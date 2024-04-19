@@ -3,13 +3,12 @@ import { UserModule } from '@/service/user/user.module';
 import { Module, VersioningType } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, NestFactory } from '@nestjs/core';
-import proxies from '@/proxy/proxy.module';
+import proxies from './proxy.module';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
-import { ValidationPipe } from '@lib/pipe';
+import { UserGuard, ValidationPipe, metadata } from '@lib';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { metadata } from '@/core/metadata';
 
 @Module({
    imports: [
@@ -18,12 +17,12 @@ import { metadata } from '@/core/metadata';
       // Service modules
       UserModule,
    ],
-   // providers: [
-   //    {
-   //       provide: APP_GUARD,
-   //       useClass: UserGuard,
-   //    },
-   // ],
+   providers: [
+      {
+         provide: APP_GUARD,
+         useClass: UserGuard,
+      },
+   ],
 })
 export class AppModule {
    static async bootstrap(): Promise<void> {

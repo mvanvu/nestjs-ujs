@@ -1,3 +1,4 @@
+import { appConstant } from '@lib/constant';
 import { ConfigService } from '@nestjs/config';
 import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/microservices';
 
@@ -19,7 +20,7 @@ export function createClientAsyncOptions(name: string): ClientsProviderAsyncOpti
 }
 
 // Todo add more services
-const services = ['UserProxy'];
+const services = [appConstant.userService.proxy];
 
 export default services.map((name) =>
    ClientsModule.registerAsync({ isGlobal: true, clients: [createClientAsyncOptions(name)] }),

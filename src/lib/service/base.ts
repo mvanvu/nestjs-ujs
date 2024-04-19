@@ -1,5 +1,5 @@
-import { metadata } from '@/core/metadata';
-import { HttpRequest, ServieConstant } from '@lib/type';
+import { metadata } from '../metadata';
+import { HttpRequest, ServiceExecuteOptions, ServiceOptions } from '../type';
 import { Is, Util } from '@mvanvu/ujs';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
@@ -8,19 +8,19 @@ import { lastValueFrom, timeout } from 'rxjs';
 
 @Injectable()
 export abstract class BaseService {
-   @Inject(REQUEST) readonly req: HttpRequest;
+   abstract readonly options: ServiceOptions;
 
-   abstract readonly options: { serviceConstant: ServieConstant };
+   @Inject(REQUEST) readonly req: HttpRequest;
 
    async execute<TInput, TResult>(
       messagePattern: string,
       data?: TInput,
-      options?: { timeOut?: number },
+      options?: ServiceExecuteOptions,
    ): Promise<TResult> {
       if (metadata.isGateway()) {
          // Handle for the api gateway
          try {
-            const clientProxy = this.options.serviceConstant.proxy;
+            const clientProxy = this.options.constant.proxy;
             const app = metadata.getGateway();
             const client = app.get<ClientProxy>(clientProxy);
             const record = new RmqRecordBuilder(data ?? null)

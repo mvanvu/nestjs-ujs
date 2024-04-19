@@ -3,5 +3,6 @@ export const userService = {
    patterns: {
       signIn: 'user.signIn',
       signUp: 'user.signUp',
+      paginate: 'user.paginate',
    },
 };

@@ -3,10 +3,10 @@ async function bootstrap() {
 
    switch (appEnv) {
       case 'gateway':
-         return import('./core/app/http.gateway').then(({ AppModule }) => AppModule.bootstrap());
+         return import('./lib/app/http.gateway').then(({ AppModule }) => AppModule.bootstrap());
 
       case 'user':
-         return import('./core/app/rpc.user').then(({ AppModule }) => AppModule.bootstrap());
+         return import('./lib/app/rpc.user').then(({ AppModule }) => AppModule.bootstrap());
    }
 }
 

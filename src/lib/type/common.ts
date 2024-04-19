@@ -1,4 +1,6 @@
 import { Registry } from '@mvanvu/ujs';
+import { RequestMethod } from '@nestjs/common';
+import { VersionValue } from '@nestjs/common/interfaces';
 import { Request } from 'express';
 
 export interface HttpRequest extends Request {
@@ -18,4 +20,22 @@ export type ExecuteOptions<TInput> = {
 export type ServieConstant = {
    proxy: string;
    patterns: Record<string, string>;
+};
+
+export type ServiceOptions = {
+   constant: ServieConstant;
+};
+
+export type ServiceExecuteOptions = {
+   timeOut?: number;
+};
+
+export type IRouteOptions = {
+   pattern: string;
+   route?: {
+      method: RequestMethod;
+      path?: string | string[];
+      version?: VersionValue;
+      public?: boolean;
+   };
 };

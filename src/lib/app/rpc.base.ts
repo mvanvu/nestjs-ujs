@@ -1,5 +1,4 @@
-import { metadata } from '@/core/metadata';
-import { ValidationPipe } from '@lib/pipe';
+import { ValidationPipe, metadata } from '@lib';
 import { Callable, Util } from '@mvanvu/ujs';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -24,6 +23,6 @@ export async function createMicroserviceApp(
 
    // Wrap the application with the metadata
    metadata.setService(app);
-
-   app.listen().then(() => `${queue} is listening`);
+   await app.listen();
+   console.log(`${queue} is listening`);
 }
