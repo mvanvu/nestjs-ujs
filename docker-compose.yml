@@ -1,0 +1,89 @@
+version: 'latest'
+services:
+   redis:
+      image: redis:latest
+      restart: unless-stopped
+      ports:
+         - ${REDIS_HOST_PORT}:${REDIS_CONTAINER_PORT}
+      command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+      networks:
+         - redis-network
+
+   rabbitmq:
+      image: rabbitmq:latest
+      restart: on-failure
+      ports:
+         - ${RABBITMQ_HOST_PORT}:${RABBITMQ_CONTAINER_PORT}
+      environment:
+         RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+         RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      volumes:
+         - rabbitmq:/var/lib/rabbitmq
+      networks:
+         - rabbitmq-network
+
+   mongodb-primary:
+      image: mongodb:latest
+      restart: always
+      environment:
+         MONGODB_USERNAME: ${MONGODB_USERNAME}
+         MONGODB_PASSWORD: ${MONGODB_PASSWORD}
+      env_file:
+         - .env
+      volumes:
+         - mongo-primary:/data/db
+      ports:
+         - ${MONGODB_PRIMARY_PORT}:${MONGODB_PRIMARY_PORT}
+      expose:
+         - ${MONGODB_PRIMARY_PORT}
+      command: mongod --bind_ip_all --replSet rs0 --keyFile /mongodb-keyfile --port ${MONGODB_PRIMARY_PORT}
+      networks:
+         - mongodb-network
+
+   mongodb-secondary-1:
+      image: mongodb:latest
+      restart: always
+      environment:
+         MONGODB_USERNAME: ${MONGODB_USERNAME}
+         MONGODB_PASSWORD: ${MONGODB_PASSWORD}
+      env_file:
+         - .env
+      volumes:
+         - mongo-secondary1:/data/db
+      ports:
+         - ${MONGODB_SECONDARY1_PORT}:${MONGODB_SECONDARY1_PORT}
+      expose:
+         - ${MONGODB_SECONDARY1_PORT}
+      command: mongod --bind_ip_all --replSet rs0 --keyFile /mongodb-keyfile --port ${MONGODB_SECONDARY1_PORT}
+      networks:
+         - mongodb-network
+
+   mongodb-secondary-2:
+      image: mongodb:latest
+      restart: always
+      environment:
+         MONGODB_USERNAME: ${MONGODB_USERNAME}
+         MONGODB_PASSWORD: ${MONGODB_PASSWORD}
+      env_file:
+         - .env
+      volumes:
+         - mongo-secondary2:/data/db
+      ports:
+         - ${MONGODB_SECONDARY2_PORT}:${MONGODB_SECONDARY2_PORT}
+      expose:
+         - ${MONGODB_SECONDARY2_PORT}
+      command: mongod --bind_ip_all --replSet rs0 --keyFile /mongodb-keyfile --port ${MONGODB_SECONDARY2_PORT}
+      networks:
+         - mongodb-network
+
+volumes:
+   rabbitmq:
+   mongo-primary:
+   mongo-secondary1:
+   mongo-secondary2:
+
+networks:
+   rabbitmq-network:
+   redis-network:
+   mongodb-network:
+      driver: bridge

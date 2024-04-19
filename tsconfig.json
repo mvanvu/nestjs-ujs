@@ -1,0 +1,37 @@
+{
+   "compilerOptions": {
+      "module": "commonjs",
+      "declaration": true,
+      "removeComments": true,
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "allowSyntheticDefaultImports": true,
+      "target": "ES2021",
+      "sourceMap": false,
+      "outDir": "./dist",
+      "baseUrl": "./",
+      "incremental": true,
+      "skipLibCheck": true,
+      "resolveJsonModule": true,
+      "strict": true,
+      "esModuleInterop": true,
+      "useUnknownInCatchVariables": true,
+      "strictFunctionTypes": true,
+      "allowUnusedLabels": false,
+      "allowUnreachableCode": false,
+      "noPropertyAccessFromIndexSignature": false,
+      "forceConsistentCasingInFileNames": true,
+      "rootDir": ".",
+      "strictNullChecks": false,
+      "noImplicitAny": false,
+      "strictBindCallApply": true,
+      "paths": {
+         "@lib": ["src/lib"],
+         "@lib/*": ["src/lib/*"],
+         "@service": ["src/service"],
+         "@service/*": ["src/service/*"],
+         "@": ["src"],
+         "@/*": ["src/*"]
+      }
+   }
+}
