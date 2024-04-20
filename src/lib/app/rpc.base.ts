@@ -23,6 +23,8 @@ export async function createMicroserviceApp(
 
    // Wrap the application with the metadata
    metadata.setService(app);
-   await app.listen();
-   console.log(`${queue} is listening`);
+   await app
+      .listen()
+      .then(() => console.log(`${queue} is listening`))
+      .catch((e) => console.debug(`${queue} listen ERR`, e));
 }
