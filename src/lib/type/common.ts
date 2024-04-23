@@ -1,10 +1,15 @@
 import { Registry } from '@mvanvu/ujs';
-import { RequestMethod } from '@nestjs/common';
+import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { VersionValue } from '@nestjs/common/interfaces';
 import { Request } from 'express';
 
+export type RequestRegistryData = {
+   user?: { id: string };
+   tz?: string;
+};
+
 export interface HttpRequest extends Request {
-   registry?: Registry;
+   registry: Registry<RequestRegistryData>;
 }
 
 export type ClassConstructor<T> = new (...arg: any[]) => T;
@@ -37,5 +42,6 @@ export type IRouteOptions = {
       path?: string | string[];
       version?: VersionValue;
       public?: boolean;
+      httpStatus?: HttpStatus;
    };
 };

@@ -1,5 +1,7 @@
 import { type BaseEntity } from '@lib/entity';
+import { RequestRegistryData } from './common';
 import { BaseDMMF } from '@prisma/client/runtime/library';
+import { Registry } from '@mvanvu/ujs';
 export type PrismaModels = BaseDMMF['datamodel']['models'];
 export type PrismaModel = PrismaModels[0];
 export type PrismaModelField = PrismaModel['fields'][0];
@@ -46,3 +48,5 @@ export type PaginationResult<T> = {
       limit: number;
    };
 };
+
+export type DataDelivery<TData = any> = { data: TData; meta: Registry<RequestRegistryData> };

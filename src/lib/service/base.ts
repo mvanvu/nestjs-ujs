@@ -1,9 +1,9 @@
 import { metadata } from '../metadata';
-import { HttpRequest, ServiceExecuteOptions, ServiceOptions } from '../type';
+import { DataDelivery, HttpRequest, ServiceExecuteOptions, ServiceOptions } from '../type';
 import { Is, Util } from '@mvanvu/ujs';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { ClientProxy, RmqRecordBuilder, RpcException } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { lastValueFrom, timeout } from 'rxjs';
 
 @Injectable()
@@ -23,13 +23,10 @@ export abstract class BaseService {
             const clientProxy = this.options.config.proxy;
             const app = metadata.getGateway();
             const client = app.get<ClientProxy>(clientProxy);
-            const record = new RmqRecordBuilder(data ?? null)
-               .setOptions({
-                  headers: {},
-               })
-               .build();
             const response = await lastValueFrom(
-               client.send(messagePattern, record).pipe(timeout(options?.timeOut ?? 5000)),
+               client
+                  .send<TResult, DataDelivery>(messagePattern, { data: data ?? null, meta: this.req.registry })
+                  .pipe(timeout(options?.timeOut ?? 5000)),
             );
 
             // Todo, handle response data
