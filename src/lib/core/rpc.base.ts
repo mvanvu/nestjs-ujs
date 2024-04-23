@@ -1,4 +1,4 @@
-import { ValidationPipe, metadata } from '@lib';
+import { ValidationPipe, appConfig, metadata } from '@lib';
 import { Callable, Util } from '@mvanvu/ujs';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -11,7 +11,7 @@ export async function createMicroserviceApp(
 ) {
    const app = await NestFactory.createMicroservice(AppModule, <MicroserviceOptions>{
       transport: Transport.RMQ,
-      options: { urls: [process.env.RABBITMQ_URL], queue, queueOptions: { durable: true } },
+      options: { urls: [appConfig.rabbitMQ.url], queue, queueOptions: { durable: true } },
    });
 
    // API payload validation

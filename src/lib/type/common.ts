@@ -17,13 +17,13 @@ export type ExecuteOptions<TInput> = {
    excuter: ((...args: any[]) => any | Promise<any>) | (new (...args: any[]) => any | Promise<any>) | object;
 };
 
-export type ServieConstant = {
+export type ServieConfig = {
    proxy: string;
    patterns: Record<string, string>;
 };
 
 export type ServiceOptions = {
-   constant: ServieConstant;
+   config: ServieConfig;
 };
 
 export type ServiceExecuteOptions = {

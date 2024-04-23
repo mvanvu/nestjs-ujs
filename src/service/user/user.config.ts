@@ -1,4 +1,4 @@
-export const userService = {
+export const userConfig = {
    proxy: 'UserProxy',
    patterns: {
       signIn: 'user.signIn',

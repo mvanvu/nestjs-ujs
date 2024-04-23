@@ -1,4 +1,4 @@
-export * from './constant';
+export * from './core/config';
 export * from './decorator';
 export * from './entity';
 export * from './interceptor';

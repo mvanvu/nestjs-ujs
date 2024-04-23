@@ -20,7 +20,7 @@ export abstract class BaseService {
       if (metadata.isGateway()) {
          // Handle for the api gateway
          try {
-            const clientProxy = this.options.constant.proxy;
+            const clientProxy = this.options.config.proxy;
             const app = metadata.getGateway();
             const client = app.get<ClientProxy>(clientProxy);
             const record = new RmqRecordBuilder(data ?? null)

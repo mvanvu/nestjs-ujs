@@ -1,16 +1,17 @@
-import { BaseService, appConstant, ServiceOptions, CRUDService, PaginationResult } from '@lib';
+import { BaseService, ServiceOptions, CRUDService, PaginationResult } from '@lib';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma } from '.prisma/user';
 import { UserEntity } from './user.entity';
+import { userConfig } from './user.config';
 
 @Injectable()
 export class UserService extends BaseService {
-   readonly options: ServiceOptions = { constant: appConstant.userService };
+   readonly options: ServiceOptions = { config: userConfig };
 
    @Inject(PrismaService) readonly prisma: PrismaService;
 
-   createCRUDUserService(): CRUDService<PrismaService, Prisma.UserSelect> {
+   createCRUDService(): CRUDService<PrismaService, Prisma.UserSelect> {
       return new CRUDService<PrismaService, Prisma.UserSelect>({
          prisma: this.prisma,
          modelName: 'user',
@@ -30,6 +31,6 @@ export class UserService extends BaseService {
    }
 
    async paginate(): Promise<PaginationResult<UserEntity>> {
-      return this.createCRUDUserService().paginate();
+      return this.createCRUDService().paginate();
    }
 }

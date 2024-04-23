@@ -1,18 +1,16 @@
 // import { UserGuard } from '@lib/interceptor';
 import { UserModule } from '@/service/user/user.module';
 import { Module, VersioningType } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, NestFactory } from '@nestjs/core';
 import proxies from './proxy.module';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
-import { UserGuard, ValidationPipe, metadata } from '@lib';
+import { UserGuard, ValidationPipe, appConfig, metadata } from '@lib';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 @Module({
    imports: [
-      ConfigModule.forRoot({ isGlobal: true, expandVariables: true }),
       ...proxies,
       // Service modules
       UserModule,
@@ -27,19 +25,18 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 export class AppModule {
    static async bootstrap(): Promise<void> {
       const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
-      const config = app.get(ConfigService);
 
       app.enableShutdownHooks();
       app.use(helmet());
 
-      const staticPath = config.get('MEDIA_STORAGE_LOCAL_PATH');
+      const staticPath = appConfig.storage.localPath;
 
       if (staticPath) {
          const rootPath = path.join(process.cwd(), staticPath, 'public');
          app.useStaticAssets(rootPath, { prefix: '/', index: false });
       }
 
-      const apiPrefix = config.get('API_PREFIX');
+      const apiPrefix = appConfig.apiGateway.prefix;
 
       if (apiPrefix) {
          app.setGlobalPrefix(apiPrefix);
@@ -47,10 +44,8 @@ export class AppModule {
 
       app.enableVersioning({ defaultVersion: '1', type: VersioningType.URI });
 
-      if (config.get('CORS_ENABLED') === 'true') {
-         const origin = config.get<string>('CORS_ORIGIN') || '*';
-         const methods = config.get<string>('CORS_METHODS') || undefined;
-         app.enableCors({ origin: origin.includes(',') ? origin.split(',') : origin, methods });
+      if (appConfig.apiGateway.cors.enable) {
+         app.enableCors({ origin: appConfig.apiGateway.cors.origin, methods: appConfig.apiGateway.cors.methods });
       }
 
       app.useGlobalPipes(new ValidationPipe());
@@ -61,7 +56,7 @@ export class AppModule {
          .build();
       const document = SwaggerModule.createDocument(app, swaggerConfig);
       SwaggerModule.setup('api-docs', app, document, { swaggerOptions: { persistAuthorization: true } });
-      const port = config.get('PORT');
+      const port = appConfig.apiGateway.port;
 
       // Metadata
       metadata.setGateway(app);

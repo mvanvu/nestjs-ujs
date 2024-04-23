@@ -1,16 +1,15 @@
-import { appConstant } from '@lib/constant';
-import { ConfigService } from '@nestjs/config';
+import * as serviceConfig from '@service/config';
 import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/microservices';
+import { appConfig } from '@lib/core/config';
 
 export function createClientAsyncOptions(name: string): ClientsProviderAsyncOptions {
    return {
       name,
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
+      useFactory: () => {
          return {
             transport: Transport.RMQ,
             options: {
-               urls: [config.get<string>('RABBITMQ_URL')],
+               urls: [appConfig.rabbitMQ.url],
                queue: `${name}Queue`,
                queueOptions: { durable: true },
             },
@@ -20,7 +19,7 @@ export function createClientAsyncOptions(name: string): ClientsProviderAsyncOpti
 }
 
 // Todo add more services
-const services = [appConstant.userService.proxy];
+const services = [serviceConfig.userConfig.proxy];
 
 export default services.map((name) =>
    ClientsModule.registerAsync({ isGlobal: true, clients: [createClientAsyncOptions(name)] }),
