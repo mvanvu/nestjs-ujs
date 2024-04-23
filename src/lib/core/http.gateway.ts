@@ -50,8 +50,8 @@ export class AppModule {
 
       app.useGlobalPipes(new ValidationPipe());
       const swaggerConfig = new DocumentBuilder()
-         .setTitle('Nexle')
-         .setDescription('Document API')
+         .setTitle('NestJS UJS')
+         .setDescription('NestJS App API')
          .addBearerAuth()
          .build();
       const document = SwaggerModule.createDocument(app, swaggerConfig);

@@ -1,8 +1,7 @@
-import { ValidationPipe, appConfig, metadata } from '@lib';
+import { ClassConstructor, ValidationPipe, appConfig, metadata } from '@lib';
 import { Callable, Util } from '@mvanvu/ujs';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { ClassConstructor } from 'class-transformer';
 
 export async function createMicroserviceApp(
    AppModule: ClassConstructor<any>,

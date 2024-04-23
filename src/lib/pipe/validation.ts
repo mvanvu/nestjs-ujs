@@ -1,8 +1,7 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { ArgumentMetadata, HttpException, HttpStatus, Injectable, PipeTransform } from '@nestjs/common';
 import { EqualsRulesOptions, Is, IsValidType, ObjectRecord, Transform, Util } from '@mvanvu/ujs';
-import { OPTIONAL_PROP, TRANSFORMER_PROP, TransformOptions, VALIDATION_PROP, ValidationOptions } from '@lib/decorator';
-
-export type ValidationError = Record<string, { code: number | string; message: string }[]>;
+import { CLASS_PROPERTIES } from '@lib/decorator';
+import { PropertyOptions, ValidationError } from '@lib/type';
 
 @Injectable()
 export class ValidationPipe implements PipeTransform {
@@ -11,60 +10,61 @@ export class ValidationPipe implements PipeTransform {
       const error: ValidationError = {};
 
       if (Is.object(value) && typeof ClassContructor === 'function') {
-         // Handle transformer
-         const transformOptions: Record<string, TransformOptions[]> | undefined =
-            ClassContructor.prototype[TRANSFORMER_PROP];
+         const propertyOptions: Record<string, PropertyOptions<IsValidType>> | undefined =
+            ClassContructor.prototype[CLASS_PROPERTIES];
+         const props: string[] = Object.keys(ClassContructor.prototype[CLASS_PROPERTIES] || {});
 
-         if (transformOptions) {
-            for (const prop in transformOptions) {
-               if (transformOptions[prop].length) {
-                  for (const { fromType, toType } of transformOptions[prop]) {
-                     value[prop] = fromType
-                        ? Transform.cleanIfType(value[prop], toType, fromType)
-                        : Transform.clean(value[prop], toType);
-                  }
-               }
+         // Handle transformer
+         for (const prop of props) {
+            if (propertyOptions[prop]?.transform) {
+               const { fromType, toType } = propertyOptions[prop].transform;
+               value[prop] = fromType
+                  ? Transform.cleanIfType(value[prop], toType, fromType)
+                  : Transform.clean(value[prop], toType);
             }
          }
 
          // Handle validator
-         if (ClassContructor.prototype[VALIDATION_PROP]) {
-            const validationProps: Record<string, ValidationOptions<IsValidType>[]> =
-               ClassContructor.prototype[VALIDATION_PROP];
-            const optionalProps: string[] = ClassContructor.prototype[OPTIONAL_PROP] || [];
+         for (const prop of props) {
+            const val: any = value[prop];
+            const propOptions = propertyOptions[prop];
 
-            for (const prop in value) {
-               const val: any = value[prop];
+            if (!propOptions || (propOptions.optional === true && Is.nullOrUndefined(val))) {
+               continue;
+            }
 
-               if (
-                  !validationProps.hasOwnProperty(prop) ||
-                  (optionalProps.includes(prop) && [undefined, null].includes(val))
-               ) {
-                  continue;
-               }
-
-               const options = validationProps[prop] as ValidationOptions<IsValidType>[];
-
-               for (const option of options) {
-                  const { is: type } = option;
+            if (propOptions.validate) {
+               for (const validateOption of Array.isArray(propOptions.validate)
+                  ? propOptions.validate
+                  : [propOptions.validate]) {
+                  const { is: type } = validateOption;
                   let isValid: boolean;
 
                   if (Is.callable(type)) {
                      isValid = !!(await Util.callAsync(this, type, val));
                   } else if (type === 'equals') {
-                     const { equalsTo } = (option.meta as EqualsRulesOptions) || {};
+                     const { equalsTo } = (validateOption.meta as EqualsRulesOptions) || {};
                      isValid = typeof equalsTo === 'string' && Is.equals(val, value[equalsTo]);
                   } else {
-                     isValid = Is.valid(val, { type: type, each: option.each, meta: option.meta as any });
+                     isValid = Is.valid(val, { type, each: validateOption.each, meta: validateOption.meta as any });
                   }
 
-                  if (option.not === true) {
+                  if (validateOption.not === true) {
                      isValid = !isValid;
                   }
 
-                  if (isValid) {
-                     const code: string | number = Is.nullOrUndefined(option.code) ? 'VALIDATE_FAILED' : option.code;
-                     const message: string = Is.nullOrUndefined(option.message) ? 'Bad request' : option.message;
+                  if (!isValid) {
+                     const code: string | number = Is.nullOrUndefined(validateOption.code)
+                        ? 'VALIDATE_FAILED'
+                        : validateOption.code;
+                     const message: string = Is.nullOrUndefined(validateOption.message)
+                        ? 'Bad request'
+                        : validateOption.message;
+
+                     if (!error[prop]) {
+                        error[prop] = [];
+                     }
+
                      error[prop].push({ code, message });
                   }
                }
@@ -76,6 +76,6 @@ export class ValidationPipe implements PipeTransform {
          return value;
       }
 
-      throw error;
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
    }
 }

@@ -1,5 +1,3 @@
-export * from './method';
+export * from './route';
 export * from './param';
 export * from './property';
-export * from './transformer';
-export * from './validator';

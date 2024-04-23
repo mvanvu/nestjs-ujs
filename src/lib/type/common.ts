@@ -1,4 +1,4 @@
-import { Registry } from '@mvanvu/ujs';
+import { CommonType, IsValidOptions, IsValidType, Registry, Transform } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { VersionValue } from '@nestjs/common/interfaces';
 import { Request } from 'express';
@@ -45,3 +45,32 @@ export type IRouteOptions = {
       httpStatus?: HttpStatus;
    };
 };
+
+export type EntityConstructor<T> = new (...args: any[]) => T;
+
+export type ValidationCode = string | number;
+
+export type ValidationOptions<T> = {
+   is: T;
+   each?: boolean;
+   not?: boolean;
+   meta?: IsValidOptions<T>['meta'];
+   message?: string;
+   code?: ValidationCode;
+};
+
+export type TransformType<T = keyof typeof Transform> = T extends 'clean' | 'cleanIfType' | 'prototype' ? never : T;
+
+export type TransformOptions = {
+   toType: TransformType | TransformType[];
+   fromType?: CommonType | CommonType[];
+};
+
+export type PropertyOptions<IsType extends IsValidType> = {
+   swagger?: { description?: string; example?: any };
+   validate?: ValidationOptions<IsType> | ValidationOptions<IsType>[];
+   transform?: TransformOptions;
+   optional?: boolean;
+};
+
+export type ValidationError = Record<string, { code: number | string; message: string }[]>;

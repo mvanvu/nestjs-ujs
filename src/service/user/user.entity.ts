@@ -1,12 +1,15 @@
-import { BaseEntity, Property } from '@lib';
+import { BaseEntity, IProperty } from '@lib';
 
 export class UserEntity extends BaseEntity {
-   @Property()
+   @IProperty()
    id: string;
 
-   @Property()
-   username: string;
+   @IProperty()
+   name?: string;
 
-   @Property()
+   @IProperty()
+   username?: string;
+
+   @IProperty()
    email: string;
 }
