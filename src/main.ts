@@ -1,12 +1,12 @@
-async function bootstrap() {
-   const appEnv = process.env.APP_ENV;
+import { appConfig } from '@lib';
 
-   switch (appEnv) {
+async function bootstrap() {
+   switch (appConfig.appEnv) {
       case 'gateway':
-         return import('./lib/core/http.gateway').then(({ AppModule }) => AppModule.bootstrap());
+         return import('./lib/core/gateway/app.module').then(({ AppModule }) => AppModule.bootstrap());
 
       case 'user':
-         return import('./lib/core/rpc.user').then(({ AppModule }) => AppModule.bootstrap());
+         return import('./lib/core/service/user/app.module').then(({ AppModule }) => AppModule.bootstrap());
    }
 }
 

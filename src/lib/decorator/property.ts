@@ -1,5 +1,5 @@
 import { PropertyOptions } from '@lib/type';
-import { IsValidType } from '@mvanvu/ujs';
+import { IsValidType, Registry } from '@mvanvu/ujs';
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -12,7 +12,7 @@ export function IProperty<IsType extends IsValidType>(options?: PropertyOptions<
             target[CLASS_PROPERTIES] = {};
          }
 
-         target[CLASS_PROPERTIES][propertyKey] = { ...options, swagger: undefined };
+         target[CLASS_PROPERTIES][propertyKey] = Registry.from(options).omit('swagger').valueOf();
       },
    ];
 

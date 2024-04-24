@@ -1,9 +1,11 @@
-import { Body, Controller, Inject, RequestMethod } from '@nestjs/common';
+import { Controller, Inject, RequestMethod } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { IRoute } from '@lib/decorator';
+import { IBody, IRoute } from '@lib/decorator';
 import { userConfig } from './user.config';
 import { UserSignUpDto } from './dto';
+import { MessageData, PaginationResult } from '@lib';
+import { UserEntity } from '@service/user/user.entity';
 
 @ApiTags('Users')
 @Controller('users')
@@ -14,7 +16,7 @@ export class UserController {
       pattern: userConfig.patterns.signUp,
       route: { method: RequestMethod.POST, path: 'signup', public: true },
    })
-   signUp(@Body() dto: UserSignUpDto): Promise<any> {
+   signUp(@IBody() dto: UserSignUpDto): Promise<UserEntity> {
       return this.userConfig.execute(userConfig.patterns.signUp, dto);
    }
 
@@ -22,7 +24,7 @@ export class UserController {
       pattern: userConfig.patterns.paginate,
       route: { method: RequestMethod.GET },
    })
-   paginate(): Promise<any> {
-      return this.userConfig.execute(userConfig.patterns.paginate, 'The new DTO data');
+   paginate(@IBody() data: MessageData): Promise<PaginationResult<UserEntity>> {
+      return this.userConfig.execute(userConfig.patterns.paginate, data);
    }
 }

@@ -3,21 +3,25 @@ import { ClassConstructor } from '@lib/type';
 import { ObjectRecord } from '@mvanvu/ujs';
 
 export class BaseEntity {
+   constructor(entity?: ObjectRecord) {
+      if (entity) {
+         this.bind(entity);
+      }
+   }
+
    static bindToClass<T>(cls: ClassConstructor<T>, obj: ObjectRecord): T {
       const props: string[] = Object.keys(cls.prototype[CLASS_PROPERTIES] || {});
       const entity = new cls();
 
-      for (const prop in obj) {
-         if (props.includes(prop)) {
-            entity[prop] = obj[prop];
-         }
+      for (const prop of props) {
+         entity[prop] = obj.hasOwnProperty(prop) ? obj[prop] : null;
       }
 
       return entity;
    }
 
-   bind(obj: ObjectRecord): this {
-      Object.assign(this, BaseEntity.bindToClass(this.constructor as ClassConstructor<typeof this>, obj));
+   bind(entity: ObjectRecord): this {
+      Object.assign(this, BaseEntity.bindToClass(this.constructor as ClassConstructor<typeof this>, entity));
 
       return this;
    }

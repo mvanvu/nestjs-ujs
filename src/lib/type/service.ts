@@ -11,6 +11,10 @@ export type CRUDServiceOptions<PrismaService, PrismaSelect> = {
    modelName: string;
    select?: PrismaSelect;
    entity?: typeof BaseEntity;
+   orderFields?: string[];
+   searchFields?: string[];
+   filterFields?: string[];
+   maxLimit?: number;
 };
 
 export interface BasePrismaService {
@@ -32,14 +36,6 @@ export type QueryParams = {
    order?: string;
 };
 
-export type PaginationParams = {
-   query?: QueryParams;
-   orderFields?: string[];
-   searchFields?: string[];
-   filterFields?: string[];
-   maxLimit?: number;
-};
-
 export type PaginationResult<T> = {
    data: T[];
    meta: {
@@ -49,4 +45,12 @@ export type PaginationResult<T> = {
    };
 };
 
-export type DataDelivery<TData = any> = { data: TData; meta: Registry<RequestRegistryData> };
+export type DataDelivery<TData = any> = {
+   data: TData;
+   meta: RequestRegistryData & { query: QueryParams };
+};
+
+export type MessageData<TData = any> = {
+   data: DataDelivery<TData>['data'];
+   meta: Registry<DataDelivery<TData>['meta']>;
+};

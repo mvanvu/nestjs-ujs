@@ -1,6 +1,7 @@
 export * from './core/config';
 export * from './decorator';
 export * from './entity';
+export * from './exception';
 export * from './interceptor';
 export * from './pipe';
 export * from './type';

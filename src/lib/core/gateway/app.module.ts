@@ -1,13 +1,14 @@
 // import { UserGuard } from '@lib/interceptor';
 import { UserModule } from '@/service/user/user.module';
-import { Module, VersioningType } from '@nestjs/common';
+import { MiddlewareConsumer, Module, VersioningType } from '@nestjs/common';
 import { APP_GUARD, NestFactory } from '@nestjs/core';
 import proxies from './proxy.module';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
-import { UserGuard, ValidationPipe, appConfig, metadata } from '@lib';
+import { HttpTransform, UserGuard, ValidationPipe, appConfig, metadata, ExceptionFilter } from '@lib';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { HttpMiddleware } from './http.middleware';
 
 @Module({
    imports: [
@@ -23,6 +24,10 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
    ],
 })
 export class AppModule {
+   configure(consumer: MiddlewareConsumer) {
+      consumer.apply(HttpMiddleware).forRoutes('*');
+   }
+
    static async bootstrap(): Promise<void> {
       const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
 
@@ -48,7 +53,10 @@ export class AppModule {
          app.enableCors({ origin: appConfig.apiGateway.cors.origin, methods: appConfig.apiGateway.cors.methods });
       }
 
+      app.useGlobalFilters(new ExceptionFilter());
       app.useGlobalPipes(new ValidationPipe());
+      app.useGlobalInterceptors(new HttpTransform());
+
       const swaggerConfig = new DocumentBuilder()
          .setTitle('NestJS UJS')
          .setDescription('NestJS App API')

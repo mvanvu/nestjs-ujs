@@ -1,4 +1,4 @@
-import { ClassConstructor, ValidationPipe, appConfig, metadata } from '@lib';
+import { ClassConstructor, ValidationPipe, appConfig, metadata, ExceptionFilter } from '@lib';
 import { Callable, Util } from '@mvanvu/ujs';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -15,6 +15,9 @@ export async function createMicroserviceApp(
 
    // API payload validation
    app.useGlobalPipes(new ValidationPipe());
+
+   // Global exception filter
+   app.useGlobalFilters(new ExceptionFilter());
 
    if (onBeforeListen) {
       await Util.call(app, onBeforeListen);

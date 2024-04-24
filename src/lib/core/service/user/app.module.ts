@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { createMicroserviceApp } from './rpc.base';
+import { createMicroserviceApp } from '@lib/core/service/base';
 import { UserModule } from '@service/user/user.module';
 import { userConfig } from '@service/user/user.config';
 
 @Module({
-   imports: [ConfigModule.forRoot({ isGlobal: true, expandVariables: true }), UserModule],
+   imports: [UserModule],
 })
 export class AppModule {
    static bootstrap(): Promise<void> {

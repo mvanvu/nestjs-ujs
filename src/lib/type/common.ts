@@ -6,6 +6,9 @@ import { Request } from 'express';
 export type RequestRegistryData = {
    user?: { id: string };
    tz?: string;
+   device: 'web' | 'mobile' | 'desktop';
+   userAgent: string;
+   ipAddress: string;
 };
 
 export interface HttpRequest extends Request {
@@ -38,7 +41,7 @@ export type ServiceExecuteOptions = {
 export type IRouteOptions = {
    pattern: string;
    route?: {
-      method: RequestMethod;
+      method?: RequestMethod;
       path?: string | string[];
       version?: VersionValue;
       public?: boolean;
@@ -55,7 +58,6 @@ export type ValidationOptions<T> = {
    each?: boolean;
    not?: boolean;
    meta?: IsValidOptions<T>['meta'];
-   message?: string;
    code?: ValidationCode;
 };
 
@@ -72,5 +74,3 @@ export type PropertyOptions<IsType extends IsValidType> = {
    transform?: TransformOptions;
    optional?: boolean;
 };
-
-export type ValidationError = Record<string, { code: number | string; message: string }[]>;
