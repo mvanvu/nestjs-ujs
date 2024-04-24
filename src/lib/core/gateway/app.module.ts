@@ -6,9 +6,10 @@ import proxies from './proxy.module';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
-import { HttpTransform, UserGuard, ValidationPipe, appConfig, metadata, ExceptionFilter } from '@lib';
+import { HttpTransform, ValidationPipe, appConfig, metadata, ExceptionFilter } from '@lib';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpMiddleware } from './http.middleware';
+import { UserAuthGuard } from '@service/user/auth/guard';
 
 @Module({
    imports: [
@@ -19,7 +20,7 @@ import { HttpMiddleware } from './http.middleware';
    providers: [
       {
          provide: APP_GUARD,
-         useClass: UserGuard,
+         useClass: UserAuthGuard,
       },
    ],
 })

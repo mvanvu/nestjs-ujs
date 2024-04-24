@@ -13,3 +13,11 @@ export class UserEntity extends BaseEntity {
    @IProperty()
    email: string;
 }
+
+export class AuthEntity extends BaseEntity {
+   @IProperty()
+   user: UserEntity;
+
+   @IProperty()
+   tokens: { access: string; refresh: string };
+}

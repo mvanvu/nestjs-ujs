@@ -11,10 +11,12 @@ export type CRUDServiceOptions<PrismaService, PrismaSelect> = {
    modelName: string;
    select?: PrismaSelect;
    entity?: typeof BaseEntity;
-   orderFields?: string[];
-   searchFields?: string[];
-   filterFields?: string[];
-   maxLimit?: number;
+   list?: {
+      orderFields?: string[];
+      searchFields?: string[];
+      filterFields?: string[];
+      maxLimit?: number;
+   };
 };
 
 export interface BasePrismaService {

@@ -1,4 +1,4 @@
-import { IProperty } from '@lib';
+import { IPickType, IProperty } from '@lib';
 
 export class UserSignUpDto {
    @IProperty({
@@ -34,3 +34,5 @@ export class UserSignUpDto {
    })
    password2?: string;
 }
+
+export class UserSignInDto extends IPickType(UserSignUpDto, ['username', 'email', 'password']) {}

@@ -21,8 +21,8 @@ const appConfigData = {
    },
    jwt: {
       secret: envConfig.get<string>('JWT_SECRET_KEY'),
-      accessExpiresIn: envConfig.get<string>('JWT_ACCESS_EXPIRES_IN', '1h'),
-      refreshExpiresIn: envConfig.get<string>('JWT_REFRESH_EXPIRES_IN', '1.2h'),
+      accessExpiresInMinutes: envConfig.get<number>('JWT_ACCESS_EXPIRES_IN_MINUTES', 60, 'UInt'),
+      refreshExpiresInMinutes: envConfig.get<number>('JWT_REFRESH_EXPIRES_IN_MINUTES', 70, 'UInt'),
    },
    redis: {
       url: envConfig.get<string>('REDIS_URL'),

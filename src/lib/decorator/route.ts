@@ -17,7 +17,7 @@ export function IRoute(options: IRouteOptions): MethodDecorator {
 
    const decorators: Array<ClassDecorator | MethodDecorator | PropertyDecorator> = [];
 
-   if (!Is.nullOrUndefined(route.method) || !Is.nullOrUndefined(route.httpStatus) || route.version) {
+   if (!Is.nullOrUndefined(route?.method) || !Is.nullOrUndefined(route?.httpStatus) || route?.version) {
       switch (route.method) {
          case RequestMethod.GET:
             decorators.push(Get(route.path));

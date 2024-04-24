@@ -128,8 +128,8 @@ export class CRUDService<PrismaService extends BasePrismaService, PrismaSelect =
                      modelParams.orderBy.push({
                         [ordering]: <OrderDirection>direction,
                      });
-                  } else if (this.options.orderFields?.length) {
-                     for (const orderField of this.options.orderFields) {
+                  } else if (this.options.list?.orderFields?.length) {
+                     for (const orderField of this.options.list?.orderFields) {
                         const regex = /\[([a-z0-9_.,]+)\]/gi;
                         let fieldName = orderField;
                         let queryName = fieldName;
@@ -172,7 +172,7 @@ export class CRUDService<PrismaService extends BasePrismaService, PrismaSelect =
       // Take care search
       const q = (query.q || '').toString().trim();
 
-      if (q && this.options.searchFields?.length) {
+      if (q && this.options.list?.searchFields?.length) {
          const where: Record<string, any>[] = [];
          const mode = 'insensitive';
          let searchCondition: Record<string, any> = { contains: q, mode };
@@ -212,7 +212,7 @@ export class CRUDService<PrismaService extends BasePrismaService, PrismaSelect =
             }
          }
 
-         for (const searchField of this.options.searchFields) {
+         for (const searchField of this.options.list?.searchFields) {
             if (searchField.includes('.')) {
                where.push(this.parseDeepCondition(searchField, modelFields, searchCondition));
             } else {
@@ -224,7 +224,7 @@ export class CRUDService<PrismaService extends BasePrismaService, PrismaSelect =
       }
 
       // Take care filter
-      const filterFields = this.options.filterFields || [];
+      const filterFields = this.options.list?.filterFields || [];
 
       if (filterFields.length) {
          for (const field of filterFields) {
@@ -339,7 +339,7 @@ export class CRUDService<PrismaService extends BasePrismaService, PrismaSelect =
 
       // Take care pagination
       const defaultLimit = appConfig.list.limit;
-      const maxLimit = this.options.maxLimit ?? appConfig.list.maxLimit;
+      const maxLimit = this.options.list?.maxLimit ?? appConfig.list.maxLimit;
       let limit: number =
          query.limit === undefined || !query.limit.toString().match(/^[0-9]+$/)
             ? defaultLimit

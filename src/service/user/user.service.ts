@@ -1,11 +1,21 @@
-import { BaseService, ServiceOptions, CRUDService, PaginationResult, FieldsException, MessageData } from '@lib';
+import {
+   BaseService,
+   ServiceOptions,
+   CRUDService,
+   PaginationResult,
+   FieldsException,
+   MessageData,
+   ThrowException,
+   appConfig,
+} from '@lib';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma } from '.prisma/user';
-import { UserEntity } from './user.entity';
+import { AuthEntity, UserEntity } from './user.entity';
 import { userConfig } from './user.config';
-import { UserSignUpDto } from './dto';
+import { UserSignInDto, UserSignUpDto } from './dto';
 import * as argon2 from 'argon2';
+import { DateTime, Hash, Is } from '@mvanvu/ujs';
 
 @Injectable()
 export class UserService extends BaseService {
@@ -58,7 +68,53 @@ export class UserService extends BaseService {
       return new UserEntity(newUser);
    }
 
+   async generateTokens(userId: string): Promise<AuthEntity['tokens']> {
+      const { jwt: jwtConfig } = appConfig;
+      const jwt = Hash.jwt();
+      const [access, refresh] = await Promise.all([
+         jwt.sign(
+            { id: userId },
+            { secret: appConfig.jwt.secret, iat: DateTime.now().addMinute(jwtConfig.accessExpiresInMinutes) },
+         ),
+
+         jwt.sign(
+            { id: userId },
+            { secret: appConfig.jwt.secret, iat: DateTime.now().addMinute(jwtConfig.refreshExpiresInMinutes) },
+         ),
+      ]);
+
+      return { access, refresh };
+   }
+
+   async signIn({ data }: MessageData<UserSignInDto>): Promise<AuthEntity> {
+      const { username, email, password } = data;
+
+      if (Is.empty([username, email], true)) {
+         new ThrowException('Invalid credentials');
+      }
+
+      const user = await this.prisma.user.findFirst({ where: { OR: [{ username }, { email }] } });
+
+      if (!user || !(await argon2.verify(user.password, password))) {
+         new ThrowException('Invalid credentials');
+      }
+
+      return new AuthEntity({ user: new UserEntity(user), tokens: await this.generateTokens(user.id) });
+   }
+
+   async verify({ data: token }: MessageData<string>): Promise<UserEntity> {
+      const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.jwt.secret });
+      const user = await this.prisma.user.findUnique({ where: { id } });
+
+      if (!user || user.status !== this.prisma.enums.UserStatus.ACTIVE) {
+         new ThrowException('Invalid credentials');
+      }
+
+      return new UserEntity(user);
+   }
+
    async paginate({ meta }: MessageData): Promise<PaginationResult<UserEntity>> {
+      console.log(meta.get('user'));
       return this.createCRUDService().paginate(meta.get('query'));
    }
 }

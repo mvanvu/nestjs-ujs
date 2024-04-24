@@ -3,6 +3,7 @@ export const userConfig = {
    patterns: {
       signIn: 'user.signIn',
       signUp: 'user.signUp',
+      verify: 'user.verify',
       paginate: 'user.paginate',
    },
 };
