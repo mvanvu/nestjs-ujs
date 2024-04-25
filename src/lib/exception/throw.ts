@@ -3,12 +3,10 @@ import { ObjectRecord } from '@mvanvu/ujs';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 
-export class ThrowException {
-   constructor(error: string | ObjectRecord, statusCode?: HttpStatus) {
-      if (metadata.isGateway()) {
-         throw new HttpException({ error }, statusCode ?? HttpStatus.BAD_REQUEST);
-      } else {
-         throw new RpcException(error);
-      }
+export function ThrowException(error: string | ObjectRecord, statusCode?: HttpStatus) {
+   if (metadata.isGateway()) {
+      throw new HttpException({ error }, statusCode ?? HttpStatus.BAD_REQUEST);
+   } else {
+      throw new RpcException(error);
    }
 }

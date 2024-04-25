@@ -1,29 +1,20 @@
-import { type BaseEntity } from '@lib/entity';
 import { RequestRegistryData } from './common';
-import { BaseDMMF } from '@prisma/client/runtime/library';
-import { Registry } from '@mvanvu/ujs';
-export type PrismaModels = BaseDMMF['datamodel']['models'];
-export type PrismaModel = PrismaModels[0];
-export type PrismaModelField = PrismaModel['fields'][0];
+import { Callable, Registry } from '@mvanvu/ujs';
 
-export type CRUDServiceOptions<PrismaService, PrismaSelect> = {
-   prisma: PrismaService;
-   modelName: string;
-   select?: PrismaSelect;
-   entity?: typeof BaseEntity;
+export type CRUDServiceOptions<TPrismaModel, TPrismaSelect> = {
+   model: TPrismaModel;
+   select?: TPrismaSelect;
    list?: {
       orderFields?: string[];
       searchFields?: string[];
       filterFields?: string[];
       maxLimit?: number;
    };
+   events?: {
+      onInit?: Callable;
+      onEntity?: Callable;
+   };
 };
-
-export interface BasePrismaService {
-   readonly dmmf: BaseDMMF;
-}
-
-export type CRUDServiceModelFields = Record<string, Record<string, PrismaModelField>>;
 
 export type OrderDirection = 'asc' | 'desc';
 

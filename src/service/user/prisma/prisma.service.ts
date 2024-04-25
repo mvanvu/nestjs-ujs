@@ -1,12 +1,9 @@
 import { Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
-import { PrismaClient, $Enums, Prisma } from '.prisma/user';
+import { PrismaClient, $Enums } from '.prisma/user';
 import { Util } from '@mvanvu/ujs';
-import { BasePrismaService } from '@lib';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements BasePrismaService, OnModuleInit, OnApplicationShutdown {
-   readonly dmmf = Prisma.dmmf;
-
+export class PrismaService extends PrismaClient implements OnModuleInit, OnApplicationShutdown {
    get enums() {
       return $Enums;
    }

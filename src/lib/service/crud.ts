@@ -1,101 +1,27 @@
 import { appConfig } from '@lib/core/config';
-import { BaseEntity } from '@lib/entity';
-import {
-   CRUDServiceOptions,
-   PrismaModel,
-   PrismaModelField,
-   BasePrismaService,
-   CRUDServiceModelFields,
-   QueryParams,
-   OrderBy,
-   OrderDirection,
-   PaginationResult,
-} from '@lib/type';
-import { DateTime, ObjectRecord, Registry, Transform } from '@mvanvu/ujs';
+import { ThrowException } from '@lib/exception';
+import { CRUDServiceOptions, QueryParams, OrderBy, OrderDirection, PaginationResult } from '@lib/type';
+import { DateTime, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { Injectable, Logger } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
+import { Operation } from '@prisma/client/runtime/library';
 
 @Injectable()
-export class CRUDService<PrismaService extends BasePrismaService, PrismaSelect = any> {
-   protected readonly logger: Logger = new Logger(CRUDService.name);
+export class CRUDService<
+   PrismaModel extends Record<string | Operation, any>,
+   CreateDto extends ObjectRecord,
+   PrismaSelect = undefined,
+> {
+   readonly logger: Logger;
 
-   readonly select: PrismaSelect;
-
-   protected modelFields: CRUDServiceModelFields = {};
-
-   constructor(public readonly options: CRUDServiceOptions<PrismaService, PrismaSelect>) {
+   constructor(public readonly options: CRUDServiceOptions<PrismaModel, PrismaSelect>) {
       this.logger = new Logger(this.constructor.name);
-      options.prisma.dmmf.datamodel.models.forEach((model: PrismaModel) => {
-         const name = model.name.toLowerCase();
-         this.modelFields[name] = {};
-         model.fields.forEach((field: PrismaModelField) => (this.modelFields[name][field.name] = field));
-      });
    }
 
-   private parseDeepCondition(
-      path: string,
-      deepModelFields: Record<string, PrismaModelField>,
-      condition: Record<string, any> | any[],
-      isSearch = true,
-      deepListKey = 'some',
-   ) {
-      const deepPath = path.split('.');
-      const conditionsPath = [];
-      const lastPath = deepPath.pop();
-
-      while (deepPath.length) {
-         const part = deepPath.shift();
-         conditionsPath.push(part);
-
-         if (deepModelFields[part].isList) {
-            conditionsPath.push(deepListKey);
-         }
-
-         deepModelFields = this.getModelFields(deepModelFields[part].type);
-      }
-
-      if (isSearch && process.env.MULTILINGUAL && deepModelFields?.translations?.type?.match(/Translation$/g)) {
-         return Registry.from()
-            .set(conditionsPath.join('.'), {
-               OR: [
-                  {
-                     translations: {
-                        some: {
-                           referenceField: lastPath,
-                           translatedValue: condition,
-                        },
-                     },
-                  },
-                  { [lastPath]: condition },
-               ],
-            })
-            .valueOf();
-      }
-
-      conditionsPath.push(lastPath);
-
-      return Registry.from().set(conditionsPath.join('.'), condition).valueOf();
+   get model(): PrismaModel {
+      return this.options.model;
    }
 
-   private getModelFields(modelName: string): Record<string, PrismaModelField> {
-      modelName = modelName.toLowerCase();
-
-      if (!this.modelFields[modelName]) {
-         throw new RpcException('Prisma model name is undefined');
-      }
-
-      return this.modelFields[modelName];
-   }
-
-   protected willTranslate(lang?: string) {
-      const enableTranslation: boolean = Transform.toBoolean(process.env.MULTILINGUAL);
-      const defaultLanguage: string = process.env.DEFAULT_LANGUAGE || 'en-GB';
-      const allowLanguages: string[] = (process.env.ALLOW_LANGUAGE || '*').split(',');
-
-      return enableTranslation && [...allowLanguages, '*'].includes(lang) && (lang === '*' || lang !== defaultLanguage);
-   }
-
-   async paginate<TResult>(query?: QueryParams): Promise<PaginationResult<TResult>> {
+   async paginate<T>(query?: QueryParams): Promise<PaginationResult<T>> {
       const modelParams = {
          select: this.options.select,
          where: { AND: [], OR: [] },
@@ -108,7 +34,6 @@ export class CRUDService<PrismaService extends BasePrismaService, PrismaSelect =
 
       // Take care order by
       const orderBy = <OrderBy | string>(query?.order || '');
-      const modelFields = this.getModelFields(this.options.modelName);
 
       if (orderBy) {
          if (typeof orderBy === 'string') {
@@ -124,11 +49,7 @@ export class CRUDService<PrismaService extends BasePrismaService, PrismaSelect =
                }
 
                if (['asc', 'desc'].includes(direction)) {
-                  if (modelFields[ordering] && !modelFields[ordering].relationName) {
-                     modelParams.orderBy.push({
-                        [ordering]: <OrderDirection>direction,
-                     });
-                  } else if (this.options.list?.orderFields?.length) {
+                  if (this.options.list?.orderFields?.length) {
                      for (const orderField of this.options.list?.orderFields) {
                         const regex = /\[([a-z0-9_.,]+)\]/gi;
                         let fieldName = orderField;
@@ -213,11 +134,7 @@ export class CRUDService<PrismaService extends BasePrismaService, PrismaSelect =
          }
 
          for (const searchField of this.options.list?.searchFields) {
-            if (searchField.includes('.')) {
-               where.push(this.parseDeepCondition(searchField, modelFields, searchCondition));
-            } else {
-               where.push({ [searchField]: searchCondition });
-            }
+            where.push({ [searchField]: searchCondition });
          }
 
          modelParams.where.OR.push(...where);
@@ -251,15 +168,7 @@ export class CRUDService<PrismaService extends BasePrismaService, PrismaSelect =
 
                   from.startOf();
                   to.endOf();
-
-                  if (fieldName.includes('.')) {
-                     Object.assign(
-                        modelParams.where,
-                        this.parseDeepCondition(fieldName, modelFields, { gte: from.native, lt: to.native }, false),
-                     );
-                  } else {
-                     modelParams.where[fieldName] = { gte: from.native, lt: to.native };
-                  }
+                  modelParams.where[fieldName] = { gte: from.native, lt: to.native };
                }
 
                continue;
@@ -307,23 +216,12 @@ export class CRUDService<PrismaService extends BasePrismaService, PrismaSelect =
                   }
                });
 
-               if (fieldName.includes('.')) {
-                  if (inValues.length) {
-                     orWhere.push(this.parseDeepCondition(fieldName, modelFields, { in: inValues }, false));
-                  }
+               if (inValues.length) {
+                  orWhere.push({ [fieldName]: { in: inValues } });
+               }
 
-                  if (notInValues.length) {
-                     orWhere.push(this.parseDeepCondition(fieldName, modelFields, { notIn: notInValues }, false));
-                     orWhere.push(this.parseDeepCondition(fieldName, modelFields, {}, false, 'none'));
-                  }
-               } else {
-                  if (inValues.length) {
-                     orWhere.push({ [fieldName]: { in: inValues } });
-                  }
-
-                  if (notInValues.length) {
-                     orWhere.push({ [fieldName]: { notIn: notInValues } });
-                  }
+               if (notInValues.length) {
+                  orWhere.push({ [fieldName]: { notIn: notInValues } });
                }
 
                modelParams.where.AND.push(orWhere.length > 1 ? { OR: orWhere } : orWhere[0]);
@@ -354,16 +252,32 @@ export class CRUDService<PrismaService extends BasePrismaService, PrismaSelect =
       Object.assign(query, { page, limit, q });
 
       // Prisma model
-      const model = (this.options.prisma as any)[this.options.modelName];
+      const model = this.options.model;
       const [items, totalCount] = await Promise.all([
-         model['findMany'](modelParams),
-         model['count']({ where: modelParams.where }),
+         model.findMany(modelParams),
+         model.count({ where: modelParams.where }),
       ]);
 
-      const data = this.options.entity
-         ? items.map((dt: ObjectRecord) => BaseEntity.bindToClass(this.options.entity, dt))
-         : items;
+      let data = items;
+
+      if (this.options.events?.onEntity) {
+         data = await Promise.all(
+            items.map((item: T) => Util.callAsync(this, this.options.events?.onEntity || item, item)),
+         );
+      }
 
       return { data, meta: { totalCount, page, limit } };
    }
+
+   async getById<T>(id: string): Promise<T> {
+      const record = await this.options.model['findUnique']({ where: { id } });
+
+      if (!record) {
+         ThrowException(`Record with ID(${id}) not found`);
+      }
+
+      return this.options.events?.onEntity ? await Util.callAsync(this, this.options.events.onEntity, record) : record;
+   }
+
+   async create<T>(dto: CreateDto): Promise<T> {}
 }

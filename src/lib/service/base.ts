@@ -49,7 +49,7 @@ export abstract class BaseService {
             });
          }
 
-         new ThrowException(`The method ${this.constructor.name}.${method} is not a function`);
+         ThrowException(`The method ${this.constructor.name}.${method} is not a function`);
       }
    }
 }

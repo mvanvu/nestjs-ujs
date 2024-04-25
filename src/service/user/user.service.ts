@@ -23,11 +23,9 @@ export class UserService extends BaseService {
 
    @Inject(PrismaService) readonly prisma: PrismaService;
 
-   createCRUDService(): CRUDService<PrismaService, Prisma.UserSelect> {
-      return new CRUDService<PrismaService, Prisma.UserSelect>({
-         prisma: this.prisma,
-         modelName: 'user',
-         entity: UserEntity,
+   createCRUDService(): CRUDService<PrismaService['user'], any, Prisma.UserSelect> {
+      return new CRUDService({
+         model: this.prisma.user,
          select: {
             id: true,
             username: true,
@@ -74,12 +72,12 @@ export class UserService extends BaseService {
       const [access, refresh] = await Promise.all([
          jwt.sign(
             { id: userId },
-            { secret: appConfig.jwt.secret, iat: DateTime.now().addMinute(jwtConfig.accessExpiresInMinutes) },
+            { secret: jwtConfig.secret, iat: DateTime.now().addMinute(jwtConfig.accessExpiresInMinutes) },
          ),
 
          jwt.sign(
             { id: userId },
-            { secret: appConfig.jwt.secret, iat: DateTime.now().addMinute(jwtConfig.refreshExpiresInMinutes) },
+            { secret: jwtConfig.secret, iat: DateTime.now().addMinute(jwtConfig.refreshExpiresInMinutes) },
          ),
       ]);
 
@@ -90,13 +88,13 @@ export class UserService extends BaseService {
       const { username, email, password } = data;
 
       if (Is.empty([username, email], true)) {
-         new ThrowException('Invalid credentials');
+         ThrowException('Invalid credentials');
       }
 
       const user = await this.prisma.user.findFirst({ where: { OR: [{ username }, { email }] } });
 
       if (!user || !(await argon2.verify(user.password, password))) {
-         new ThrowException('Invalid credentials');
+         ThrowException('Invalid credentials');
       }
 
       return new AuthEntity({ user: new UserEntity(user), tokens: await this.generateTokens(user.id) });
@@ -107,14 +105,13 @@ export class UserService extends BaseService {
       const user = await this.prisma.user.findUnique({ where: { id } });
 
       if (!user || user.status !== this.prisma.enums.UserStatus.ACTIVE) {
-         new ThrowException('Invalid credentials');
+         ThrowException('Invalid credentials');
       }
 
       return new UserEntity(user);
    }
 
    async paginate({ meta }: MessageData): Promise<PaginationResult<UserEntity>> {
-      console.log(meta.get('user'));
       return this.createCRUDService().paginate(meta.get('query'));
    }
 }
