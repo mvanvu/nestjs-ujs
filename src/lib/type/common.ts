@@ -35,6 +35,7 @@ export type ServiceOptions = {
 };
 
 export type ServiceExecuteOptions = {
+   params?: Record<string, string | number | boolean>;
    timeOut?: number;
 };
 
@@ -47,6 +48,7 @@ export type IRouteOptions = {
       public?: boolean;
       httpStatus?: HttpStatus;
    };
+   swagger?: { summary?: string; responseType?: any; example?: any };
 };
 
 export type EntityConstructor<T> = new (...args: any[]) => T;
@@ -69,7 +71,7 @@ export type TransformOptions = {
 };
 
 export type PropertyOptions<IsType extends IsValidType> = {
-   swagger?: { description?: string; example?: any };
+   swagger?: { description?: string; example?: any; isArray?: boolean };
    validate?: ValidationOptions<IsType> | ValidationOptions<IsType>[];
    transform?: TransformOptions;
    optional?: boolean;

@@ -2,11 +2,11 @@ import {
    BaseService,
    ServiceOptions,
    CRUDService,
-   PaginationResult,
    FieldsException,
    MessageData,
    ThrowException,
    appConfig,
+   CreateCRUDService,
 } from '@lib';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
@@ -18,18 +18,26 @@ import * as argon2 from 'argon2';
 import { DateTime, Hash, Is } from '@mvanvu/ujs';
 
 @Injectable()
-export class UserService extends BaseService {
+export class UserService extends BaseService implements CreateCRUDService {
    readonly options: ServiceOptions = { config: userConfig };
 
    @Inject(PrismaService) readonly prisma: PrismaService;
 
-   createCRUDService(): CRUDService<PrismaService['user'], any, Prisma.UserSelect> {
+   createCRUDService(): CRUDService<PrismaService, Prisma.UserSelect, any, any> {
       return new CRUDService({
-         model: this.prisma.user,
+         prisma: this.prisma,
+         model: 'user',
          select: {
             id: true,
             username: true,
             email: true,
+         },
+         events: {
+            onEntity: (record: UserEntity) => {
+               console.log(record);
+
+               return record;
+            },
          },
       });
    }
@@ -109,9 +117,5 @@ export class UserService extends BaseService {
       }
 
       return new UserEntity(user);
-   }
-
-   async paginate({ meta }: MessageData): Promise<PaginationResult<UserEntity>> {
-      return this.createCRUDService().paginate(meta.get('query'));
    }
 }

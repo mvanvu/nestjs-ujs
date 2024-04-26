@@ -5,5 +5,9 @@ export const userConfig = {
       signUp: 'user.signUp',
       verify: 'user.verify',
       paginate: 'user.paginate',
+      read: 'user.read',
+      create: 'user.create',
+      update: 'user.update',
+      delete: 'user.delete',
    },
 };

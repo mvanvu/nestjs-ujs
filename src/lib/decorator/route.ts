@@ -1,15 +1,15 @@
 import { IRouteOptions, metadata } from '@lib';
 import { Is } from '@mvanvu/ujs';
-import { HttpCode, RequestMethod, SetMetadata, Version } from '@nestjs/common';
+import { HttpCode, HttpStatus, RequestMethod, SetMetadata, Version } from '@nestjs/common';
 import { Delete, Get, Patch, Post, applyDecorators } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 export const USER_PUBLIC_KEY = 'USER_PUBLIC_KEY';
 export const Public = () => SetMetadata(USER_PUBLIC_KEY, true);
 
 export function IRoute(options: IRouteOptions): MethodDecorator {
-   const { pattern, route } = options;
+   const { pattern, route, swagger } = options;
 
    if (metadata.isMicroservice()) {
       return applyDecorators(MessagePattern(pattern));
@@ -45,6 +45,18 @@ export function IRoute(options: IRouteOptions): MethodDecorator {
       }
 
       decorators.push(route.public === true ? Public() : ApiBearerAuth());
+   }
+
+   if (swagger) {
+      decorators.push(ApiOperation({ summary: swagger.summary }));
+
+      if (swagger.summary) {
+         decorators.push(ApiOperation({ summary: swagger.summary }));
+      }
+
+      if (route?.httpStatus || swagger.responseType) {
+         decorators.push(ApiResponse({ status: route?.httpStatus || HttpStatus.OK, type: swagger.responseType }));
+      }
    }
 
    return decorators.length ? applyDecorators(...decorators) : () => {};

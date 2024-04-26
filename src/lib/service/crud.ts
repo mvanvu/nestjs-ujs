@@ -1,24 +1,20 @@
 import { appConfig } from '@lib/core/config';
-import { ThrowException } from '@lib/exception';
-import { CRUDServiceOptions, QueryParams, OrderBy, OrderDirection, PaginationResult } from '@lib/type';
-import { DateTime, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
+import { FieldsException, ThrowException } from '@lib/exception';
+import { CRUDServiceOptions, QueryParams, OrderBy, OrderDirection, PaginationResult, GetPrismaModels } from '@lib/type';
+import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { Injectable, Logger } from '@nestjs/common';
-import { Operation } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class CRUDService<
-   PrismaModel extends Record<string | Operation, any>,
+   PrismaService extends GetPrismaModels,
+   PrismaSelect extends ObjectRecord,
    CreateDto extends ObjectRecord,
-   PrismaSelect = undefined,
+   UpdateDto extends ObjectRecord = Partial<CreateDto>,
 > {
    readonly logger: Logger;
 
-   constructor(public readonly options: CRUDServiceOptions<PrismaModel, PrismaSelect>) {
+   constructor(public readonly options: CRUDServiceOptions<PrismaService, PrismaSelect>) {
       this.logger = new Logger(this.constructor.name);
-   }
-
-   get model(): PrismaModel {
-      return this.options.model;
    }
 
    async paginate<T>(query?: QueryParams): Promise<PaginationResult<T>> {
@@ -252,32 +248,176 @@ export class CRUDService<
       Object.assign(query, { page, limit, q });
 
       // Prisma model
-      const model = this.options.model;
+      const model = this.options.prisma[this.options.model];
       const [items, totalCount] = await Promise.all([
-         model.findMany(modelParams),
-         model.count({ where: modelParams.where }),
+         model['findMany'](modelParams),
+         model['count']({ where: modelParams.where }),
       ]);
 
       let data = items;
 
       if (this.options.events?.onEntity) {
          data = await Promise.all(
-            items.map((item: T) => Util.callAsync(this, this.options.events?.onEntity || item, item)),
+            items.map((item: T) =>
+               Util.callAsync(this, this.options.events?.onEntity || item, item, { context: 'read', isList: true }),
+            ),
          );
       }
 
       return { data, meta: { totalCount, page, limit } };
    }
 
-   async getById<T>(id: string): Promise<T> {
+   async read<T>(id: string): Promise<T> {
       const record = await this.options.model['findUnique']({ where: { id } });
 
       if (!record) {
          ThrowException(`Record with ID(${id}) not found`);
       }
 
-      return this.options.events?.onEntity ? await Util.callAsync(this, this.options.events.onEntity, record) : record;
+      return this.options.events?.onEntity
+         ? await Util.callAsync(this, this.options.events.onEntity, record, { context: 'read', isList: false })
+         : record;
    }
 
-   async create<T>(dto: CreateDto): Promise<T> {}
+   async validate(dto: CreateDto | UpdateDto, id?: string): Promise<void> {
+      const entityModel = this.options.prisma[this.options.model];
+      const model = this.options.prisma.models[`${this.options.model}`];
+
+      // Validate unknown fields
+      for (const fieldName in dto) {
+         const field = model.fields.find(({ name }) => name === fieldName);
+
+         if (!field) {
+            ThrowException(`Unknown the field name: ${fieldName}`);
+         }
+      }
+
+      // Validate some requirements
+      const promises: Promise<any>[] = [];
+      const fieldsException = new FieldsException();
+      const uniqueFields: Record<string, any>[] = [];
+
+      for (const field of model.fields) {
+         const { name } = field;
+         const value = dto[name];
+         const isNothing = Is.nullOrUndefined(value);
+
+         if (field.isRequired && isNothing && !field.hasDefaultValue) {
+            fieldsException.add(name, FieldsException.REQUIRED);
+         }
+
+         if (field.isUnique && !isNothing) {
+            uniqueFields.push({ [name]: value });
+         }
+      }
+
+      if (
+         !Is.emptyObject(uniqueFields) &&
+         Is.equals(Util.sort(Object.keys(uniqueFields)), Util.sort(model.uniqueFields))
+      ) {
+         for (const name in uniqueFields) {
+            promises.push(
+               entityModel['findFirst']({
+                  where: { [name]: uniqueFields[name], id: id ? { id: { not: id } } : undefined },
+                  select: { id: true },
+               }).then((record: { id: string }) => {
+                  if (!!record) {
+                     fieldsException.add(name, FieldsException.UNIQUE_CONSTRAINT);
+                  }
+               }),
+            );
+         }
+      }
+
+      if (promises.length) {
+         await Promise.all(promises);
+      }
+
+      fieldsException.validate();
+   }
+
+   async create<T>(data: CreateDto): Promise<T> {
+      // Validate first
+      await this.validate(data);
+
+      if (Is.emptyObject(data)) {
+         // Nothing to create, throw an exception
+         ThrowException('No data to create');
+      }
+
+      if (this.options.events?.onInit) {
+         // Trigger an event before handle
+         await Util.callAsync(this, this.options.events.onInit, data, { context: 'create' });
+      }
+
+      const record = await this.options.prisma[this.options.model]['create']({
+         data,
+         select: this.options.select,
+      });
+
+      if (this.options.events?.onEntity) {
+         // Trigger an event before response
+         await Util.callAsync(this, this.options.events.onEntity, record, { data, context: 'create' });
+      }
+
+      return record;
+   }
+
+   async update<T>(id: string, data: UpdateDto): Promise<T> {
+      // Validate first
+      await this.validate(data, id);
+      const model = this.options.prisma[this.options.model];
+      const oldRecord = await model['findFirst']({ where: { id }, select: this.options.select });
+
+      if (!oldRecord) {
+         ThrowException(`The record with ID(${id}) doesn't exists`);
+      }
+
+      if (Is.emptyObject(data)) {
+         // Nothing to update, throw an exception
+         ThrowException('No data to update');
+      }
+
+      if (this.options.events?.onInit) {
+         // Trigger an event before handle
+         await Util.callAsync(this, this.options.events.onInit, data, { oldRecord, context: 'update' });
+      }
+
+      const record = await this.options.prisma[this.options.model]['update']({
+         data,
+         select: this.options.select,
+         where: { id },
+      });
+
+      if (this.options.events?.onEntity) {
+         // Trigger an event before response
+         await Util.callAsync(this, this.options.events.onEntity, record, {
+            oldRecord,
+            data,
+            context: 'update',
+         });
+      }
+
+      return record;
+   }
+
+   async delete<T>(id: string): Promise<T> {
+      if (this.options.events?.onInit) {
+         // Trigger an event before handle
+         await Util.callAsync(this, this.options.events.onInit, id, { context: 'delete' });
+      }
+
+      const record = await this.options.prisma[this.options.model]['delete']({
+         select: this.options.select,
+         where: { id },
+      });
+
+      if (this.options.events?.onEntity) {
+         // Trigger an event before response
+
+         await Util.callAsync(this, this.options.events.onEntity, record, { context: 'delete' });
+      }
+
+      return record;
+   }
 }

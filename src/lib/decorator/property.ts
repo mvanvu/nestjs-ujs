@@ -1,3 +1,4 @@
+import { metadata } from '@lib/metadata';
 import { PropertyOptions } from '@lib/type';
 import { IsValidType, Registry } from '@mvanvu/ujs';
 import { applyDecorators } from '@nestjs/common';
@@ -16,14 +17,19 @@ export function IProperty<IsType extends IsValidType>(options?: PropertyOptions<
       },
    ];
 
-   if (options?.swagger) {
-      decorators.push(
-         ApiProperty({
-            description: options.swagger.description,
-            example: options.swagger.example,
-            required: options?.optional !== true,
-         }),
-      );
+   if (metadata.isGateway()) {
+      if (options?.swagger) {
+         decorators.push(
+            ApiProperty({
+               description: options.swagger.description,
+               example: options.swagger.example,
+               required: options?.optional !== true,
+               isArray: options.swagger.isArray,
+            }),
+         );
+      } else {
+         decorators.push(ApiProperty());
+      }
    }
 
    return applyDecorators(...decorators);

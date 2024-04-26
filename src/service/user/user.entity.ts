@@ -1,4 +1,5 @@
 import { BaseEntity, IProperty } from '@lib';
+import { PaginationMeta } from '@lib/entity/pagination';
 
 export class UserEntity extends BaseEntity {
    @IProperty()
@@ -14,10 +15,26 @@ export class UserEntity extends BaseEntity {
    email: string;
 }
 
+export class AuthTokens {
+   @IProperty()
+   access: string;
+
+   @IProperty()
+   refresh: string;
+}
+
 export class AuthEntity extends BaseEntity {
    @IProperty()
    user: UserEntity;
 
    @IProperty()
-   tokens: { access: string; refresh: string };
+   tokens: AuthTokens;
+}
+
+export class SwaggerPaginationUserEntity {
+   @IProperty({ swagger: { isArray: true } })
+   data: UserEntity;
+
+   @IProperty()
+   meta: PaginationMeta;
 }
