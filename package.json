@@ -11,8 +11,8 @@
     "format": "prettier --write \"./**/src/**/*.ts\"",
     "docker:build": "(docker rmi mongodb:latest || true) && docker build -f ./docker/Dockerfile -t mongodb:latest .",
     "mongodb:replica": "docker compose exec mongodb-primary bash -c \"mongosh --port \\$MONGODB_PRIMARY_PORT < /init-replica-set.js\"",
-    "user:prisma:generate": "prisma generate --schema=src/service/user/prisma/schema.prisma",
-    "user:prisma:push": "prisma db push --schema=src/service/user/prisma/schema.prisma"
+    "user:prisma:generate": "prisma generate --schema=src/service/user/provider/prisma/schema.prisma",
+    "user:prisma:push": "prisma db push --schema=src/service/user/provider/prisma/schema.prisma"
   },
   "dependencies": {
     "@mvanvu/ujs": "file:../utils/dist",

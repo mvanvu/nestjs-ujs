@@ -1,6 +1,6 @@
 import { type CRUDService } from '@lib/service';
-import { RequestRegistryData, ServiceExecuteOptions } from './common';
-import { Registry, Callable } from '@mvanvu/ujs';
+import { ClassConstructor, RequestRegistryData } from './common';
+import { Callable, ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
 
 export type PrismaModels = Record<string, DMMF.Model>;
@@ -36,22 +36,13 @@ export type CRUDServiceOptions<TPrismaService extends GetPrismaModels, TPrismaSe
    };
    events?: {
       onInit?: Callable;
-      onEntity?: Callable;
+      onEntity?: Callable | ClassConstructor<any>;
    };
 };
 
 export type OrderDirection = 'asc' | 'desc';
 
 export type OrderBy = Record<string, OrderDirection> | Record<string, Record<string, OrderDirection>>;
-
-export type QueryParams = {
-   scope?: string;
-   q?: string;
-   page?: number;
-   limit?: number;
-   lang?: string;
-   order?: string;
-};
 
 export type PaginationResult<T> = {
    data: T[];
@@ -62,14 +53,15 @@ export type PaginationResult<T> = {
    };
 };
 
-export type DataDelivery<TData = any> = {
-   data: TData;
-   meta: RequestRegistryData & { query?: QueryParams; params?: ServiceExecuteOptions['params'] };
+export type MessageMeta = {
+   query?: ObjectRecord;
+   params?: ObjectRecord;
+   headers?: RequestRegistryData;
 };
 
-export type MessageData<TData = any> = {
-   data: DataDelivery<TData>['data'];
-   meta: Registry<DataDelivery<TData>['meta']>;
+export type MessageData<TData = any, TMeta = MessageMeta | Registry<MessageMeta>> = {
+   data?: TData;
+   meta?: TMeta;
 };
 
 export interface CreateCRUDService {

@@ -1,5 +1,6 @@
-import { BaseEntity, IProperty } from '@lib';
+import { BaseEntity, IProperty, UserRole } from '@lib';
 import { PaginationMeta } from '@lib/entity/pagination';
+import { ObjectRecord } from '@mvanvu/ujs';
 
 export class UserEntity extends BaseEntity {
    @IProperty()
@@ -13,6 +14,17 @@ export class UserEntity extends BaseEntity {
 
    @IProperty()
    email: string;
+
+   @IProperty()
+   roles: UserRole[];
+
+   constructor(entity?: ObjectRecord) {
+      super(entity);
+
+      if (Array.isArray(entity?.userRoles)) {
+         this.roles = entity.userRoles.map(({ role }) => role);
+      }
+   }
 }
 
 export class AuthTokens {

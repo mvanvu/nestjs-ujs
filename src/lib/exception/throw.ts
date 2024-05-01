@@ -7,6 +7,6 @@ export function ThrowException(error: string | ObjectRecord, statusCode?: HttpSt
    if (metadata.isGateway()) {
       throw new HttpException({ error }, statusCode ?? HttpStatus.BAD_REQUEST);
    } else {
-      throw new RpcException(error);
+      throw new RpcException({ error, statusCode });
    }
 }

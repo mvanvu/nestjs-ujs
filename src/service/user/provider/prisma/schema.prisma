@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+    output   = "../../../../../node_modules/.prisma/user"
+}
+
+datasource db {
+    provider = "mongodb"
+    url      = env("MONGODB_USER_URL")
+}
+
+enum UserStatus {
+    ACTIVE
+    PENDING
+    BLOCKED
+    DELETED
+}
+
+enum RoleStatus {
+    ACTIVE
+    DRAFT
+}
+
+model User {
+    id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+    username           String?      @unique
+    email              String       @unique
+    name               String?
+    password           String?
+    status             UserStatus   @default(PENDING)
+    createdAt          DateTime     @default(now())
+    createdBy          String?      @db.ObjectId
+    updatedAt          DateTime?    @updatedAt
+    updatedBy          String?      @db.ObjectId
+    author             User?        @relation("author", fields: [createdBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    createdUsers       User[]       @relation("author")
+    editor             User?        @relation("editor", fields: [updatedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    updatedUsers       User[]       @relation("editor")
+    createdRoles       Role[]       @relation("roleAuthor")
+    updatedRoles       Role[]       @relation("roleEditor")
+    userRoles          UserRole[]
+    createdPermissions Permission[] @relation("permissionAuthor")
+    updatedPermissions Permission[] @relation("permissionEditor")
+}
+
+model Role {
+    id          String       @id @default(auto()) @map("_id") @db.ObjectId
+    name        String       @unique
+    description String?
+    status      RoleStatus   @default(ACTIVE)
+    root        Boolean      @default(false)
+    createdAt   DateTime     @default(now())
+    createdBy   String?      @db.ObjectId
+    updatedAt   DateTime?    @updatedAt
+    updatedBy   String?      @db.ObjectId
+    author      User?        @relation("roleAuthor", fields: [createdBy], references: [id], onDelete: SetNull, onUpdate: SetNull)
+    editor      User?        @relation("roleEditor", fields: [updatedBy], references: [id], onDelete: SetNull, onUpdate: SetNull)
+    userRoles   UserRole[]
+    permissions Permission[]
+}
+
+model UserRole {
+    id     String @id @default(auto()) @map("_id") @db.ObjectId
+    userId String @db.ObjectId
+    roleId String @db.ObjectId
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Permission {
+    id        String    @id @default(auto()) @map("_id") @db.ObjectId
+    refModel  String
+    canRead   Boolean   @default(false)
+    canCreate Boolean   @default(false)
+    canUpdate Boolean   @default(false)
+    canDelete Boolean   @default(false)
+    roleId    String    @db.ObjectId
+    role      Role      @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    createdAt DateTime  @default(now())
+    createdBy String?   @db.ObjectId
+    updatedAt DateTime? @updatedAt
+    updatedBy String?   @db.ObjectId
+    author    User?     @relation("permissionAuthor", fields: [createdBy], references: [id], onDelete: SetNull, onUpdate: SetNull)
+    editor    User?     @relation("permissionEditor", fields: [updatedBy], references: [id], onDelete: SetNull, onUpdate: SetNull)
+}

@@ -5,6 +5,7 @@ export type FieldsError = Record<string, Array<string | number>>;
 
 export class FieldsException {
    static readonly ALREADY_EXISTS = 'ALREADY_EXISTS';
+   static readonly NOT_FOULND = 'NOT_FOULND';
    static readonly REQUIRED = 'REQUIRED';
    static readonly UNIQUE_CONSTRAINT = 'UNIQUE_CONSTRAINT';
 

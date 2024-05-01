@@ -1,12 +1,11 @@
-import { IRouteOptions, metadata } from '@lib';
+import { IRouteOptions } from '@lib/type';
 import { Is } from '@mvanvu/ujs';
-import { HttpCode, HttpStatus, RequestMethod, SetMetadata, Version } from '@nestjs/common';
+import { HttpCode, HttpStatus, RequestMethod, Version } from '@nestjs/common';
 import { Delete, Get, Patch, Post, applyDecorators } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
-
-export const USER_PUBLIC_KEY = 'USER_PUBLIC_KEY';
-export const Public = () => SetMetadata(USER_PUBLIC_KEY, true);
+import { Public } from './method';
+import { metadata } from '@lib/metadata';
 
 export function IRoute(options: IRouteOptions): MethodDecorator {
    const { pattern, route, swagger } = options;

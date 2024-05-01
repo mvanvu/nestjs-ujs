@@ -9,7 +9,7 @@ import * as path from 'path';
 import { HttpTransform, ValidationPipe, appConfig, metadata, ExceptionFilter } from '@lib';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpMiddleware } from './http.middleware';
-import { UserAuthGuard } from '@service/user/auth/guard';
+import { UserAuthGuard, UserRoleGuard } from '@service/user/auth/guard';
 
 @Module({
    imports: [
@@ -21,6 +21,10 @@ import { UserAuthGuard } from '@service/user/auth/guard';
       {
          provide: APP_GUARD,
          useClass: UserAuthGuard,
+      },
+      {
+         provide: APP_GUARD,
+         useClass: UserRoleGuard,
       },
    ],
 })

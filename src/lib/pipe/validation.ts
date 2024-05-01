@@ -37,6 +37,10 @@ export class ValidationPipe implements PipeTransform {
             const propOptions = propertyOptions[prop];
 
             if (!propOptions || (propOptions.optional === true && Is.nullOrUndefined(val))) {
+               if (Is.undefined(val)) {
+                  delete data[prop];
+               }
+
                continue;
             }
 

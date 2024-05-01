@@ -19,14 +19,19 @@ export function IProperty<IsType extends IsValidType>(options?: PropertyOptions<
 
    if (metadata.isGateway()) {
       if (options?.swagger) {
-         decorators.push(
-            ApiProperty({
-               description: options.swagger.description,
-               example: options.swagger.example,
-               required: options?.optional !== true,
-               isArray: options.swagger.isArray,
-            }),
-         );
+         if (typeof options?.swagger === 'string') {
+            decorators.push(ApiProperty({ description: options.swagger, required: options?.optional !== true }));
+         } else {
+            decorators.push(
+               ApiProperty({
+                  description: options.swagger.description,
+                  example: options.swagger.example,
+                  required: options?.optional !== true,
+                  isArray: options.swagger.isArray,
+                  type: options.swagger.type,
+               }),
+            );
+         }
       } else {
          decorators.push(ApiProperty());
       }

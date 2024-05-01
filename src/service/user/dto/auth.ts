@@ -26,13 +26,13 @@ export class UserSignUpDto {
       swagger: { description: 'The password of user', example: 'MyStr0ngPassWord!' },
       validate: [{ is: 'strongPassword', meta: { minLength: 8, noSpaces: true } }],
    })
-   password?: string;
+   password: string;
 
    @IProperty({
       swagger: { description: 'The confirm password', example: 'MyStr0ngPassWord!' },
       validate: { is: 'equals', meta: { equalsTo: 'password' } },
    })
-   password2?: string;
+   password2: string;
 }
 
 export class UserSignInDto extends IPickType(UserSignUpDto, ['username', 'email', 'password']) {}

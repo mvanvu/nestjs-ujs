@@ -11,7 +11,7 @@ export class ExceptionFilter implements NestExceptionFilter {
    catch(exception: any, host: ArgumentsHost): void | Observable<any> {
       if (metadata.isGateway()) {
          const response = host.switchToHttp().getResponse<Response>();
-         const status = Is.func(exception?.getStatus) ? exception.getStatus() : HttpStatus.BAD_GATEWAY;
+
          const exceptionResponse = Is.func(exception?.getResponse) ? exception.getResponse() : exception;
          const error =
             exceptionResponse?.error ||
@@ -26,6 +26,13 @@ export class ExceptionFilter implements NestExceptionFilter {
             success: false,
             error,
          };
+
+         let status = Is.func(exception?.getStatus) ? exception.getStatus() : HttpStatus.BAD_GATEWAY;
+
+         if (error.error && Is.object(error, { rules: { statusCode: 'number' }, suitable: false })) {
+            jsonRes.error = error.error;
+            status = error.statusCode;
+         }
 
          if (appConfig.nodeEnv !== 'production') {
             jsonRes.stack = exception.stack;

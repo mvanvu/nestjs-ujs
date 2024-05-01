@@ -1,8 +1,8 @@
 import { appConfig } from '@lib/core/config';
 import { FieldsException, ThrowException } from '@lib/exception';
-import { CRUDServiceOptions, QueryParams, OrderBy, OrderDirection, PaginationResult, GetPrismaModels } from '@lib/type';
+import { CRUDServiceOptions, OrderBy, OrderDirection, PaginationResult, GetPrismaModels } from '@lib/type';
 import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class CRUDService<
@@ -17,7 +17,7 @@ export class CRUDService<
       this.logger = new Logger(this.constructor.name);
    }
 
-   async paginate<T>(query?: QueryParams): Promise<PaginationResult<T>> {
+   async paginate<T>(query?: ObjectRecord): Promise<PaginationResult<T>> {
       const modelParams = {
          select: this.options.select,
          where: { AND: [], OR: [] },
@@ -118,10 +118,10 @@ export class CRUDService<
                      break;
 
                   case '|':
-                     qValue = qValue.split(/\s+/g).filter((qv) => !!qv.trim());
+                     qValue = (qValue as string).split(/\s+/g).filter((qv: string) => !!qv.trim());
 
                      if (qValue.length) {
-                        searchCondition = { OR: qValue.map((qv) => ({ contains: qv, mode })) };
+                        searchCondition = { OR: qValue.map((qv: string) => ({ contains: qv, mode })) };
                      }
 
                      break;
@@ -268,10 +268,13 @@ export class CRUDService<
    }
 
    async read<T>(id: string): Promise<T> {
-      const record = await this.options.model['findUnique']({ where: { id } });
+      const record = await this.options.prisma[this.options.model]['findUnique']({
+         where: { id },
+         select: this.options.select,
+      });
 
       if (!record) {
-         ThrowException(`Record with ID(${id}) not found`);
+         ThrowException(`Record with ID(${id}) not found`, HttpStatus.NOT_FOUND);
       }
 
       return this.options.events?.onEntity
@@ -280,45 +283,50 @@ export class CRUDService<
    }
 
    async validate(dto: CreateDto | UpdateDto, id?: string): Promise<void> {
-      const entityModel = this.options.prisma[this.options.model];
-      const model = this.options.prisma.models[`${this.options.model}`];
+      const modelName = Util.uFirst(this.options.model as string);
+      const entityModel = this.options.prisma[modelName];
+      const model = this.options.prisma.models[modelName];
 
       // Validate unknown fields
       for (const fieldName in dto) {
          const field = model.fields.find(({ name }) => name === fieldName);
 
          if (!field) {
-            ThrowException(`Unknown the field name: ${fieldName}`);
+            if (['createdBy', 'updatedBy'].includes(fieldName)) {
+               delete dto[fieldName];
+            } else {
+               ThrowException(`Unknown the field name: ${fieldName}`);
+            }
          }
       }
 
       // Validate some requirements
       const promises: Promise<any>[] = [];
       const fieldsException = new FieldsException();
-      const uniqueFields: Record<string, any>[] = [];
+      const uniqueFields: Record<string, any> = {};
 
       for (const field of model.fields) {
          const { name } = field;
          const value = dto[name];
          const isNothing = Is.nullOrUndefined(value);
 
-         if (field.isRequired && isNothing && !field.hasDefaultValue) {
+         if (!id && field.isRequired && isNothing && !field.relationName && !field.hasDefaultValue) {
             fieldsException.add(name, FieldsException.REQUIRED);
          }
 
          if (field.isUnique && !isNothing) {
-            uniqueFields.push({ [name]: value });
+            uniqueFields[name] = value;
          }
       }
 
-      if (
-         !Is.emptyObject(uniqueFields) &&
-         Is.equals(Util.sort(Object.keys(uniqueFields)), Util.sort(model.uniqueFields))
-      ) {
+      if (!Is.emptyObject(uniqueFields)) {
          for (const name in uniqueFields) {
             promises.push(
                entityModel['findFirst']({
-                  where: { [name]: uniqueFields[name], id: id ? { id: { not: id } } : undefined },
+                  where: {
+                     [name]: { equals: uniqueFields[name], mode: 'insensitive' },
+                     id: id ? { not: id } : undefined,
+                  },
                   select: { id: true },
                }).then((record: { id: string }) => {
                   if (!!record) {
@@ -355,12 +363,9 @@ export class CRUDService<
          select: this.options.select,
       });
 
-      if (this.options.events?.onEntity) {
-         // Trigger an event before response
-         await Util.callAsync(this, this.options.events.onEntity, record, { data, context: 'create' });
-      }
-
-      return record;
+      return this.options.events?.onEntity
+         ? await Util.callAsync(this, this.options.events.onEntity, record, { data, context: 'create' })
+         : record;
    }
 
    async update<T>(id: string, data: UpdateDto): Promise<T> {
@@ -389,35 +394,30 @@ export class CRUDService<
          where: { id },
       });
 
-      if (this.options.events?.onEntity) {
-         // Trigger an event before response
-         await Util.callAsync(this, this.options.events.onEntity, record, {
-            oldRecord,
-            data,
-            context: 'update',
-         });
-      }
-
-      return record;
+      return this.options.events?.onEntity
+         ? await Util.callAsync(this, this.options.events.onEntity, record, { oldRecord, data, context: 'update' })
+         : record;
    }
 
    async delete<T>(id: string): Promise<T> {
-      if (this.options.events?.onInit) {
-         // Trigger an event before handle
-         await Util.callAsync(this, this.options.events.onInit, id, { context: 'delete' });
-      }
-
-      const record = await this.options.prisma[this.options.model]['delete']({
-         select: this.options.select,
+      const record = await this.options.prisma[this.options.model]['findUnique']({
          where: { id },
+         select: this.options.select,
       });
 
-      if (this.options.events?.onEntity) {
-         // Trigger an event before response
-
-         await Util.callAsync(this, this.options.events.onEntity, record, { context: 'delete' });
+      if (!record) {
+         ThrowException(`Record with ID(${id}) not found`);
       }
 
-      return record;
+      if (this.options.events?.onInit) {
+         // Trigger an event before handle
+         await Util.callAsync(this, this.options.events.onInit, id, { record, context: 'delete' });
+      }
+
+      await this.options.prisma[this.options.model]['delete']({ select: { id: true }, where: { id } });
+
+      return this.options.events?.onEntity
+         ? await Util.callAsync(this, this.options.events.onEntity, record, { context: 'delete' })
+         : record;
    }
 }

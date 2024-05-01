@@ -11,33 +11,48 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma } from '.prisma/user';
-import { AuthEntity, UserEntity } from './user.entity';
-import { userConfig } from './user.config';
-import { UserSignInDto, UserSignUpDto } from './dto';
+import { AuthEntity, UserEntity } from '../entity/user';
+import { userConfig } from '../user.config';
+import { CreateUserDto, UserSignInDto, UserSignUpDto } from '../dto';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is } from '@mvanvu/ujs';
 
 @Injectable()
 export class UserService extends BaseService implements CreateCRUDService {
+   @Inject(PrismaService) readonly prisma: PrismaService;
+
    readonly options: ServiceOptions = { config: userConfig };
 
-   @Inject(PrismaService) readonly prisma: PrismaService;
+   readonly userSelect: Prisma.UserSelect = {
+      id: true,
+      username: true,
+      email: true,
+      createdAt: true,
+      updatedAt: true,
+      status: true,
+      userRoles: {
+         select: {
+            role: {
+               select: {
+                  id: true,
+                  name: true,
+                  root: true,
+                  permissions: {
+                     select: { refModel: true, canCreate: true, canUpdate: true, canRead: true, canDelete: true },
+                  },
+               },
+            },
+         },
+      },
+   };
 
    createCRUDService(): CRUDService<PrismaService, Prisma.UserSelect, any, any> {
       return new CRUDService({
          prisma: this.prisma,
          model: 'user',
-         select: {
-            id: true,
-            username: true,
-            email: true,
-         },
+         select: this.userSelect,
          events: {
-            onEntity: (record: UserEntity) => {
-               console.log(record);
-
-               return record;
-            },
+            onEntity: UserEntity,
          },
       });
    }
@@ -46,8 +61,8 @@ export class UserService extends BaseService implements CreateCRUDService {
       return await argon2.hash(rawPassword);
    }
 
-   async signUp({ data }: MessageData<UserSignUpDto>): Promise<UserEntity> {
-      const { username, name, password, email } = data;
+   private async validateUserDto(dto: UserSignUpDto | CreateUserDto) {
+      const { username, email } = dto;
       const existsUser = await this.prisma.user.findFirst({
          where: { OR: [{ username }, { email }] },
          select: { username: true, email: true },
@@ -66,7 +81,11 @@ export class UserService extends BaseService implements CreateCRUDService {
 
          fieldsError.validate();
       }
+   }
 
+   async signUp({ data }: MessageData<UserSignUpDto>): Promise<UserEntity> {
+      await this.validateUserDto(data);
+      const { name, username, email, password } = data;
       const newUser = await this.prisma.user.create({
          data: { name, username, email, password: await this.hashPassword(password) },
       });
@@ -110,12 +129,29 @@ export class UserService extends BaseService implements CreateCRUDService {
 
    async verify({ data: token }: MessageData<string>): Promise<UserEntity> {
       const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.jwt.secret });
-      const user = await this.prisma.user.findUnique({ where: { id } });
+      const user = await this.prisma.user.findUnique({ where: { id }, select: this.userSelect });
 
       if (!user || user.status !== this.prisma.enums.UserStatus.ACTIVE) {
          ThrowException('Invalid credentials');
       }
 
       return new UserEntity(user);
+   }
+
+   async create({ data }: MessageData<CreateUserDto>): Promise<UserEntity> {
+      await this.validateUserDto(data);
+      const { name, username, email, password, roles } = data;
+      const newUser = await this.prisma.user.create({
+         data: {
+            name,
+            username,
+            email,
+            password: await this.hashPassword(password),
+            userRoles: roles ? { create: roles.map((roleId) => ({ roleId })) } : undefined,
+         },
+         select: this.userSelect,
+      });
+
+      return new UserEntity(newUser);
    }
 }

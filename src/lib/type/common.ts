@@ -3,8 +3,23 @@ import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { VersionValue } from '@nestjs/common/interfaces';
 import { Request } from 'express';
 
+export type UserPermission = {
+   refModel: string;
+   canRead?: boolean;
+   canCreate?: boolean;
+   canUpdate?: boolean;
+   canDelete?: boolean;
+};
+
+export type UserRole = { id: string; name: string; root: boolean; permissions: UserPermission[] }[];
+
 export type RequestRegistryData = {
-   user?: { id: string };
+   user?: {
+      id: string;
+      email: string;
+      username: string;
+      roles: UserRole[];
+   };
    tz?: string;
    device: 'web' | 'mobile' | 'desktop';
    userAgent: string;
@@ -48,7 +63,11 @@ export type IRouteOptions = {
       public?: boolean;
       httpStatus?: HttpStatus;
    };
-   swagger?: { summary?: string; responseType?: any; example?: any };
+   swagger?: {
+      summary?: string;
+      responseType?: any;
+      example?: any;
+   };
 };
 
 export type EntityConstructor<T> = new (...args: any[]) => T;
@@ -71,7 +90,7 @@ export type TransformOptions = {
 };
 
 export type PropertyOptions<IsType extends IsValidType> = {
-   swagger?: { description?: string; example?: any; isArray?: boolean };
+   swagger?: { description?: string; example?: any; isArray?: boolean; type?: string } | string;
    validate?: ValidationOptions<IsType> | ValidationOptions<IsType>[];
    transform?: TransformOptions;
    optional?: boolean;
