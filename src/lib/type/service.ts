@@ -35,7 +35,9 @@ export type CRUDServiceOptions<TPrismaService extends GetPrismaModels, TPrismaSe
       maxLimit?: number;
    };
    events?: {
-      onInit?: Callable;
+      onBeforeCreate?: Callable;
+      onBeforeUpdate?: Callable;
+      onBeforeDelete?: Callable;
       onEntity?: Callable | ClassConstructor<any>;
    };
 };

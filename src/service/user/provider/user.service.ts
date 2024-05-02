@@ -37,9 +37,7 @@ export class UserService extends BaseService implements CreateCRUDService {
                   id: true,
                   name: true,
                   root: true,
-                  permissions: {
-                     select: { refModel: true, canCreate: true, canUpdate: true, canRead: true, canDelete: true },
-                  },
+                  permissions: true,
                },
             },
          },

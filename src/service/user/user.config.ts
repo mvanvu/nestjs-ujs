@@ -14,6 +14,28 @@ export const userConfig = {
       roleCreate: 'role.CRUD.create',
       roleUpdate: 'role.CRUD.update',
       roleDelete: 'role.CRUD.delete',
-      createPermissions: 'role.createPermissions',
    },
 };
+
+export const rolePermissions = {
+   role: {
+      create: 'ROLE.CREATE',
+      read: 'ROLE.READ',
+      update: 'ROLE.UPDATE',
+      delete: 'ROLE.DELETE',
+   },
+};
+
+export const permissionKeys: string[] = [];
+
+function loadKeys(permission: object | string) {
+   if (typeof permission === 'string') {
+      permissionKeys.push(permission);
+   } else if (typeof permission === 'object' && permission !== null) {
+      for (const prop in permission) {
+         loadKeys(permission[prop]);
+      }
+   }
+}
+
+loadKeys(rolePermissions);

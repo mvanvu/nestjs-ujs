@@ -1,4 +1,4 @@
-import { metadata, HttpRequest, UserPermission, USER_PUBLIC_KEY, USER_ROLE_KEY, UserRole } from '@lib';
+import { metadata, HttpRequest, USER_PUBLIC_KEY, USER_ROLE_KEY, UserRole } from '@lib';
 import { Is } from '@mvanvu/ujs';
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -59,7 +59,7 @@ export class UserRoleGuard implements CanActivate {
 
       const app = metadata.getGateway();
       const reflector = app.get(Reflector);
-      const permission = reflector.getAllAndOverride<UserPermission & { root?: boolean }>(USER_ROLE_KEY, [
+      const permission = reflector.getAllAndOverride<{ key?: string; or?: string[]; and?: string[] }>(USER_ROLE_KEY, [
          context.getHandler(),
          context.getClass(),
       ]);
@@ -70,56 +70,37 @@ export class UserRoleGuard implements CanActivate {
 
       const { registry } = context.switchToHttp().getRequest<HttpRequest>();
 
-      if (registry) {
-         const roles = registry.get<UserRole>('user.roles', []);
-         const isUserRoot = !!roles.find(({ root }) => root === true);
-
-         if (permission.root === true && !isUserRoot) {
-            throw new UnauthorizedException();
-         }
-
-         if (isUserRoot) {
-            return true;
-         }
-
-         for (const role of roles) {
-            const permissionRole = role.permissions.find(({ refModel }) => refModel === permission.refModel);
-
-            if (!permissionRole) {
-               continue;
-            }
-
-            const { canRead, canCreate, canUpdate, canDelete } = permissionRole;
-
-            if (Is.nullOrUndefined([canRead, canCreate, canUpdate, canDelete], true)) {
-               return true;
-            }
-
-            const permitRecord: Record<'canRead' | 'canCreate' | 'canUpdate' | 'canDelete', boolean> = {
-               canRead,
-               canCreate,
-               canUpdate,
-               canDelete,
-            };
-
-            let passed: boolean = true;
-
-            for (const key in permitRecord) {
-               if (
-                  Is.boolean(permitRecord[key]) &&
-                  !role.permissions.find((permit) => permit[key] === permitRecord[key])
-               ) {
-                  passed = false;
-                  break;
-               }
-            }
-
-            if (passed) {
-               return true;
-            }
-         }
+      if (!registry) {
+         throw new UnauthorizedException();
       }
 
-      throw new UnauthorizedException();
+      const roles = registry.get<UserRole>('user.roles', []);
+      const isUserRoot = !!roles.find(({ root }) => root === true);
+
+      if (Is.emptyObject(permission) && !isUserRoot) {
+         throw new ForbiddenException();
+      }
+
+      if (isUserRoot) {
+         return true;
+      }
+
+      const userPermissions: string[] = [];
+
+      for (const role of roles) {
+         userPermissions.push(...role.permissions);
+      }
+
+      if (
+         !userPermissions.length ||
+         (permission.key && !userPermissions.includes(permission.key)) ||
+         (permission.or?.length && !userPermissions.find((permit) => permission.or.includes(permit))) ||
+         (permission.and?.length &&
+            userPermissions.filter((permit) => permission.and.includes(permit)).length < permission.and.length)
+      ) {
+         throw new ForbiddenException();
+      }
+
+      return true;
    }
 }

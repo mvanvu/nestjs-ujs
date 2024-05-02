@@ -3,15 +3,7 @@ import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { VersionValue } from '@nestjs/common/interfaces';
 import { Request } from 'express';
 
-export type UserPermission = {
-   refModel: string;
-   canRead?: boolean;
-   canCreate?: boolean;
-   canUpdate?: boolean;
-   canDelete?: boolean;
-};
-
-export type UserRole = { id: string; name: string; root: boolean; permissions: UserPermission[] }[];
+export type UserRole = { id: string; name: string; root: boolean; permissions: string[] }[];
 
 export type RequestRegistryData = {
    user?: {

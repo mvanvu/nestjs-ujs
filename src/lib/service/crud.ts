@@ -353,9 +353,9 @@ export class CRUDService<
          ThrowException('No data to create');
       }
 
-      if (this.options.events?.onInit) {
+      if (this.options.events?.onBeforeCreate) {
          // Trigger an event before handle
-         await Util.callAsync(this, this.options.events.onInit, data, { context: 'create' });
+         await Util.callAsync(this, this.options.events.onBeforeCreate, data);
       }
 
       const record = await this.options.prisma[this.options.model]['create']({
@@ -364,7 +364,7 @@ export class CRUDService<
       });
 
       return this.options.events?.onEntity
-         ? await Util.callAsync(this, this.options.events.onEntity, record, { data, context: 'create' })
+         ? await Util.callAsync(this, this.options.events.onEntity, record, { context: 'create' })
          : record;
    }
 
@@ -383,9 +383,9 @@ export class CRUDService<
          ThrowException('No data to update');
       }
 
-      if (this.options.events?.onInit) {
+      if (this.options.events?.onBeforeUpdate) {
          // Trigger an event before handle
-         await Util.callAsync(this, this.options.events.onInit, data, { oldRecord, context: 'update' });
+         await Util.callAsync(this, this.options.events.onBeforeUpdate, data, oldRecord);
       }
 
       const record = await this.options.prisma[this.options.model]['update']({
@@ -395,7 +395,7 @@ export class CRUDService<
       });
 
       return this.options.events?.onEntity
-         ? await Util.callAsync(this, this.options.events.onEntity, record, { oldRecord, data, context: 'update' })
+         ? await Util.callAsync(this, this.options.events.onEntity, record, { context: 'update' })
          : record;
    }
 
@@ -409,9 +409,9 @@ export class CRUDService<
          ThrowException(`Record with ID(${id}) not found`);
       }
 
-      if (this.options.events?.onInit) {
+      if (this.options.events?.onBeforeDelete) {
          // Trigger an event before handle
-         await Util.callAsync(this, this.options.events.onInit, id, { record, context: 'delete' });
+         await Util.callAsync(this, this.options.events.onBeforeDelete, record);
       }
 
       await this.options.prisma[this.options.model]['delete']({ select: { id: true }, where: { id } });

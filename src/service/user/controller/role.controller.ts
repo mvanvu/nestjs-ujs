@@ -2,10 +2,10 @@ import { Controller, Inject, RequestMethod } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RoleService } from '../provider';
 import { IParam, IPayload, IQuery, IRoute, Permission } from '@lib/decorator';
-import { userConfig } from '../user.config';
+import { rolePermissions, userConfig } from '../user.config';
 import { PaginationQueryDto, ServiceExecuteResult } from '@lib';
 import { SwaggerPaginationRoleEntity, RoleEntity } from '../entity';
-import { PermissionListDto, CreateRoleDto, UpdateRoleDto } from '../dto';
+import { CreateRoleDto, UpdateRoleDto } from '../dto';
 
 @ApiTags('Roles')
 @Controller('roles')
@@ -13,7 +13,7 @@ import { PermissionListDto, CreateRoleDto, UpdateRoleDto } from '../dto';
 export class RoleController {
    @Inject(RoleService) readonly roleService: RoleService;
 
-   @Permission({ refModel: 'role', canRead: true })
+   @Permission({ key: rolePermissions.role.read })
    @IRoute({
       pattern: userConfig.patterns.rolePaginate,
       route: { method: RequestMethod.GET },
@@ -26,7 +26,7 @@ export class RoleController {
       return this.roleService.execute(userConfig.patterns.rolePaginate, { meta: { query } });
    }
 
-   @Permission({ refModel: 'role', canRead: true })
+   @Permission({ key: rolePermissions.role.read })
    @IRoute({
       pattern: userConfig.patterns.roleRead,
       route: { method: RequestMethod.GET, path: ':id' },
@@ -36,7 +36,7 @@ export class RoleController {
       return this.roleService.execute(userConfig.patterns.roleRead, { meta: { params: { id } } });
    }
 
-   @Permission({ refModel: 'role', root: true })
+   @Permission({ key: rolePermissions.role.create })
    @IRoute({
       pattern: userConfig.patterns.roleCreate,
       route: { method: RequestMethod.POST },
@@ -46,7 +46,7 @@ export class RoleController {
       return this.roleService.execute(userConfig.patterns.roleCreate, { data });
    }
 
-   @Permission({ refModel: 'role', root: true })
+   @Permission({ key: rolePermissions.role.update })
    @IRoute({
       pattern: userConfig.patterns.roleUpdate,
       route: { method: RequestMethod.PATCH, path: ':id' },
@@ -56,7 +56,7 @@ export class RoleController {
       return this.roleService.execute(userConfig.patterns.roleUpdate, { data, meta: { params: { id } } });
    }
 
-   @Permission({ refModel: 'role', root: true })
+   @Permission({ key: rolePermissions.role.delete })
    @IRoute({
       pattern: userConfig.patterns.roleDelete,
       route: { method: RequestMethod.DELETE, path: ':id' },
@@ -64,18 +64,5 @@ export class RoleController {
    })
    delete(@IParam('id') id: string): ServiceExecuteResult<RoleEntity> {
       return this.roleService.execute(userConfig.patterns.roleDelete, { meta: { params: { id } } });
-   }
-
-   @Permission({ refModel: 'role', root: true })
-   @IRoute({
-      pattern: userConfig.patterns.createPermissions,
-      route: { method: RequestMethod.POST, path: ':id/permissions' },
-      swagger: { summary: 'Create permissions which assigned to the specific role', responseType: RoleEntity },
-   })
-   createPermissions(
-      @IParam('id') roleId: string,
-      @IPayload() data: PermissionListDto,
-   ): ServiceExecuteResult<RoleEntity> {
-      return this.roleService.execute(userConfig.patterns.createPermissions, { data, meta: { params: { roleId } } });
    }
 }
