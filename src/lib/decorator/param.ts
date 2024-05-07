@@ -5,13 +5,11 @@ import {
    Body,
    createParamDecorator,
    ExecutionContext,
-   NestInterceptor,
    Param,
    PipeTransform,
    Query,
    Type,
    UnauthorizedException,
-   UseInterceptors,
 } from '@nestjs/common';
 import { Payload } from '@nestjs/microservices';
 
@@ -52,12 +50,6 @@ export function IGatewayPayload(...pipes: (Type<PipeTransform> | PipeTransform)[
 
 export function IServicePayload(...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
    return metadata.isMicroservice() ? Payload(...pipes) : () => {};
-}
-
-export function IGatewayInterceptors(
-   ...interceptors: (NestInterceptor | Function)[]
-): MethodDecorator & ClassDecorator {
-   return metadata.isGateway() ? UseInterceptors(...interceptors) : () => {};
 }
 
 export function IQuery(...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
