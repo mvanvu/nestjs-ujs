@@ -7,12 +7,15 @@
   "scripts": {
     "start:gateway:dev": "cross-env APP_ENV=gateway nest start -w",
     "start:user:dev": "cross-env APP_ENV=user nest start -w",
+    "start:storage:dev": "cross-env APP_ENV=storage nest start -w",
     "build": "nest build",
     "format": "prettier --write \"./**/src/**/*.ts\"",
     "docker:build": "(docker rmi mongodb:latest || true) && docker build -f ./docker/Dockerfile -t mongodb:latest .",
     "mongodb:replica": "docker compose exec mongodb-primary bash -c \"mongosh --port \\$MONGODB_PRIMARY_PORT < /init-replica-set.js\"",
     "user:prisma:generate": "prisma generate --schema=src/service/user/provider/prisma/schema.prisma",
-    "user:prisma:push": "prisma db push --schema=src/service/user/provider/prisma/schema.prisma"
+    "user:prisma:push": "prisma db push --schema=src/service/user/provider/prisma/schema.prisma",
+    "storage:prisma:generate": "prisma generate --schema=src/service/storage/provider/prisma/schema.prisma",
+    "storage:prisma:push": "prisma db push --schema=src/service/storage/provider/prisma/schema.prisma"
   },
   "dependencies": {
     "@mvanvu/ujs": "file:../utils/dist",
@@ -47,6 +50,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^4.17.21",
     "@types/jest": "29.5.12",
+    "@types/multer": "^1.4.11",
     "@types/node": "^20.11.16",
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^6.21.0",

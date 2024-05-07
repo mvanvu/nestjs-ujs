@@ -6,7 +6,7 @@ dotenvExpand.expand(dotenv.config());
 export const envConfig = Registry.from(process.env);
 const appConfigData = {
    nodeEnv: envConfig.get<'development' | 'production' | 'test'>('NODE_ENV'),
-   appEnv: envConfig.get<'gateway' | 'user'>('APP_ENV'),
+   appEnv: envConfig.get<'gateway' | 'user' | 'storage'>('APP_ENV'),
    apiGateway: {
       port: envConfig.get<number>('PORT', 9000, 'toUInt'),
       prefix: envConfig.get<string>('API_PREFIX', 'api'),
@@ -17,7 +17,8 @@ const appConfigData = {
       },
    },
    storage: {
-      localPath: envConfig.get<string | undefined>('MEDIA_STORAGE_LOCAL_PATH'),
+      localPath: envConfig.get<string | undefined>('STORAGE_LOCAL_PATH'),
+      prefix: envConfig.get<string | undefined>('STORAGE_LOCAL_PREFIX'),
    },
    jwt: {
       secret: envConfig.get<string>('JWT_SECRET_KEY'),

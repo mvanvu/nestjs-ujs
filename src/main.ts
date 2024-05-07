@@ -7,6 +7,9 @@ async function bootstrap() {
 
       case 'user':
          return import('./lib/core/service/user/app.module').then(({ AppModule }) => AppModule.bootstrap());
+
+      case 'storage':
+         return import('./lib/core/service/storage/app.module').then(({ AppModule }) => AppModule.bootstrap());
    }
 }
 

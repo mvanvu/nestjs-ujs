@@ -1,5 +1,6 @@
 // import { UserGuard } from '@lib/interceptor';
 import { UserModule } from '@/service/user/user.module';
+import { StorageModule } from '@service/storage/storage.module';
 import { MiddlewareConsumer, Module, VersioningType } from '@nestjs/common';
 import { APP_GUARD, NestFactory } from '@nestjs/core';
 import proxies from './proxy.module';
@@ -16,6 +17,7 @@ import { UserAuthGuard, UserRoleGuard } from '@service/user/auth/guard';
       ...proxies,
       // Service modules
       UserModule,
+      StorageModule,
    ],
    providers: [
       {
