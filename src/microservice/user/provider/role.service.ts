@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma } from '.prisma/user';
 import { userConfig } from '../user.config';
-import { RoleEntity } from '@service/user/entity';
+import { RoleEntity } from '@/microservice/user/entity';
 
 @Injectable()
 export class RoleService extends BaseService implements CreateCRUDService {

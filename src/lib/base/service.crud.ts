@@ -1,4 +1,4 @@
-import { appConfig } from '@lib/core/config';
+import { appConfig } from '@config';
 import { FieldsException, ThrowException } from '@lib/exception';
 import { CRUDServiceOptions, OrderBy, OrderDirection, PaginationResult, GetPrismaModels } from '@lib/type';
 import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';

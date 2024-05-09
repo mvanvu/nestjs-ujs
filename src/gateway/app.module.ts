@@ -1,16 +1,17 @@
 // import { UserGuard } from '@lib/interceptor';
-import { UserModule } from '@/service/user/user.module';
-import { StorageModule } from '@service/storage/storage.module';
+import { UserModule } from '@/microservice/user/user.module';
+import { StorageModule } from '@/microservice/storage/storage.module';
 import { MiddlewareConsumer, Module, VersioningType } from '@nestjs/common';
 import { APP_GUARD, NestFactory } from '@nestjs/core';
 import proxies from './proxy.module';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
-import { HttpTransform, ValidationPipe, appConfig, metadata, ExceptionFilter } from '@lib';
+import { HttpTransform, ValidationPipe, metadata, ExceptionFilter } from '@lib';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpMiddleware } from './http.middleware';
-import { UserAuthGuard, UserRoleGuard } from '@service/user/auth/guard';
+import { UserAuthGuard, UserRoleGuard } from '@/microservice/user/auth/guard';
+import { appConfig } from '@config';
 
 @Module({
    imports: [

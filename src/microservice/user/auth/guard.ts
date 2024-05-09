@@ -2,8 +2,8 @@ import { metadata, HttpRequest, USER_PUBLIC_KEY, USER_ROLE_KEY, PermissionOption
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
-import { UserEntity } from '@service/user/entity';
-import { userConfig } from '@service/user/user.config';
+import { UserEntity } from '@/microservice/user/entity';
+import { userConfig } from '@/microservice/user/user.config';
 import { lastValueFrom, timeout } from 'rxjs';
 
 @Injectable()

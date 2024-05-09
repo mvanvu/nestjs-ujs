@@ -1,5 +1,5 @@
 import { Injectable, StreamableFile } from '@nestjs/common';
-import { ThrowException, appConfig } from '@lib';
+import { ThrowException } from '@lib';
 import { FinalUploadDto, UploadDto } from '../dto';
 import { FileProviderLocal } from './file.provider.local';
 import { FileProviderGoogleDrive } from './file.provider.google-drive';
@@ -7,10 +7,11 @@ import { FileEntity } from '../entity';
 import { Provider } from '.prisma/storage';
 import { FileProviderInterface } from './file.provider.interface';
 import { Transform } from '@mvanvu/ujs';
+import { appConfig } from '@config';
 @Injectable()
 export class FileProvider {
    getStorageDriver(provider?: Provider): FileProviderInterface {
-      provider = provider ?? appConfig.storage.provider;
+      provider = provider ?? <Provider>appConfig.storage.provider;
 
       switch (provider) {
          case Provider.GoogleDrive:

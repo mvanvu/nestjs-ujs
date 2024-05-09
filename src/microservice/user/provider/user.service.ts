@@ -5,7 +5,6 @@ import {
    FieldsException,
    MessageData,
    ThrowException,
-   appConfig,
    CreateCRUDService,
 } from '@lib';
 import { Inject, Injectable } from '@nestjs/common';
@@ -16,6 +15,7 @@ import { userConfig } from '../user.config';
 import { CreateUserDto, UserSignInDto, UserSignUpDto } from '../dto';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is } from '@mvanvu/ujs';
+import { appConfig } from '@config';
 
 @Injectable()
 export class UserService extends BaseService implements CreateCRUDService {

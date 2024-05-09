@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { createMicroserviceApp } from '@lib/core/service/base';
-import { StorageModule } from '@service/storage/storage.module';
-import { storageConfig } from '@service/storage/storage.config';
+import { createMicroserviceApp } from '../create-app';
+import { StorageModule } from '@/microservice/storage/storage.module';
+import { storageConfig } from '@/microservice/storage/storage.config';
 
 @Module({
    imports: [StorageModule],

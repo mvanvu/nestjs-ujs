@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { createMicroserviceApp } from '@lib/core/service/base';
-import { UserModule } from '@service/user/user.module';
-import { userConfig } from '@service/user/user.config';
+import { createMicroserviceApp } from '../create-app';
+import { UserModule } from '@/microservice/user/user.module';
+import { userConfig } from '@/microservice/user/user.config';
 
 @Module({
    imports: [UserModule],

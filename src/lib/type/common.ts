@@ -1,7 +1,7 @@
 import { CommonType, IsValidOptions, IsValidType, Registry, Transform } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { VersionValue } from '@nestjs/common/interfaces';
-import { UserEntity } from '@service/user/entity';
+import { UserEntity } from '@/microservice/user/entity';
 import { Request } from 'express';
 
 export type UserRole = { id: string; name: string; permissions: string[] }[];

@@ -1,15 +1,15 @@
-import { appConfig } from '@lib';
+import { appConfig } from './config';
 
 async function bootstrap() {
    switch (appConfig.appEnv) {
       case 'gateway':
-         return import('./lib/core/gateway/app.module').then(({ AppModule }) => AppModule.bootstrap());
+         return import('./gateway/app.module').then(({ AppModule }) => AppModule.bootstrap());
 
       case 'user':
-         return import('./lib/core/service/user/app.module').then(({ AppModule }) => AppModule.bootstrap());
+         return import('./microservice/user/app.module').then(({ AppModule }) => AppModule.bootstrap());
 
       case 'storage':
-         return import('./lib/core/service/storage/app.module').then(({ AppModule }) => AppModule.bootstrap());
+         return import('./microservice/storage/app.module').then(({ AppModule }) => AppModule.bootstrap());
    }
 }
 

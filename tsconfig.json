@@ -26,10 +26,11 @@
       "noImplicitAny": false,
       "strictBindCallApply": true,
       "paths": {
+         "@config": ["src/config"],
          "@lib": ["src/lib"],
          "@lib/*": ["src/lib/*"],
-         "@service": ["src/service"],
-         "@service/*": ["src/service/*"],
+         "@service": ["src/microservice"],
+         "@service/*": ["src/microservice/*"],
          "@": ["src"],
          "@/*": ["src/*"]
       }

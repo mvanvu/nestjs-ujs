@@ -1,4 +1,5 @@
-import { BaseEntity, IProperty, PermissionOptions, PaginationMeta, appConfig } from '@lib';
+import { appConfig } from '@config';
+import { BaseEntity, IProperty, PermissionOptions, PaginationMeta } from '@lib';
 import { Is, ObjectRecord } from '@mvanvu/ujs';
 
 export class UserEntity extends BaseEntity {

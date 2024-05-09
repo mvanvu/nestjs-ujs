@@ -1,4 +1,4 @@
-import { appConfig } from '@lib/core/config';
+import { appConfig } from '@config';
 import { metadata } from '@lib/metadata';
 import { Is } from '@mvanvu/ujs';
 import { ExceptionFilter as NestExceptionFilter, Catch, ArgumentsHost, HttpStatus } from '@nestjs/common';
