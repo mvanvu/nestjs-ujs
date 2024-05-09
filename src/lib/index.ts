@@ -5,5 +5,6 @@ export * from './exception';
 export * from './interceptor';
 export * from './pipe';
 export * from './type';
+export * from './util';
 export * from './metadata';
 export * from './service';

@@ -1,3 +1,5 @@
+import { loadPermissionKeys } from '@lib';
+
 export const userConfig = {
    proxy: 'UserProxy',
    patterns: {
@@ -26,16 +28,4 @@ export const rolePermissions = {
    },
 };
 
-export const permissionKeys: string[] = [];
-
-function loadKeys(permission: object | string) {
-   if (typeof permission === 'string') {
-      permissionKeys.push(permission);
-   } else if (typeof permission === 'object' && permission !== null) {
-      for (const prop in permission) {
-         loadKeys(permission[prop]);
-      }
-   }
-}
-
-loadKeys(rolePermissions);
+export const permissionKeys: string[] = loadPermissionKeys(rolePermissions);

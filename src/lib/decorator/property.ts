@@ -29,6 +29,7 @@ export function IProperty<IsType extends IsValidType>(options?: PropertyOptions<
                   required: options?.optional !== true,
                   isArray: options.swagger.isArray,
                   type: options.swagger.type,
+                  enum: options.swagger.enum,
                }),
             );
          }

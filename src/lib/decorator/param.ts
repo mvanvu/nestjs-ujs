@@ -44,6 +44,14 @@ export function IPayload(...pipes: (Type<PipeTransform> | PipeTransform)[]): Par
    return metadata.isGateway() ? Body(...pipes) : Payload(...pipes);
 }
 
+export function IGatewayPayload(...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
+   return metadata.isGateway() ? Body(...pipes) : () => {};
+}
+
+export function IServicePayload(...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
+   return metadata.isMicroservice() ? Payload(...pipes) : () => {};
+}
+
 export function IQuery(...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
    return metadata.isGateway() ? Query(...pipes) : Payload(...pipes);
 }

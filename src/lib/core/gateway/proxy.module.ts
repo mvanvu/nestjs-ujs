@@ -19,7 +19,7 @@ export function createClientAsyncOptions(name: string): ClientsProviderAsyncOpti
 }
 
 // Todo add more services
-const services = [serviceConfig.userConfig.proxy];
+const services = [serviceConfig.userConfig.proxy, serviceConfig.storageConfig.proxy];
 
 export default services.map((name) =>
    ClientsModule.registerAsync({ isGlobal: true, clients: [createClientAsyncOptions(name)] }),

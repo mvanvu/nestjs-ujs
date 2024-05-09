@@ -51,6 +51,7 @@ export abstract class BaseService {
             // Todo, handle response data
             return response;
          } catch (e) {
+            Util.debug(e);
             new ThrowException(e);
          }
       } else {

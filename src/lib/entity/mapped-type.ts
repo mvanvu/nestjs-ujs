@@ -1,7 +1,7 @@
 import { CLASS_PROPERTIES } from '@lib/decorator';
 import { PropertyOptions } from '@lib/type';
 import { Type } from '@nestjs/common';
-import { PickType, PartialType } from '@nestjs/swagger';
+import { PickType, PartialType, OmitType } from '@nestjs/swagger';
 
 export function IPickType<T, K extends keyof T>(
    classRef: Type<T>,
@@ -36,4 +36,24 @@ export function IPartialType<T>(classRef: Type<T>, options?: { skipNullPropertie
    }
 
    return PartialClass;
+}
+
+export function IOmitType<T, K extends keyof T>(
+   classRef: Type<T>,
+   keys: readonly K[],
+): Type<Omit<T, (typeof keys)[number]>> {
+   const OmitClass = OmitType(classRef, keys);
+   const props = classRef.prototype[CLASS_PROPERTIES] as Record<string, PropertyOptions<any>>;
+
+   if (props) {
+      OmitClass.prototype[CLASS_PROPERTIES] = {};
+
+      for (const prop in props) {
+         if (!(keys as unknown as string[]).includes(prop)) {
+            OmitClass.prototype[CLASS_PROPERTIES][prop] = { ...props[prop], optional: true };
+         }
+      }
+   }
+
+   return OmitClass;
 }
