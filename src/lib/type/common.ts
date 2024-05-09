@@ -1,17 +1,13 @@
 import { CommonType, IsValidOptions, IsValidType, Registry, Transform } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { VersionValue } from '@nestjs/common/interfaces';
+import { UserEntity } from '@service/user/entity';
 import { Request } from 'express';
 
-export type UserRole = { id: string; name: string; root: boolean; permissions: string[] }[];
+export type UserRole = { id: string; name: string; permissions: string[] }[];
 
 export type RequestRegistryData = {
-   user?: {
-      id: string;
-      email: string;
-      username: string;
-      roles: UserRole[];
-   };
+   user?: UserEntity;
    tz?: string;
    device: 'web' | 'mobile' | 'desktop';
    userAgent: string;
@@ -87,3 +83,5 @@ export type PropertyOptions<IsType extends IsValidType> = {
    transform?: TransformOptions;
    optional?: boolean;
 };
+
+export type PermissionOptions = { key?: string; or?: string[]; and?: string[] } | string;

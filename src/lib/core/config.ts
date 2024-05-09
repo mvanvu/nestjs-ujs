@@ -46,6 +46,7 @@ const appConfigData = {
       limit: envConfig.get<number>('LIST_ITEMS_PER_PAGE', 25, 'toUInt'),
       maxLimit: envConfig.get<number>('LIST_ITEMS_MAX_LIMIT', 1000, 'toUInt'),
    },
+   rootUid: envConfig.get<string>('ROOT_UID'),
 };
 
 export type AppConfigData = typeof appConfigData;
