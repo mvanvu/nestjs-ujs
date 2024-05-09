@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { FileProviderInterface } from './file.provider.interface';
 import { appConfig } from '@lib';
 import { UploadDto, FinalUploadDto } from '../dto';
-import { Transform, Util } from '@mvanvu/ujs';
+import { Util } from '@mvanvu/ujs';
 import { FileEntity } from '../entity';
 
 export class FileProviderLocal implements FileProviderInterface {
@@ -31,14 +31,13 @@ export class FileProviderLocal implements FileProviderInterface {
    async upload(dto: UploadDto): Promise<FinalUploadDto | null> {
       try {
          const providerId = randomUUID();
-         const name = Transform.toSafeFileName(dto.file.originalname);
          fs.writeFileSync(
-            `${this.storePath}/${dto.isPublic ? 'public' : 'secret'}/${providerId}-${name}`,
+            `${this.storePath}/${dto.isPublic ? 'public' : 'secret'}/${providerId}-${dto.file.filename}`,
             dto.file.buffer,
          );
 
          return {
-            name,
+            name: dto.file.filename,
             providerId,
             mime: dto.file.mimetype,
             size: dto.file.size,
@@ -52,7 +51,7 @@ export class FileProviderLocal implements FileProviderInterface {
       }
    }
 
-   getUrl(file: FileEntity) {
+   getUrl(file: FileEntity): string {
       if (file.isPublic) {
          return `${this.storeUrl}/${file.providerId}-${file.name}`;
       }
@@ -60,7 +59,7 @@ export class FileProviderLocal implements FileProviderInterface {
       return `/${this.storeUrl}/${file.id}/stream`;
    }
 
-   async stream(file: FileEntity) {
+   async stream(file: FileEntity): Promise<StreamableFile> {
       if (file.provider !== 'Local') {
          throw new BadRequestException(`The storage of file[${file.name}] is not ${file.provider}`);
       }

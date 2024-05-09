@@ -33,6 +33,7 @@
     "argon2": "^0.40.1",
     "dotenv": "^16.4.5",
     "dotenv-expand": "^11.0.6",
+    "googleapis": "^137.1.0",
     "helmet": "^7.1.0",
     "node-device-detector": "^2.1.0",
     "passport": "^0.7.0",

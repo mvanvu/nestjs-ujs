@@ -8,8 +8,11 @@ export const USER_ROLE_KEY = 'USER_ROLE_KEY';
 export const Permission = (options?: { key?: string; or?: string[]; and?: string[] }) =>
    SetMetadata(USER_ROLE_KEY, options ?? {});
 
-export function IGatewayInterceptors(
+export function IInterceptors(
+   appEnv: 'gateway' | 'service',
    ...interceptors: (NestInterceptor | Function)[]
 ): MethodDecorator & ClassDecorator {
-   return metadata.isGateway() ? UseInterceptors(...interceptors) : () => {};
+   return (metadata.isGateway() && appEnv === 'gateway') || (metadata.isMicroservice() && appEnv === 'service')
+      ? UseInterceptors(...interceptors)
+      : () => {};
 }

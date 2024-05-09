@@ -17,8 +17,10 @@ const appConfigData = {
       },
    },
    storage: {
+      provider: envConfig.get<'Local' | 'GoogleDrive'>('STORAGE_PROVIDER', 'Local'),
       localPath: envConfig.get<string | undefined>('STORAGE_LOCAL_PATH'),
       prefix: envConfig.get<string | undefined>('STORAGE_LOCAL_PREFIX'),
+      googleDriveCredentialsPath: envConfig.get<string | undefined>('GOOGLE_DRIVE_CREDENTIALS_PATH'),
    },
    jwt: {
       secret: envConfig.get<string>('JWT_SECRET_KEY'),

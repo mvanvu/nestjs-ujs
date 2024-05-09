@@ -1,7 +1,7 @@
 import { Controller, Inject, RequestMethod } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RoleService } from '../provider';
-import { IParam, IPayload, IQuery, IRoute, Permission } from '@lib/decorator';
+import { IParam, IData, IQuery, IRoute, Permission } from '@lib/decorator';
 import { rolePermissions, userConfig } from '../user.config';
 import { PaginationQueryDto, ServiceExecuteResult } from '@lib';
 import { SwaggerPaginationRoleEntity, RoleEntity } from '../entity';
@@ -42,7 +42,7 @@ export class RoleController {
       route: { method: RequestMethod.POST },
       swagger: { summary: 'Create a new role', responseType: RoleEntity },
    })
-   create(@IPayload() data: CreateRoleDto): ServiceExecuteResult<RoleEntity> {
+   create(@IData() data: CreateRoleDto): ServiceExecuteResult<RoleEntity> {
       return this.roleService.execute(userConfig.patterns.roleCreate, { data });
    }
 
@@ -52,7 +52,7 @@ export class RoleController {
       route: { method: RequestMethod.PATCH, path: ':id' },
       swagger: { summary: 'Update role', responseType: RoleEntity },
    })
-   update(@IParam('id') id: string, @IPayload() data: UpdateRoleDto): ServiceExecuteResult<RoleEntity> {
+   update(@IParam('id') id: string, @IData() data: UpdateRoleDto): ServiceExecuteResult<RoleEntity> {
       return this.roleService.execute(userConfig.patterns.roleUpdate, { data, meta: { params: { id } } });
    }
 

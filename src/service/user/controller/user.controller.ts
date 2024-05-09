@@ -1,7 +1,7 @@
 import { Controller, HttpStatus, Inject, Param, RequestMethod } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UserService } from '../provider/user.service';
-import { IPayload, IQuery, IRoute } from '@lib/decorator';
+import { IData, IQuery, IRoute } from '@lib/decorator';
 import { userConfig } from '../user.config';
 import { CreateUserDto, UserSignInDto, UserSignUpDto } from '../dto';
 import { PaginationQueryDto, ServiceExecuteResult } from '@lib';
@@ -17,7 +17,7 @@ export class UserController {
       route: { method: RequestMethod.POST, httpStatus: HttpStatus.OK, path: 'signup', public: true },
       swagger: { summary: 'Register a new user account', responseType: UserEntity },
    })
-   signUp(@IPayload() data: UserSignUpDto): ServiceExecuteResult<UserEntity> {
+   signUp(@IData() data: UserSignUpDto): ServiceExecuteResult<UserEntity> {
       return this.userService.execute(userConfig.patterns.signUp, { data });
    }
 
@@ -26,12 +26,12 @@ export class UserController {
       route: { method: RequestMethod.POST, httpStatus: HttpStatus.OK, path: 'signin', public: true },
       swagger: { summary: 'Sing-in with the user account', responseType: AuthEntity },
    })
-   signIn(@IPayload() data: UserSignInDto): ServiceExecuteResult<AuthEntity> {
+   signIn(@IData() data: UserSignInDto): ServiceExecuteResult<AuthEntity> {
       return this.userService.execute(userConfig.patterns.signIn, { data });
    }
 
    @IRoute({ pattern: userConfig.patterns.verify })
-   verify(@IPayload() token: string): ServiceExecuteResult<UserEntity> {
+   verify(@IData() token: string): ServiceExecuteResult<UserEntity> {
       return this.userService.execute(userConfig.patterns.verify, { data: token });
    }
 
@@ -61,7 +61,7 @@ export class UserController {
       route: { method: RequestMethod.POST },
       swagger: { summary: 'Admin create a new user account', responseType: UserEntity },
    })
-   create(@IPayload() data: CreateUserDto): ServiceExecuteResult<UserEntity> {
+   create(@IData() data: CreateUserDto): ServiceExecuteResult<UserEntity> {
       return this.userService.execute(userConfig.patterns.createUser, { data });
    }
 

@@ -1,4 +1,4 @@
-import { type CRUDService } from '@lib/service';
+import { type CRUDService } from '@lib/base';
 import { ClassConstructor, RequestRegistryData } from './common';
 import { Callable, ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';

@@ -13,7 +13,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { ClientProxy, RmqRecordBuilder, CONTEXT, RequestContext } from '@nestjs/microservices';
 import { lastValueFrom, timeout } from 'rxjs';
-import { CRUDService } from '@lib/service/crud';
+import { CRUDService } from './service.crud';
 
 @Injectable()
 export abstract class BaseService {

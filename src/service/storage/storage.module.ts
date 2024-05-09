@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { FileService, PrismaService } from './provider';
+import { FileProvider, FileService, PrismaService } from './provider';
 import { FileController } from './controller';
 
 @Module({
    controllers: [FileController],
-   providers: [PrismaService, FileService],
+   providers: [PrismaService, FileService, FileProvider],
 })
 export class StorageModule {}

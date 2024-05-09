@@ -17,24 +17,20 @@ export function IProperty<IsType extends IsValidType>(options?: PropertyOptions<
       },
    ];
 
-   if (metadata.isGateway()) {
-      if (options?.swagger) {
-         if (typeof options?.swagger === 'string') {
-            decorators.push(ApiProperty({ description: options.swagger, required: options?.optional !== true }));
-         } else {
-            decorators.push(
-               ApiProperty({
-                  description: options.swagger.description,
-                  example: options.swagger.example,
-                  required: options?.optional !== true,
-                  isArray: options.swagger.isArray,
-                  type: options.swagger.type,
-                  enum: options.swagger.enum,
-               }),
-            );
-         }
+   if (metadata.isGateway() && options?.swagger) {
+      if (typeof options?.swagger === 'string') {
+         decorators.push(ApiProperty({ description: options.swagger, required: options?.optional !== true }));
       } else {
-         decorators.push(ApiProperty());
+         decorators.push(
+            ApiProperty({
+               description: options.swagger.description,
+               example: options.swagger.example,
+               required: options?.optional !== true,
+               isArray: options.swagger.isArray,
+               type: options.swagger.type,
+               enum: options.swagger.enum,
+            }),
+         );
       }
    }
 

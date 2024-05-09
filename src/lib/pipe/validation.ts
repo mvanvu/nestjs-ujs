@@ -1,6 +1,6 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { EqualsRulesOptions, Is, IsValidType, ObjectRecord, Transform, Util } from '@mvanvu/ujs';
-import { CLASS_PROPERTIES } from '@lib/decorator';
+import { CLASS_PROPERTIES, DTO_FOR } from '@lib/decorator';
 import { PropertyOptions } from '@lib/type';
 import { ThrowException } from '@lib/exception';
 import { metadata } from '@lib/metadata';
@@ -8,7 +8,8 @@ import { metadata } from '@lib/metadata';
 @Injectable()
 export class ValidationPipe implements PipeTransform {
    async transform(value: ObjectRecord, meta: ArgumentMetadata) {
-      const data = metadata.isGateway()
+      const isGateway = metadata.isGateway();
+      const data = isGateway
          ? value
          : Is.object(value, { suitable: false, rules: { meta: 'object' } })
            ? value.data
@@ -17,9 +18,24 @@ export class ValidationPipe implements PipeTransform {
       const error: Record<string, Array<string | number>> = {};
 
       if (Is.object(data) && typeof ClassContructor === 'function') {
+         if (
+            ClassContructor.prototype[DTO_FOR] &&
+            ((isGateway && ClassContructor.prototype[DTO_FOR] !== 'gateway') ||
+               (!isGateway && ClassContructor.prototype[DTO_FOR] !== 'service'))
+         ) {
+            return undefined;
+         }
+
          const propertyOptions: Record<string, PropertyOptions<IsValidType>> | undefined =
             ClassContructor.prototype[CLASS_PROPERTIES];
          const props: string[] = Object.keys(ClassContructor.prototype[CLASS_PROPERTIES] || {});
+
+         // Cleanup data
+         for (const prop in data) {
+            if (!props.includes(prop)) {
+               delete data[prop];
+            }
+         }
 
          // Handle transformer
          for (const prop of props) {

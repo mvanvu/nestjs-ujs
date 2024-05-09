@@ -40,16 +40,8 @@ export const GetUser = createParamDecorator(
    },
 );
 
-export function IPayload(...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
+export function IData(...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
    return metadata.isGateway() ? Body(...pipes) : Payload(...pipes);
-}
-
-export function IGatewayPayload(...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
-   return metadata.isGateway() ? Body(...pipes) : () => {};
-}
-
-export function IServicePayload(...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
-   return metadata.isMicroservice() ? Payload(...pipes) : () => {};
 }
 
 export function IQuery(...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
