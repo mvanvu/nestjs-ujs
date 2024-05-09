@@ -1,8 +1,8 @@
-import { metadata, HttpRequest, USER_PUBLIC_KEY, USER_ROLE_KEY, UserRole } from '@lib';
-import { Is } from '@mvanvu/ujs';
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { metadata, HttpRequest, USER_PUBLIC_KEY, USER_ROLE_KEY, PermissionOptions } from '@lib';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
+import { UserEntity } from '@service/user/entity';
 import { userConfig } from '@service/user/user.config';
 import { lastValueFrom, timeout } from 'rxjs';
 
@@ -36,7 +36,7 @@ export class UserAuthGuard implements CanActivate {
             app.get<ClientProxy>(userConfig.proxy).send(userConfig.patterns.verify, token).pipe(timeout(5000)),
          );
 
-         request.registry.set('user', user);
+         request.registry.set('user', new UserEntity(user));
       } catch (e) {
          throw new ForbiddenException();
       }
@@ -59,45 +59,19 @@ export class UserRoleGuard implements CanActivate {
 
       const app = metadata.getGateway();
       const reflector = app.get(Reflector);
-      const permission = reflector.getAllAndOverride<{ key?: string; or?: string[]; and?: string[] }>(USER_ROLE_KEY, [
+      const permission = reflector.getAllAndOverride<PermissionOptions | undefined>(USER_ROLE_KEY, [
          context.getHandler(),
          context.getClass(),
       ]);
 
-      if (!permission) {
+      if (permission === undefined) {
          return true;
       }
 
       const { registry } = context.switchToHttp().getRequest<HttpRequest>();
+      const user = registry.get<UserEntity>('user');
 
-      if (!registry) {
-         throw new UnauthorizedException();
-      }
-
-      const roles = registry.get<UserRole>('user.roles', []);
-      const isUserRoot = !!roles.find(({ root }) => root === true);
-
-      if (Is.emptyObject(permission) && !isUserRoot) {
-         throw new ForbiddenException();
-      }
-
-      if (isUserRoot) {
-         return true;
-      }
-
-      const userPermissions: string[] = [];
-
-      for (const role of roles) {
-         userPermissions.push(...role.permissions);
-      }
-
-      if (
-         !userPermissions.length ||
-         (permission.key && !userPermissions.includes(permission.key)) ||
-         (permission.or?.length && !userPermissions.find((permit) => permission.or.includes(permit))) ||
-         (permission.and?.length &&
-            userPermissions.filter((permit) => permission.and.includes(permit)).length < permission.and.length)
-      ) {
+      if (!user?.authorise(permission)) {
          throw new ForbiddenException();
       }
 
