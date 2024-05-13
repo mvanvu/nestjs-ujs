@@ -1,6 +1,4 @@
-import { loadPermissionKeys } from '@lib';
-
-export const userConfig = {
+export default {
    proxy: 'UserProxy',
    patterns: {
       signIn: 'user.signIn',
@@ -17,15 +15,12 @@ export const userConfig = {
       roleUpdate: 'role.CRUD.update',
       roleDelete: 'role.CRUD.delete',
    },
-};
-
-export const rolePermissions = {
-   role: {
-      create: 'ROLE.CREATE',
-      read: 'ROLE.READ',
-      update: 'ROLE.UPDATE',
-      delete: 'ROLE.DELETE',
+   permissions: {
+      role: {
+         create: 'ROLE.CREATE',
+         read: 'ROLE.READ',
+         update: 'ROLE.UPDATE',
+         delete: 'ROLE.DELETE',
+      },
    },
 };
-
-export const permissionKeys: string[] = loadPermissionKeys(rolePermissions);

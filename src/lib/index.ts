@@ -6,4 +6,4 @@ export * from './pipe';
 export * from './type';
 export * from './util';
 export * from './metadata';
-export * from './base';
+export * from './service';

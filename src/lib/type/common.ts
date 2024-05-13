@@ -1,7 +1,7 @@
 import { CommonType, IsValidOptions, IsValidType, Registry, Transform } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { VersionValue } from '@nestjs/common/interfaces';
-import { UserEntity } from '@/microservice/user/entity';
+import { UserEntity } from '@lib/service/user/entity';
 import { Request } from 'express';
 
 export type UserRole = { id: string; name: string; permissions: string[] }[];
@@ -28,16 +28,12 @@ export type ExecuteOptions<TInput> = {
    excuter: ((...args: any[]) => any | Promise<any>) | (new (...args: any[]) => any | Promise<any>) | object;
 };
 
-export type ServieConfig = {
+export type ServiceConfig = {
    proxy: string;
    patterns: Record<string, string>;
 };
 
 export type ServiceOptions = {
-   config: ServieConfig;
-};
-
-export type ServiceExecuteOptions = {
    params?: Record<string, string | number | boolean>;
    timeOut?: number;
 };

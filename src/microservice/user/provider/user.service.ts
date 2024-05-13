@@ -1,27 +1,17 @@
-import {
-   BaseService,
-   ServiceOptions,
-   CRUDService,
-   FieldsException,
-   MessageData,
-   ThrowException,
-   CreateCRUDService,
-} from '@lib';
+import { FieldsException, MessageData, ThrowException } from '@lib';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma } from '.prisma/user';
-import { AuthEntity, UserEntity } from '../entity/user';
-import { userConfig } from '../user.config';
-import { CreateUserDto, UserSignInDto, UserSignUpDto } from '../dto';
+import { AuthEntity, UserEntity } from '../../../lib/service/user/entity/user';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is } from '@mvanvu/ujs';
 import { appConfig } from '@config';
+import { BaseService, CRUDService, CreateCRUDService } from '@service/lib';
+import { CreateUserDto, UserSignInDto, UserSignUpDto } from '@lib/service/user';
 
 @Injectable()
 export class UserService extends BaseService implements CreateCRUDService {
    @Inject(PrismaService) readonly prisma: PrismaService;
-
-   readonly options: ServiceOptions = { config: userConfig };
 
    readonly userSelect: Prisma.UserSelect = {
       id: true,

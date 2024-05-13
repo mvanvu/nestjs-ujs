@@ -1,6 +1,6 @@
 import { IPartialType, IProperty } from '@lib';
 import { $Enums } from '.prisma/user';
-import { permissionKeys } from '../user.config';
+import { permissionKeys } from '@lib/service';
 
 export class CreateRoleDto {
    @IProperty({

@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { createMicroserviceApp } from '../create-app';
-import { UserModule } from '@/microservice/user/user.module';
-import { userConfig } from '@/microservice/user/user.config';
+import { createMicroserviceApp } from '../lib';
+import { UserModule } from './user.module';
+import { serviceConfig } from '@config';
 
 @Module({
    imports: [UserModule],
 })
 export class AppModule {
    static bootstrap(): Promise<void> {
-      return createMicroserviceApp(AppModule, `${userConfig.proxy}Queue`);
+      return createMicroserviceApp(AppModule, `${serviceConfig.get('user.proxy')}Queue`);
    }
 }

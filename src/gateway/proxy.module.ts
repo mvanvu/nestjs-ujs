@@ -1,6 +1,6 @@
-import * as serviceConfig from '@/microservice/config';
 import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/microservices';
 import { appConfig } from '@config';
+import { clientProxies } from '@lib';
 
 export function createClientAsyncOptions(name: string): ClientsProviderAsyncOptions {
    return {
@@ -18,9 +18,6 @@ export function createClientAsyncOptions(name: string): ClientsProviderAsyncOpti
    };
 }
 
-// Todo add more services
-const services = [serviceConfig.userConfig.proxy, serviceConfig.storageConfig.proxy];
-
-export default services.map((name) =>
+export default clientProxies.map((name) =>
    ClientsModule.registerAsync({ isGlobal: true, clients: [createClientAsyncOptions(name)] }),
 );

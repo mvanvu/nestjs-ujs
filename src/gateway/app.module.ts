@@ -1,6 +1,3 @@
-// import { UserGuard } from '@lib/interceptor';
-import { UserModule } from '@/microservice/user/user.module';
-import { StorageModule } from '@/microservice/storage/storage.module';
 import { MiddlewareConsumer, Module, VersioningType } from '@nestjs/common';
 import { APP_GUARD, NestFactory } from '@nestjs/core';
 import proxies from './proxy.module';
@@ -12,14 +9,12 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpMiddleware } from './http.middleware';
 import { UserAuthGuard, UserRoleGuard } from '@/microservice/user/auth/guard';
 import { appConfig } from '@config';
+import { RoleController, UserController } from './controller';
+import { FileProvider } from './provider';
 
 @Module({
-   imports: [
-      ...proxies,
-      // Service modules
-      UserModule,
-      StorageModule,
-   ],
+   imports: proxies,
+   controllers: [RoleController, UserController],
    providers: [
       {
          provide: APP_GUARD,
@@ -29,6 +24,7 @@ import { appConfig } from '@config';
          provide: APP_GUARD,
          useClass: UserRoleGuard,
       },
+      FileProvider,
    ],
 })
 export class AppModule {

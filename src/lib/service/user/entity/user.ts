@@ -83,9 +83,9 @@ export class AuthEntity extends BaseEntity {
    tokens: AuthTokens;
 }
 
-export class SwaggerPaginationUserEntity {
+export class PaginationUserEntity {
    @IProperty({ swagger: { isArray: true } })
-   data: UserEntity;
+   data: UserEntity[];
 
    @IProperty()
    meta: PaginationMeta;

@@ -2,9 +2,9 @@ import { metadata, HttpRequest, USER_PUBLIC_KEY, USER_ROLE_KEY, PermissionOption
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
-import { UserEntity } from '@/microservice/user/entity';
-import { userConfig } from '@/microservice/user/user.config';
+import { UserEntity } from '@lib/service/user/entity';
 import { lastValueFrom, timeout } from 'rxjs';
+import { serviceConfig } from '@config';
 
 @Injectable()
 export class UserAuthGuard implements CanActivate {
@@ -33,7 +33,10 @@ export class UserAuthGuard implements CanActivate {
 
       try {
          const user = await lastValueFrom(
-            app.get<ClientProxy>(userConfig.proxy).send(userConfig.patterns.verify, token).pipe(timeout(5000)),
+            app
+               .get<ClientProxy>(serviceConfig.get('user.proxy'))
+               .send(serviceConfig.get('user.patterns.verify'), token)
+               .pipe(timeout(5000)),
          );
 
          request.registry.set('user', new UserEntity(user));

@@ -1,4 +1,3 @@
-import { type CRUDService } from '@lib/base';
 import { ClassConstructor, RequestRegistryData } from './common';
 import { Callable, ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
@@ -66,10 +65,6 @@ export type MessageData<TData = any, TMeta = MessageMeta | Registry<MessageMeta>
    meta?: TMeta;
 };
 
-export interface CreateCRUDService {
-   createCRUDService(): CRUDService<any, any, any, any>;
-}
-
 export type ServiceExecuteResult<TResult> = Promise<TResult | PaginationResult<TResult>>;
 
 export type BootServiceOptions<TPatterns, TPermissions> = {
@@ -77,3 +72,22 @@ export type BootServiceOptions<TPatterns, TPermissions> = {
    patterns: TPatterns;
    permissions?: TPermissions;
 };
+
+export class ConfigService<
+   TPatterns extends Record<string, string>,
+   TPermissions extends Record<string, Record<string, string>> | undefined = undefined,
+> {
+   constructor(private readonly options: BootServiceOptions<TPatterns, TPermissions>) {}
+
+   get proxy(): string {
+      return this.options.proxy;
+   }
+
+   get patterns(): TPatterns {
+      return this.options.patterns;
+   }
+
+   get permissions(): TPermissions | undefined {
+      return this.options.permissions;
+   }
+}

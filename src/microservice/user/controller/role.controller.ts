@@ -1,68 +1,26 @@
-import { Controller, Inject, RequestMethod } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Inject } from '@nestjs/common';
 import { RoleService } from '../provider';
-import { IParam, IData, IQuery, IRoute, Permission } from '@lib/decorator';
-import { rolePermissions, userConfig } from '../user.config';
-import { PaginationQueryDto, ServiceExecuteResult } from '@lib';
-import { SwaggerPaginationRoleEntity, RoleEntity } from '../entity';
-import { CreateRoleDto, UpdateRoleDto } from '../dto';
+import { RoleEntity, CreateRoleDto, UpdateRoleDto } from '@lib/service/user';
+import { serviceConfig } from '@config';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
-@ApiTags('Roles')
-@Controller('roles')
-@ApiBearerAuth()
 export class RoleController {
    @Inject(RoleService) readonly roleService: RoleService;
 
-   @Permission({ key: rolePermissions.role.read })
-   @IRoute({
-      pattern: userConfig.patterns.rolePaginate,
-      route: { method: RequestMethod.GET },
-      swagger: {
-         summary: 'Get list pagination of the roles',
-         responseType: SwaggerPaginationRoleEntity,
-      },
-   })
-   paginate(@IQuery() query: PaginationQueryDto): ServiceExecuteResult<RoleEntity> {
-      return this.roleService.execute(userConfig.patterns.rolePaginate, { meta: { query } });
+   @MessagePattern(serviceConfig.get('user.patterns.rolePaginate'))
+   @MessagePattern(serviceConfig.get('user.patterns.roleRead'))
+   read(): Promise<RoleEntity> {
+      return this.roleService.execute();
    }
 
-   @Permission({ key: rolePermissions.role.read })
-   @IRoute({
-      pattern: userConfig.patterns.roleRead,
-      route: { method: RequestMethod.GET, path: ':id' },
-      swagger: { summary: 'Get the detail of the role', responseType: RoleEntity },
-   })
-   read(@IParam('id') id: string): ServiceExecuteResult<RoleEntity> {
-      return this.roleService.execute(userConfig.patterns.roleRead, { meta: { params: { id } } });
+   @MessagePattern(serviceConfig.get('user.patterns.roleCreate'))
+   @MessagePattern(serviceConfig.get('user.patterns.roleUpdate'))
+   write(@Payload() data: CreateRoleDto | UpdateRoleDto): Promise<RoleEntity> {
+      return this.roleService.execute(data);
    }
 
-   @Permission({ key: rolePermissions.role.create })
-   @IRoute({
-      pattern: userConfig.patterns.roleCreate,
-      route: { method: RequestMethod.POST },
-      swagger: { summary: 'Create a new role', responseType: RoleEntity },
-   })
-   create(@IData() data: CreateRoleDto): ServiceExecuteResult<RoleEntity> {
-      return this.roleService.execute(userConfig.patterns.roleCreate, { data });
-   }
-
-   @Permission({ key: rolePermissions.role.update })
-   @IRoute({
-      pattern: userConfig.patterns.roleUpdate,
-      route: { method: RequestMethod.PATCH, path: ':id' },
-      swagger: { summary: 'Update role', responseType: RoleEntity },
-   })
-   update(@IParam('id') id: string, @IData() data: UpdateRoleDto): ServiceExecuteResult<RoleEntity> {
-      return this.roleService.execute(userConfig.patterns.roleUpdate, { data, meta: { params: { id } } });
-   }
-
-   @Permission({ key: rolePermissions.role.delete })
-   @IRoute({
-      pattern: userConfig.patterns.roleDelete,
-      route: { method: RequestMethod.DELETE, path: ':id' },
-      swagger: { summary: 'Delete a role', responseType: RoleEntity },
-   })
-   delete(@IParam('id') id: string): ServiceExecuteResult<RoleEntity> {
-      return this.roleService.execute(userConfig.patterns.roleDelete, { meta: { params: { id } } });
+   @MessagePattern(serviceConfig.get('user.patterns.roleDelete'))
+   delete(): Promise<RoleEntity> {
+      return this.roleService.execute(Promise);
    }
 }

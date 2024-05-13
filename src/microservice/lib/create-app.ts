@@ -2,7 +2,7 @@ import { ClassConstructor, ValidationPipe, metadata, ExceptionFilter } from '@li
 import { Callable, Util } from '@mvanvu/ujs';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { appConfig } from '../config';
+import { appConfig } from '../../config';
 
 export async function createMicroserviceApp(
    AppModule: ClassConstructor<any>,

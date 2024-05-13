@@ -1,13 +1,12 @@
 import { ThrowException } from '@lib';
 import { FileProviderInterface } from './file.provider.interface';
 import { google, drive_v3 as v3 } from 'googleapis';
-import { FinalUploadDto, UploadDto } from '../dto';
 import { Readable } from 'stream';
 import { Provider } from '.prisma/storage';
-import { FileEntity } from '../entity';
 import { Util } from '@mvanvu/ujs';
 import { StreamableFile } from '@nestjs/common';
 import { appConfig } from '@config';
+import { FileEntity, FinalUploadDto, UploadDto } from '@lib/service/storage';
 
 export class FileProviderGoogleDrive implements FileProviderInterface {
    private readonly storage: v3.Drive;

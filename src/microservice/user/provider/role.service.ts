@@ -1,15 +1,12 @@
-import { BaseService, ServiceOptions, CRUDService, CreateCRUDService } from '@lib';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma } from '.prisma/user';
-import { userConfig } from '../user.config';
-import { RoleEntity } from '@/microservice/user/entity';
+import { RoleEntity } from '@lib/service/user/entity';
+import { BaseService, CRUDService, CreateCRUDService } from '@service/lib';
 
 @Injectable()
 export class RoleService extends BaseService implements CreateCRUDService {
    @Inject(PrismaService) readonly prisma: PrismaService;
-
-   readonly options: ServiceOptions = { config: userConfig };
 
    readonly roleSelect: Prisma.RoleSelect = {
       id: true,

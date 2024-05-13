@@ -1,16 +1,12 @@
-import { BaseService, MessageData, MessageMeta, RequestRegistryData, ServiceOptions } from '@lib';
+import { MessageData, MessageMeta, RequestRegistryData, FileEntity, FinalUploadDto } from '@lib';
 import { Inject, Injectable } from '@nestjs/common';
-import { storageConfig } from '../storage.config';
 import { PrismaService } from './prisma/prisma.service';
-import { FinalUploadDto } from '../dto';
-import { FileEntity } from '../entity';
 import { Registry } from '@mvanvu/ujs';
+import { BaseService } from '@service/lib';
 
 @Injectable()
 export class FileService extends BaseService {
-   @Inject(PrismaService) readonly prisma: PrismaService;
-
-   readonly options: ServiceOptions = { config: storageConfig };
+   @Inject(PrismaService) prisma: PrismaService;
 
    async upload({ data, meta }: MessageData<FinalUploadDto, Registry<MessageMeta>>): Promise<FileEntity> {
       const user: RequestRegistryData['user'] = meta?.get('headers.user');
