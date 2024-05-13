@@ -71,3 +71,9 @@ export interface CreateCRUDService {
 }
 
 export type ServiceExecuteResult<TResult> = Promise<TResult | PaginationResult<TResult>>;
+
+export type BootServiceOptions<TPatterns, TPermissions> = {
+   proxy: string;
+   patterns: TPatterns;
+   permissions?: TPermissions;
+};
