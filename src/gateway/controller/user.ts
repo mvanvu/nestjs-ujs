@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { ServiceExecuteResult, PaginationQueryDto, Public, ApiResultResponse } from '@lib';
+import { ServiceExecuteResult, PaginationQueryDto, Public, ApiResultResponse, ParseMongoIdPipe } from '@lib';
 import { CreateUserDto, UserSignInDto, UserSignUpDto, UserEntity, AuthEntity } from '@lib/service/user';
 import { BaseController, BaseClientProxy } from '../lib';
 import { serviceConfig } from '@config';
@@ -34,7 +34,7 @@ export class UserController extends BaseController {
 
    @Get(':id')
    @ApiResultResponse(UserEntity, { summary: 'Admin get the detail of user account' })
-   read(@Param('id') id: string): ServiceExecuteResult<UserEntity> {
+   read(@Param('id', ParseMongoIdPipe) id: string): ServiceExecuteResult<UserEntity> {
       return this.userProxy.send(serviceConfig.get('user.patterns.readUser'), { meta: { params: { id } } });
    }
 
@@ -46,7 +46,7 @@ export class UserController extends BaseController {
 
    @Delete(':id')
    @ApiResultResponse(UserEntity, { summary: 'Admin delete an user account' })
-   delete(@Param('id') id: string): ServiceExecuteResult<UserEntity> {
+   delete(@Param('id', ParseMongoIdPipe) id: string): ServiceExecuteResult<UserEntity> {
       return this.userProxy.send(serviceConfig.get('user.patterns.deleteUser'), { meta: { params: { id } } });
    }
 }

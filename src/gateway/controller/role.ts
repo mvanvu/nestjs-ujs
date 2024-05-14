@@ -44,7 +44,7 @@ export class RoleController extends BaseController {
    @Permission({ key: serviceConfig.get('user.permissions.role.delete') })
    @ApiResultResponse(RoleEntity, { summary: 'Delete a role' })
    @Delete(':id')
-   delete(@Param('id') id: string): Promise<RoleEntity> {
+   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<RoleEntity> {
       return this.userProxy.send(serviceConfig.get('user.patterns.deleteRole'), { meta: { params: { id } } });
    }
 }
