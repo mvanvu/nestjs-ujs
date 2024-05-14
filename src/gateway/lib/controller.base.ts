@@ -47,7 +47,7 @@ export class BaseController {
 
    createClientProxy(proxy: string): BaseClientProxy {
       class InstClientProxy extends BaseClientProxy {}
-      // Object.defineProperty(InstClientProxy, 'name', `Client${proxy}`);
+      Object.defineProperty(InstClientProxy, 'name', { value: `Client${proxy}` });
 
       return new InstClientProxy(metadata.getGateway().get<ClientProxy>(proxy), this.req);
    }

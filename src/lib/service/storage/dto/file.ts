@@ -1,10 +1,9 @@
-import { IDto, IOmitType, IProperty } from '@lib';
+import { IOmitType, IProperty } from '@lib';
 import { FileType } from '.prisma/storage';
 import { FileEntity } from '../entity';
 
 const enumType = ['Image', 'Document', 'Unknown'];
 
-@IDto('gateway')
 export class UploadDto {
    @IProperty({
       swagger: { description: 'Is this file is public?', type: 'boolean' },
@@ -24,5 +23,4 @@ export class UploadDto {
    file: Express.Multer.File;
 }
 
-@IDto('service')
 export class FinalUploadDto extends IOmitType(FileEntity, ['id', 'url', 'bind']) {}
