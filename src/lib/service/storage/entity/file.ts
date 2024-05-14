@@ -1,31 +1,31 @@
-import { BaseEntity, IProperty } from '@lib';
+import { BaseEntity, Property } from '@lib';
 import { Provider, FileType } from '.prisma/storage';
 
 export class FileEntity extends BaseEntity {
-   @IProperty()
+   @Property()
    id: string;
 
-   @IProperty()
+   @Property()
    name: string;
 
-   @IProperty()
+   @Property()
    size: number;
 
-   @IProperty()
+   @Property()
    isPublic: boolean;
 
-   @IProperty()
+   @Property()
    type: FileType;
 
-   @IProperty()
+   @Property()
    mime: string;
 
-   @IProperty()
+   @Property()
    provider: Provider;
 
-   @IProperty()
+   @Property()
    providerId: string;
 
-   @IProperty()
+   @Property()
    url: string;
 }

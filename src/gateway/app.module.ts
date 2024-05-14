@@ -8,12 +8,12 @@ import { TransformInterceptor, ValidationPipe, metadata, ExceptionFilter, UserAu
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpMiddleware } from './http.middleware';
 import { appConfig } from '@config';
-import { RoleController, UserController } from './controller';
+import { FileController, RoleController, UserController } from './controller';
 import { FileProvider } from './provider';
 
 @Module({
    imports: proxies,
-   controllers: [RoleController, UserController],
+   controllers: [RoleController, UserController, FileController],
    providers: [
       {
          provide: APP_GUARD,

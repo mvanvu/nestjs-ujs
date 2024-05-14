@@ -1,21 +1,21 @@
 import { appConfig } from '@config';
-import { BaseEntity, IProperty, PermissionOptions, PaginationMeta } from '@lib';
+import { BaseEntity, Property, PermissionOptions } from '@lib';
 import { Is, ObjectRecord } from '@mvanvu/ujs';
 
 export class UserEntity extends BaseEntity {
-   @IProperty()
+   @Property()
    id: string;
 
-   @IProperty()
+   @Property()
    name?: string;
 
-   @IProperty()
+   @Property()
    username?: string;
 
-   @IProperty()
+   @Property()
    email: string;
 
-   @IProperty()
+   @Property()
    roles: { id: string; name: string; permissions: string[] }[];
 
    constructor(entity?: ObjectRecord) {
@@ -68,25 +68,17 @@ export class UserEntity extends BaseEntity {
 }
 
 export class AuthTokens {
-   @IProperty()
+   @Property()
    access: string;
 
-   @IProperty()
+   @Property()
    refresh: string;
 }
 
 export class AuthEntity extends BaseEntity {
-   @IProperty()
+   @Property()
    user: UserEntity;
 
-   @IProperty()
+   @Property()
    tokens: AuthTokens;
-}
-
-export class PaginationUserEntity {
-   @IProperty({ swagger: { isArray: true } })
-   data: UserEntity[];
-
-   @IProperty()
-   meta: PaginationMeta;
 }

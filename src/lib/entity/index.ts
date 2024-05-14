@@ -1,3 +1,3 @@
 export * from './base';
 export * from './mapped-type';
-export * from './pagination';
+export * from './api-response';

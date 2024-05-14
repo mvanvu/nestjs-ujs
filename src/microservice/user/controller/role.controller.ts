@@ -19,6 +19,6 @@ export class RoleController {
 
    @MessagePattern(serviceConfig.get('user.patterns.deleteRole'))
    delete(): Promise<RoleEntity> {
-      return this.roleService.execute(Promise);
+      return this.roleService.execute();
    }
 }

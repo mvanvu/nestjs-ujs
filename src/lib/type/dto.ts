@@ -1,10 +1,10 @@
-import { IProperty } from '@lib/decorator';
+import { Property } from '@lib/decorator';
 
 export class PaginationQueryDto {
-   @IProperty({ transform: { fromType: 'string', toType: 'trim' }, optional: true, swagger: 'The search query' })
+   @Property({ transform: { fromType: 'string', toType: 'trim' }, optional: true, swagger: 'The search query' })
    q?: string;
 
-   @IProperty({
+   @Property({
       transform: { fromType: 'string', toType: 'toNumber' },
       validate: { is: 'uInt' },
       optional: true,
@@ -12,7 +12,7 @@ export class PaginationQueryDto {
    })
    page?: number;
 
-   @IProperty({
+   @Property({
       transform: { fromType: 'string', toType: 'toNumber' },
       validate: { is: 'uInt' },
       optional: true,
@@ -20,20 +20,20 @@ export class PaginationQueryDto {
    })
    limit?: number;
 
-   @IProperty({
+   @Property({
       transform: { fromType: 'string', toType: 'trim' },
       optional: true,
       swagger: 'Order by',
    })
    order?: string;
 
-   @IProperty({
+   @Property({
       transform: { fromType: 'string', toType: 'trim' },
       optional: true,
       swagger: 'Language code',
    })
    lang?: string;
 
-   @IProperty({ optional: true, swagger: 'Advance filters' })
+   @Property({ optional: true, swagger: 'Advance filters' })
    filters?: string; // filters=id:1|2|3,email=admin@email.com
 }

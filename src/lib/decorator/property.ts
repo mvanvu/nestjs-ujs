@@ -6,7 +6,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export const CLASS_PROPERTIES: string = '__CLASS_PROPERTIES__';
 
-export function IProperty<IsType extends IsValidType>(options?: PropertyOptions<IsType>): PropertyDecorator {
+export function Property<IsType extends IsValidType>(options?: PropertyOptions<IsType>): PropertyDecorator {
    const decorators: Array<ClassDecorator | MethodDecorator | PropertyDecorator> = [
       (target: Object, propertyKey: PropertyKey): void => {
          if (!target.hasOwnProperty(CLASS_PROPERTIES)) {
@@ -17,20 +17,24 @@ export function IProperty<IsType extends IsValidType>(options?: PropertyOptions<
       },
    ];
 
-   if (metadata.isGateway() && options?.swagger) {
-      if (typeof options?.swagger === 'string') {
-         decorators.push(ApiProperty({ description: options.swagger, required: options?.optional !== true }));
+   if (metadata.isGateway()) {
+      if (options?.swagger) {
+         if (typeof options?.swagger === 'string') {
+            decorators.push(ApiProperty({ description: options.swagger, required: options?.optional !== true }));
+         } else {
+            decorators.push(
+               ApiProperty({
+                  description: options.swagger.description,
+                  example: options.swagger.example,
+                  required: options?.optional !== true,
+                  isArray: options.swagger.isArray,
+                  type: options.swagger.type,
+                  enum: options.swagger.enum,
+               }),
+            );
+         }
       } else {
-         decorators.push(
-            ApiProperty({
-               description: options.swagger.description,
-               example: options.swagger.example,
-               required: options?.optional !== true,
-               isArray: options.swagger.isArray,
-               type: options.swagger.type,
-               enum: options.swagger.enum,
-            }),
-         );
+         decorators.push(ApiProperty());
       }
    }
 

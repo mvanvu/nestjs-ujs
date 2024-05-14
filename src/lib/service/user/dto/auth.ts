@@ -1,7 +1,7 @@
-import { IPickType, IProperty } from '@lib';
+import { IPickType, Property } from '@lib';
 
 export class UserSignUpDto {
-   @IProperty({
+   @Property({
       swagger: { description: 'The name of user', example: 'Rainy' },
       validate: { is: 'string' },
       transform: { fromType: 'string', toType: 'trim' },
@@ -9,26 +9,26 @@ export class UserSignUpDto {
    })
    name?: string;
 
-   @IProperty({
+   @Property({
       swagger: { description: 'The username of user', example: 'rainy.mi' },
       validate: { is: 'string' },
       optional: true,
    })
    username?: string;
 
-   @IProperty({
+   @Property({
       swagger: { description: 'The email of user', example: 'rainy.mi@email.com' },
       validate: { is: 'email' },
    })
    email?: string;
 
-   @IProperty({
+   @Property({
       swagger: { description: 'The password of user', example: 'MyStr0ngPassWord!' },
       validate: [{ is: 'strongPassword', meta: { minLength: 8, noSpaces: true } }],
    })
    password: string;
 
-   @IProperty({
+   @Property({
       swagger: { description: 'The confirm password', example: 'MyStr0ngPassWord!' },
       validate: { is: 'equals', meta: { equalsTo: 'password' } },
    })

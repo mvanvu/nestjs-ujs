@@ -1,14 +1,7 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Query } from '@nestjs/common';
-import { ApiProperty, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ServiceExecuteResult, PaginationQueryDto, Public } from '@lib';
-import {
-   CreateUserDto,
-   UserSignInDto,
-   UserSignUpDto,
-   UserEntity,
-   AuthEntity,
-   PaginationUserEntity,
-} from '@lib/service/user';
+import { ApiTags } from '@nestjs/swagger';
+import { ServiceExecuteResult, PaginationQueryDto, Public, ApiResultResponse } from '@lib';
+import { CreateUserDto, UserSignInDto, UserSignUpDto, UserEntity, AuthEntity } from '@lib/service/user';
 import { BaseController, BaseClientProxy } from '../lib';
 import { serviceConfig } from '@config';
 
@@ -21,44 +14,38 @@ export class UserController extends BaseController {
 
    @Public()
    @Post('signup')
-   @ApiProperty({ description: 'Register a new user account' })
-   @ApiResponse({ status: HttpStatus.OK, type: UserEntity })
+   @ApiResultResponse(UserEntity, { summary: 'Register a new user account' })
    signUp(@Body() data: UserSignUpDto): Promise<UserEntity> {
       return this.userProxy.send(serviceConfig.get('user.patterns.signUp'), { data });
    }
 
    @Public()
    @Post('signin')
-   @ApiProperty({ description: 'Sign-in with the user account' })
-   @ApiResponse({ status: HttpStatus.OK, type: AuthEntity })
+   @ApiResultResponse(AuthEntity, { summary: 'Sign-in with the user account' })
    signIn(@Body() data: UserSignInDto): Promise<AuthEntity> {
       return this.userProxy.send(serviceConfig.get('user.patterns.signIn'), { data });
    }
 
    @Get()
-   @ApiProperty({ description: 'Admin get list pagination of the users' })
-   @ApiResponse({ status: HttpStatus.OK, type: PaginationUserEntity })
-   paginate(@Query() query: PaginationQueryDto): Promise<PaginationUserEntity> {
+   @ApiResultResponse(UserEntity, { summary: 'Admin get list pagination of the users' })
+   paginate(@Query() query: PaginationQueryDto): Promise<UserEntity> {
       return this.userProxy.send(serviceConfig.get('user.patterns.readUser'), { meta: { query } });
    }
 
    @Get(':id')
-   @ApiProperty({ description: 'Admin get the detail of user account' })
-   @ApiResponse({ status: HttpStatus.OK, type: UserEntity })
+   @ApiResultResponse(UserEntity, { summary: 'Admin get the detail of user account' })
    read(@Param('id') id: string): ServiceExecuteResult<UserEntity> {
       return this.userProxy.send(serviceConfig.get('user.patterns.readUser'), { meta: { params: { id } } });
    }
 
    @Post()
-   @ApiProperty({ description: 'Admin create a new user account' })
-   @ApiResponse({ status: HttpStatus.OK, type: UserEntity })
+   @ApiResultResponse(UserEntity, { summary: 'Admin create a new user account', statusCode: HttpStatus.CREATED })
    create(@Body() data: CreateUserDto): ServiceExecuteResult<UserEntity> {
       return this.userProxy.send(serviceConfig.get('user.patterns.writeUser'), { data });
    }
 
    @Delete(':id')
-   @ApiProperty({ description: 'Admin delete an user account' })
-   @ApiResponse({ status: HttpStatus.OK, type: UserEntity })
+   @ApiResultResponse(UserEntity, { summary: 'Admin delete an user account' })
    delete(@Param('id') id: string): ServiceExecuteResult<UserEntity> {
       return this.userProxy.send(serviceConfig.get('user.patterns.deleteUser'), { meta: { params: { id } } });
    }
