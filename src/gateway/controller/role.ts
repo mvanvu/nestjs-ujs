@@ -14,30 +14,30 @@ export class RoleController extends BaseController {
    @Permission({ key: serviceConfig.get('user.permissions.role.read') })
    @Get()
    paginate(@Query() query: PaginationQueryDto): Promise<RoleEntity> {
-      return this.userProxy.send(serviceConfig.get('user.patterns.rolePaginate'), { meta: { query } });
+      return this.userProxy.send(serviceConfig.get('user.patterns.readRole'), { meta: { query } });
    }
 
    @Permission({ key: serviceConfig.get('user.permissions.role.read') })
    @Get(':id')
    read(@Param('id') id: string): Promise<RoleEntity> {
-      return this.userProxy.send(serviceConfig.get('user.patterns.roleRead'), { meta: { params: { id } } });
+      return this.userProxy.send(serviceConfig.get('user.patterns.readRole'), { meta: { params: { id } } });
    }
 
    @Permission({ key: serviceConfig.get('user.permissions.role.create') })
    @Post()
    create(@Body() data: CreateRoleDto): Promise<RoleEntity> {
-      return this.userProxy.send(serviceConfig.get('user.patterns.roleRead'), { data });
+      return this.userProxy.send(serviceConfig.get('user.patterns.writeRole'), { data });
    }
 
    @Permission({ key: serviceConfig.get('user.permissions.role.update') })
    @Patch(':id')
    update(@Param('id') id: string, @Body() data: UpdateRoleDto): Promise<RoleEntity> {
-      return this.userProxy.send(serviceConfig.get('user.patterns.roleUpdate'), { data, meta: { params: { id } } });
+      return this.userProxy.send(serviceConfig.get('user.patterns.writeRole'), { data, meta: { params: { id } } });
    }
 
    @Permission({ key: serviceConfig.get('user.permissions.role.delete') })
    @Delete(':id')
    delete(@Param('id') id: string): Promise<RoleEntity> {
-      return this.userProxy.send(serviceConfig.get('user.patterns.roleRead'), { meta: { params: { id } } });
+      return this.userProxy.send(serviceConfig.get('user.patterns.deleteRole'), { meta: { params: { id } } });
    }
 }

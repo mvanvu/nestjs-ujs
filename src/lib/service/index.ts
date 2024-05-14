@@ -8,12 +8,12 @@ export * from './user';
 import user from './user/config';
 import storage from './storage/config';
 import { loadPermissionKeys } from '@lib/util';
-
-export default Registry.from({ user, storage });
-
-export const clientProxies = [user.proxy, storage.proxy];
+const serviceConfig = Registry.from({ user, storage });
+export const clientProxies = [serviceConfig.get('user.proxy'), serviceConfig.get('storage.proxy')];
 
 // Load all permission keys
 export const permissionKeys: string[] = [];
 loadPermissionKeys(user.permissions ?? {}, permissionKeys);
 loadPermissionKeys(storage.permissions ?? {}, permissionKeys);
+
+export default serviceConfig;

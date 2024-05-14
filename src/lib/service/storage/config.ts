@@ -5,7 +5,7 @@ export default {
    },
    permissions: {
       file: {
-         upload: 'STORAGE.UPLOAD',
+         upload: 'file.upload',
       },
    },
 };

@@ -24,14 +24,12 @@ export class UserController {
       return this.userService.execute(token);
    }
 
-   @MessagePattern(serviceConfig.get('user.patterns.paginateUser'))
    @MessagePattern(serviceConfig.get('user.patterns.readUser'))
    read(): Promise<UserEntity> {
       return this.userService.execute();
    }
 
-   @MessagePattern(serviceConfig.get('user.patterns.createUser'))
-   @MessagePattern(serviceConfig.get('user.patterns.updateUser'))
+   @MessagePattern(serviceConfig.get('user.patterns.writeUser'))
    write(@Payload() data: CreateUserDto | UpdateUserDto): ServiceExecuteResult<UserEntity> {
       return this.userService.execute(data);
    }

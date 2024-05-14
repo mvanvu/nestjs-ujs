@@ -13,42 +13,44 @@ export interface CreateCRUDService {
 export class BaseService {
    @Inject(CONTEXT) readonly ctx: RequestContext;
 
-   async execute<TInput, TResult>(data?: TInput): Promise<TResult> {
+   get meta(): Registry<MessageMeta> {
       const {
          properties: { headers },
       } = this.ctx.getContext().getMessage();
-      const messagePattern = this.ctx.getPattern();
-      const meta = Registry.from<MessageMeta>(headers?.['x-meta']);
-      const method: string = messagePattern.split('.').pop();
-      const isCRUDPattern = ['paginate', 'read', 'create', 'update', 'delete'].includes(method);
 
-      if (isCRUDPattern && messagePattern.includes('.CRUD.') && typeof this['createCRUDService'] === 'function') {
+      return Registry.from<MessageMeta>(headers?.['x-meta']);
+   }
+
+   async execute<TInput, TResult>(data?: TInput): Promise<TResult> {
+      const messagePattern = this.ctx.getPattern();
+      const method: string = messagePattern.split('.').pop();
+      const isCRUDPattern =
+         ['read', 'write', 'delete'].includes(method) &&
+         messagePattern.includes('.CRUD.') &&
+         typeof this['createCRUDService'] === 'function';
+
+      if (isCRUDPattern) {
          const CRUDInstService = Util.call(this, this['createCRUDService']);
 
          if (CRUDInstService instanceof CRUDService) {
+            const meta = this.meta;
             const recordId = meta.get('params.id');
             const userId = meta.get('headers.user.id');
 
             switch (method) {
-               case 'paginate':
-                  return CRUDInstService.paginate<TResult>(meta.get('query')) as unknown as TResult;
-
                case 'read':
-                  return CRUDInstService.read<TResult>(recordId);
+                  return recordId
+                     ? CRUDInstService.read<TResult>(recordId)
+                     : (CRUDInstService.paginate<TResult>(meta.get('query')) as unknown as TResult);
 
-               case 'create':
+               case 'write':
                   if (userId) {
-                     data['createdBy'] = userId;
+                     data[recordId ? 'updatedBy' : 'createdBy'] = userId;
                   }
 
-                  return CRUDInstService.create<TResult>(data);
-
-               case 'update':
-                  if (userId) {
-                     data['updatedBy'] = userId;
-                  }
-
-                  return CRUDInstService.update<TResult>(recordId, data);
+                  return recordId
+                     ? CRUDInstService.update<TResult>(recordId, data)
+                     : CRUDInstService.create<TResult>(data);
 
                case 'delete':
                   return CRUDInstService.delete<TResult>(recordId);

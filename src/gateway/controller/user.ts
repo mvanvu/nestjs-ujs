@@ -39,7 +39,7 @@ export class UserController extends BaseController {
    @ApiProperty({ description: 'Admin get list pagination of the users' })
    @ApiResponse({ status: HttpStatus.OK, type: PaginationUserEntity })
    paginate(@Query() query: PaginationQueryDto): Promise<PaginationUserEntity> {
-      return this.userProxy.send(serviceConfig.get('user.patterns.paginateUser'), { meta: { query } });
+      return this.userProxy.send(serviceConfig.get('user.patterns.readUser'), { meta: { query } });
    }
 
    @Get(':id')
@@ -53,7 +53,7 @@ export class UserController extends BaseController {
    @ApiProperty({ description: 'Admin create a new user account' })
    @ApiResponse({ status: HttpStatus.OK, type: UserEntity })
    create(@Body() data: CreateUserDto): ServiceExecuteResult<UserEntity> {
-      return this.userProxy.send(serviceConfig.get('user.patterns.createUser'), { data });
+      return this.userProxy.send(serviceConfig.get('user.patterns.writeUser'), { data });
    }
 
    @Delete(':id')

@@ -4,13 +4,13 @@ import proxies from './proxy.module';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
-import { HttpTransform, ValidationPipe, metadata, ExceptionFilter } from '@lib';
+import { TransformInterceptor, ValidationPipe, metadata, ExceptionFilter } from '@lib';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpMiddleware } from './http.middleware';
-import { UserAuthGuard, UserRoleGuard } from '@/microservice/user/auth/guard';
 import { appConfig } from '@config';
 import { RoleController, UserController } from './controller';
 import { FileProvider } from './provider';
+import { UserAuthGuard, UserRoleGuard } from './lib';
 
 @Module({
    imports: proxies,
@@ -59,7 +59,7 @@ export class AppModule {
 
       app.useGlobalFilters(new ExceptionFilter());
       app.useGlobalPipes(new ValidationPipe());
-      app.useGlobalInterceptors(new HttpTransform());
+      app.useGlobalInterceptors(new TransformInterceptor());
 
       const swaggerConfig = new DocumentBuilder()
          .setTitle('NestJS UJS')

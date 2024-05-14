@@ -1,4 +1,4 @@
-import { FieldsException, MessageData, ThrowException } from '@lib';
+import { FieldsException, ThrowException } from '@lib';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma } from '.prisma/user';
@@ -71,7 +71,7 @@ export class UserService extends BaseService implements CreateCRUDService {
       }
    }
 
-   async signUp({ data }: MessageData<UserSignUpDto>): Promise<UserEntity> {
+   async signUp(data: UserSignUpDto): Promise<UserEntity> {
       await this.validateUserDto(data);
       const { name, username, email, password } = data;
       const newUser = await this.prisma.user.create({
@@ -99,7 +99,7 @@ export class UserService extends BaseService implements CreateCRUDService {
       return { access, refresh };
    }
 
-   async signIn({ data }: MessageData<UserSignInDto>): Promise<AuthEntity> {
+   async signIn(data: UserSignInDto): Promise<AuthEntity> {
       const { username, email, password } = data;
 
       if (Is.empty([username, email], true)) {
@@ -115,7 +115,7 @@ export class UserService extends BaseService implements CreateCRUDService {
       return new AuthEntity({ user: new UserEntity(user), tokens: await this.generateTokens(user.id) });
    }
 
-   async verify({ data: token }: MessageData<string>): Promise<UserEntity> {
+   async verify(token: string): Promise<UserEntity> {
       const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.jwt.secret });
       const user = await this.prisma.user.findUnique({ where: { id }, select: this.userSelect });
 
@@ -126,7 +126,7 @@ export class UserService extends BaseService implements CreateCRUDService {
       return new UserEntity(user);
    }
 
-   async create({ data }: MessageData<CreateUserDto>): Promise<UserEntity> {
+   async create(data: CreateUserDto): Promise<UserEntity> {
       await this.validateUserDto(data);
       const { name, username, email, password, roles } = data;
       const newUser = await this.prisma.user.create({

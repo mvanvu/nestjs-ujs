@@ -9,10 +9,6 @@ import { serviceConfig } from '@config';
 @Injectable()
 export class UserAuthGuard implements CanActivate {
    async canActivate(context: ExecutionContext): Promise<boolean> {
-      if (metadata.isMicroservice()) {
-         return true;
-      }
-
       const app = metadata.getGateway();
       const reflector = app.get(Reflector);
       const isPublic = reflector.getAllAndOverride<boolean>(USER_PUBLIC_KEY, [
@@ -56,10 +52,6 @@ export class UserAuthGuard implements CanActivate {
 @Injectable()
 export class UserRoleGuard implements CanActivate {
    async canActivate(context: ExecutionContext): Promise<boolean> {
-      if (metadata.isMicroservice()) {
-         return true;
-      }
-
       const app = metadata.getGateway();
       const reflector = app.get(Reflector);
       const permission = reflector.getAllAndOverride<PermissionOptions | undefined>(USER_ROLE_KEY, [

@@ -1,17 +1,6 @@
-import { metadata } from '@lib/metadata';
 import { HttpRequest } from '@lib/type';
 import { Is, Registry } from '@mvanvu/ujs';
-import {
-   Body,
-   createParamDecorator,
-   ExecutionContext,
-   Param,
-   PipeTransform,
-   Query,
-   Type,
-   UnauthorizedException,
-} from '@nestjs/common';
-import { Payload } from '@nestjs/microservices';
+import { createParamDecorator, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 
 export const GetUser = createParamDecorator(
    (
@@ -39,15 +28,3 @@ export const GetUser = createParamDecorator(
       return typeof property === 'string' ? reg.get(property) : reg.valueOf();
    },
 );
-
-export function IData(...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
-   return metadata.isGateway() ? Body(...pipes) : Payload(...pipes);
-}
-
-export function IQuery(...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
-   return metadata.isGateway() ? Query(...pipes) : Payload(...pipes);
-}
-
-export function IParam(property?: string, ...pipes: (Type<PipeTransform> | PipeTransform)[]): ParameterDecorator {
-   return metadata.isGateway() ? Param(property, ...pipes) : Payload(property, ...pipes);
-}
