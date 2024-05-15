@@ -58,6 +58,7 @@ export type MessageMeta = {
    query?: ObjectRecord;
    params?: ObjectRecord;
    headers?: RequestRegistryData;
+   method?: 'read' | 'write' | 'delete';
 };
 
 export type MessageData<TData = any, TMeta = MessageMeta | Registry<MessageMeta>> = {

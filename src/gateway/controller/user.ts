@@ -4,6 +4,7 @@ import { ServiceExecuteResult, PaginationQueryDto, Public, ApiResultResponse, Pa
 import { CreateUserDto, UserSignInDto, UserSignUpDto, UserEntity, AuthEntity } from '@lib/service/user';
 import { BaseController, BaseClientProxy } from '../lib';
 import { serviceConfig } from '@config';
+const userCRUDPattern: string = serviceConfig.get('user.patterns.userCRUD');
 
 @ApiTags('Users')
 @Controller('users')
@@ -29,24 +30,24 @@ export class UserController extends BaseController {
    @Get()
    @ApiResultResponse(UserEntity, { summary: 'Admin get list pagination of the users' })
    paginate(@Query() query: PaginationQueryDto): Promise<UserEntity> {
-      return this.userProxy.send(serviceConfig.get('user.patterns.readUser'), { meta: { query } });
+      return this.userProxy.send(userCRUDPattern, { meta: { query, method: 'read' } });
    }
 
    @Get(':id')
    @ApiResultResponse(UserEntity, { summary: 'Admin get the detail of user account' })
    read(@Param('id', ParseMongoIdPipe) id: string): ServiceExecuteResult<UserEntity> {
-      return this.userProxy.send(serviceConfig.get('user.patterns.readUser'), { meta: { params: { id } } });
+      return this.userProxy.send(userCRUDPattern, { meta: { params: { id }, method: 'read' } });
    }
 
    @Post()
    @ApiResultResponse(UserEntity, { summary: 'Admin create a new user account', statusCode: HttpStatus.CREATED })
    create(@Body() data: CreateUserDto): ServiceExecuteResult<UserEntity> {
-      return this.userProxy.send(serviceConfig.get('user.patterns.writeUser'), { data });
+      return this.userProxy.send(userCRUDPattern, { data, meta: { method: 'write' } });
    }
 
    @Delete(':id')
    @ApiResultResponse(UserEntity, { summary: 'Admin delete an user account' })
    delete(@Param('id', ParseMongoIdPipe) id: string): ServiceExecuteResult<UserEntity> {
-      return this.userProxy.send(serviceConfig.get('user.patterns.deleteUser'), { meta: { params: { id } } });
+      return this.userProxy.send(userCRUDPattern, { meta: { params: { id }, method: 'delete' } });
    }
 }

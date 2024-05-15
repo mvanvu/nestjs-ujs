@@ -4,12 +4,8 @@ export default {
       signIn: 'user.signIn',
       signUp: 'user.signUp',
       verify: 'user.verify',
-      readUser: 'user.CRUD.read',
-      writeUser: 'user.CRUD.write',
-      deleteUser: 'user.CRUD.delete',
-      readRole: 'role.CRUD.read',
-      writeRole: 'role.CRUD.write',
-      deleteRole: 'role.CRUD.delete',
+      userCRUD: 'user.CRUD',
+      roleCRUD: 'role.CRUD',
    },
    permissions: {
       role: {
