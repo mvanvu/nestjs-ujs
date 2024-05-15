@@ -1,5 +1,5 @@
 import { IPartialType, Property } from '@lib';
-import { $Enums } from '.prisma/user';
+import { RoleStatus } from '.prisma/user';
 import { permissionKeys } from '@lib/service';
 
 export class CreateRoleDto {
@@ -23,7 +23,7 @@ export class CreateRoleDto {
       optional: true,
       validate: { is: 'string' },
    })
-   status?: $Enums.RoleStatus;
+   status?: RoleStatus;
 
    @Property({
       swagger: { description: 'The permissions of the role', example: permissionKeys },
