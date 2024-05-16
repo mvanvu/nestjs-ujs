@@ -1,5 +1,5 @@
-import { CLASS_PROPERTIES } from '@lib/decorator';
-import { PropertyOptions } from '@lib/type';
+import { CLASS_PROPERTIES } from '@lib/common/decorator';
+import { PropertyOptions } from '@lib/common/type';
 import { Type } from '@nestjs/common';
 import { PickType, PartialType, OmitType } from '@nestjs/swagger';
 

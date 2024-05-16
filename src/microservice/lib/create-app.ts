@@ -1,4 +1,4 @@
-import { ClassConstructor, ValidationPipe, metadata, ExceptionFilter } from '@lib';
+import { ClassConstructor, ValidationPipe, metadata, ExceptionFilter } from '@lib/common';
 import { Callable, Util } from '@mvanvu/ujs';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';

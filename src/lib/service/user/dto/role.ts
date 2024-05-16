@@ -1,4 +1,4 @@
-import { IPartialType, Property } from '@lib';
+import { IPartialType, Property } from '@lib/common';
 import { RoleStatus } from '.prisma/user';
 import { permissionKeys } from '@lib/service';
 

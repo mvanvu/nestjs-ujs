@@ -5,7 +5,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { serviceConfig } from '@config';
 import { FileProvider } from '../provider';
 import { FileEntity, UploadDto } from '@lib/service/storage';
-import { ApiResultResponse, Permission } from '@lib';
+import { ApiResultResponse, Permission } from '@lib/common';
 
 @ApiTags('Files')
 @Controller('files')

@@ -1,5 +1,5 @@
-import { ThrowException } from '@lib/exception';
-import { CRUDResult, ClassConstructor, MessageMeta, validateDTO } from '@lib';
+import { ThrowException } from '@lib/common/exception';
+import { CRUDResult, ClassConstructor, MessageMeta, validateDTO } from '@lib/common';
 import { Is, Registry, Util } from '@mvanvu/ujs';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CONTEXT, RequestContext } from '@nestjs/microservices';

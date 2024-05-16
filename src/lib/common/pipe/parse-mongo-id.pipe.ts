@@ -1,4 +1,4 @@
-import { ThrowException } from '@lib/exception';
+import { ThrowException } from '@lib/common/exception';
 import { Is } from '@mvanvu/ujs';
 import { Injectable, PipeTransform } from '@nestjs/common';
 

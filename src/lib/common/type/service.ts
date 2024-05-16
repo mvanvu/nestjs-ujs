@@ -73,8 +73,6 @@ export type MessageData<TData = any, TMeta = MessageMeta | Registry<MessageMeta>
    meta?: TMeta;
 };
 
-export type ServiceExecuteResult<TResult> = Promise<TResult | PaginationResult<TResult>>;
-
 export type BootServiceOptions<TPatterns, TPermissions> = {
    proxy: string;
    patterns: TPatterns;

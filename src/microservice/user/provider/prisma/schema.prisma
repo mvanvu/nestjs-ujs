@@ -12,16 +12,16 @@ datasource db {
 }
 
 enum UserStatus {
-    ACTIVE
-    PENDING
-    BLOCKED
-    DELETED
+    Active
+    Pending
+    Blocked
+    Trashed
 }
 
 enum RoleStatus {
-    DRAFT
-    ACTIVE
-    TRASHED
+    Drafted
+    Active
+    Trashed
 }
 
 model User {
@@ -30,7 +30,7 @@ model User {
     email        String     @unique
     name         String?
     password     String?
-    status       UserStatus @default(PENDING)
+    status       UserStatus @default(Pending)
     createdAt    DateTime   @default(now())
     createdBy    String?    @db.ObjectId
     updatedAt    DateTime?  @updatedAt
@@ -48,7 +48,7 @@ model Role {
     id          String     @id @default(auto()) @map("_id") @db.ObjectId
     name        String     @unique
     description String?
-    status      RoleStatus @default(ACTIVE)
+    status      RoleStatus @default(Drafted)
     root        Boolean    @default(false)
     createdAt   DateTime   @default(now())
     createdBy   String?    @db.ObjectId

@@ -3,7 +3,7 @@ import { Response, NextFunction } from 'express';
 import DeviceDetector from 'node-device-detector';
 import DeviceHelper from 'node-device-detector/helper';
 import { Registry } from '@mvanvu/ujs';
-import { HttpRequest, RequestRegistryData } from '@lib/type';
+import { HttpRequest, RequestRegistryData } from '@lib/common/type';
 
 @Injectable()
 export class HttpMiddleware implements NestMiddleware {

@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { FileProviderInterface } from './file.provider.interface';
 import { appConfig } from '@config';
 import { Util } from '@mvanvu/ujs';
-import { FileEntity, FinalUploadDto, UploadDto } from '@lib';
+import { FileEntity, FinalUploadDto, UploadDto } from '@lib/service';
 
 export class FileProviderLocal implements FileProviderInterface {
    private readonly storePath: string;

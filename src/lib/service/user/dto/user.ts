@@ -1,4 +1,4 @@
-import { IPartialType, Property } from '@lib';
+import { IPartialType, Property } from '@lib/common';
 import { UserSignUpDto } from './auth';
 
 export class CreateUserDto extends UserSignUpDto {

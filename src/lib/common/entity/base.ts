@@ -1,6 +1,6 @@
-import { CLASS_PROPERTIES } from '@lib/decorator';
-import { ClassConstructor } from '@lib/type';
-import { ObjectRecord } from '@mvanvu/ujs';
+import { CLASS_PROPERTIES } from '@lib/common/decorator';
+import { ClassConstructor } from '@lib/common/type';
+import { Is, ObjectRecord } from '@mvanvu/ujs';
 
 export class BaseEntity {
    constructor(entity?: ObjectRecord) {
@@ -14,7 +14,9 @@ export class BaseEntity {
       const entity = new cls();
 
       for (const prop of props) {
-         entity[prop] = obj.hasOwnProperty(prop) ? obj[prop] : null;
+         if (!Is.nothing(obj[prop])) {
+            entity[prop] = obj[prop];
+         }
       }
 
       return entity;

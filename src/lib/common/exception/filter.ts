@@ -40,6 +40,7 @@ export class ExceptionFilter implements NestExceptionFilter {
 
          response.status(status).json(jsonRes);
       } else {
+         console.log(exception);
          return throwError(() =>
             exception instanceof RpcException
                ? exception.getError()

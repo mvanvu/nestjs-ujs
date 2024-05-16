@@ -2,7 +2,7 @@ import { Registry, Util } from '@mvanvu/ujs';
 import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
-import { HttpRequest, MessageData, ServiceOptions, ThrowException, metadata } from '@lib';
+import { HttpRequest, MessageData, ServiceOptions, ThrowException, metadata } from '@lib/common';
 import { lastValueFrom, timeout } from 'rxjs';
 
 export class BaseClientProxy {
@@ -34,9 +34,9 @@ export class BaseClientProxy {
 
          // Todo, handle response data
          return response;
-      } catch (e) {
+      } catch (e: any) {
          Util.debug(e);
-         new ThrowException(e);
+         new ThrowException(e?.error || e);
       }
    }
 }

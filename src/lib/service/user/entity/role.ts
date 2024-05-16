@@ -1,5 +1,6 @@
-import { BaseEntity, Property } from '@lib';
 import { RoleStatus } from '.prisma/user';
+import { Property } from '@lib/common/decorator';
+import { BaseEntity } from '@lib/common/entity';
 
 export class RoleEntity extends BaseEntity {
    @Property()

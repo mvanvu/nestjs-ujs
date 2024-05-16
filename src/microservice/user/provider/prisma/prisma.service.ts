@@ -1,7 +1,7 @@
 import { Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { PrismaClient, Prisma } from '.prisma/user';
 import { Util } from '@mvanvu/ujs';
-import { PrismaModels, GetPrismaModels } from '@lib/type';
+import { PrismaModels, GetPrismaModels } from '@lib/common/type';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements GetPrismaModels, OnModuleInit, OnApplicationShutdown {

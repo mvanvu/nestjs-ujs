@@ -1,10 +1,16 @@
 import { appConfig } from '@config';
-import { BaseEntity, Property, PermissionOptions } from '@lib';
+import { Property } from '@lib/common/decorator';
+import { BaseEntity } from '@lib/common/entity';
+import { PermissionOptions } from '@lib/common/type';
 import { Is, ObjectRecord } from '@mvanvu/ujs';
+import { UserStatus } from '.prisma/user';
 
 export class UserEntity extends BaseEntity {
    @Property()
    id: string;
+
+   @Property()
+   status: UserStatus;
 
    @Property()
    name?: string;
@@ -15,7 +21,12 @@ export class UserEntity extends BaseEntity {
    @Property()
    email: string;
 
-   @Property()
+   @Property({
+      swagger: {
+         example: { id: '6631e55d89af4ff2b9b51aa3', name: 'Admin role', permissions: ['USER.READ'] },
+         isArray: true,
+      },
+   })
    roles: { id: string; name: string; permissions: string[] }[];
 
    constructor(entity?: ObjectRecord) {
@@ -28,7 +39,7 @@ export class UserEntity extends BaseEntity {
 
    authorise(permission?: PermissionOptions): boolean {
       let isUserRoot: boolean = false;
-      const { rootUid } = appConfig;
+      const rootUid = appConfig.get('rootUid');
 
       if (rootUid) {
          if (Is.email(rootUid)) {

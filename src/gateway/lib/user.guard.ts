@@ -1,10 +1,53 @@
-import { metadata, HttpRequest, USER_PUBLIC_KEY, USER_ROLE_KEY, PermissionOptions } from '@lib';
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import { metadata, HttpRequest, PermissionOptions } from '@lib/common';
+import {
+   CanActivate,
+   ExecutionContext,
+   ForbiddenException,
+   Injectable,
+   SetMetadata,
+   UnauthorizedException,
+   createParamDecorator,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
 import { UserEntity } from '@lib/service/user/entity';
 import { lastValueFrom, timeout } from 'rxjs';
 import { serviceConfig } from '@config';
+import { Is, Registry } from '@mvanvu/ujs';
+
+export const USER_PUBLIC_KEY = 'USER_PUBLIC_KEY';
+export const Public = () => SetMetadata(USER_PUBLIC_KEY, true);
+
+export const USER_ROLE_KEY = 'USER_ROLE_KEY';
+export const Permission = (options?: { key?: string; or?: string[]; and?: string[] }) =>
+   SetMetadata(USER_ROLE_KEY, options ?? {});
+
+export const GetUser = createParamDecorator(
+   (
+      property: string | string[] | undefined | { optional?: boolean; property?: string | string[] },
+      ctx: ExecutionContext,
+   ) => {
+      const { registry } = ctx.switchToHttp().getRequest<HttpRequest>();
+      const isOptional = typeof property === 'object' && !Array.isArray(property) && property?.optional === true;
+      const user = registry.get('user');
+
+      if (!user) {
+         if (!isOptional) {
+            throw new UnauthorizedException();
+         }
+
+         return null;
+      }
+
+      const reg = Registry.from(user);
+
+      if (Is.string(property, true)) {
+         return (property as string[]).map((prop) => reg.get(prop));
+      }
+
+      return typeof property === 'string' ? reg.get(property) : reg.valueOf();
+   },
+);
 
 @Injectable()
 export class UserAuthGuard implements CanActivate {
@@ -16,14 +59,14 @@ export class UserAuthGuard implements CanActivate {
          context.getClass(),
       ]);
 
-      if (isPublic) {
-         return true;
-      }
-
       const request = context.switchToHttp().getRequest<HttpRequest>();
       const token = this.extractTokenFromHeader(request);
 
       if (!token) {
+         if (isPublic) {
+            return true;
+         }
+
          throw new ForbiddenException();
       }
 
@@ -37,6 +80,10 @@ export class UserAuthGuard implements CanActivate {
 
          request.registry.set('user', new UserEntity(user));
       } catch (e) {
+         if (isPublic) {
+            return true;
+         }
+
          throw new ForbiddenException();
       }
 

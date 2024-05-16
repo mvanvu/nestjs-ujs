@@ -1,12 +1,4 @@
-import {
-   FieldsException,
-   ThrowException,
-   CreateUserDto,
-   UserSignInDto,
-   UserSignUpDto,
-   AuthEntity,
-   UserEntity,
-} from '@lib';
+import { CreateUserDto, UserSignInDto, UserSignUpDto, AuthEntity, UserEntity, UpdateUserDto } from '@lib/service';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma, UserStatus } from '.prisma/user';
@@ -14,6 +6,7 @@ import * as argon2 from 'argon2';
 import { DateTime, Hash, Is } from '@mvanvu/ujs';
 import { appConfig } from '@config';
 import { BaseService, CRUDService, CreateCRUDService } from '@service/lib';
+import { FieldsException, ThrowException } from '@lib/common';
 
 @Injectable()
 export class UserService extends BaseService implements CreateCRUDService {
@@ -22,6 +15,7 @@ export class UserService extends BaseService implements CreateCRUDService {
    readonly userSelect: Prisma.UserSelect = {
       id: true,
       username: true,
+      name: true,
       email: true,
       createdAt: true,
       updatedAt: true,
@@ -32,7 +26,6 @@ export class UserService extends BaseService implements CreateCRUDService {
                select: {
                   id: true,
                   name: true,
-                  root: true,
                   permissions: true,
                },
             },
@@ -40,41 +33,54 @@ export class UserService extends BaseService implements CreateCRUDService {
       },
    };
 
-   createCRUDService(): CRUDService<PrismaService, Prisma.UserSelect, any, any> {
-      return new CRUDService({
-         prisma: this.prisma,
-         model: 'user',
-         select: this.userSelect,
-         events: {
-            onEntity: UserEntity,
-         },
-      });
-   }
-
    async hashPassword(rawPassword: string): Promise<string> {
       return await argon2.hash(rawPassword);
    }
 
-   private async validateUserDto(dto: UserSignUpDto | CreateUserDto) {
-      const { username, email } = dto;
+   private async validateUserDto(dto: UserSignUpDto | CreateUserDto | UpdateUserDto, id?: string) {
+      const fieldsError = new FieldsException();
+      let { username, email } = dto;
+      const OR: Prisma.UserWhereInput['OR'] = [];
+
+      if (username) {
+         username = username.toLowerCase();
+         OR.push({ username });
+      }
+
+      if (email) {
+         email = email.toLowerCase();
+         OR.push({ email });
+      }
+
       const existsUser = await this.prisma.user.findFirst({
-         where: { OR: [{ username }, { email }] },
+         where: { OR, id: id ? { not: id } : undefined },
          select: { username: true, email: true },
       });
 
-      if (existsUser) {
-         const fieldsError = new FieldsException();
+      if (dto['roles']?.length) {
+         let isValidRoles = false;
 
-         if (username && existsUser.username === username.toLowerCase()) {
+         try {
+            const count = await this.prisma.role.count({ where: { id: { in: dto['roles'] } } });
+            isValidRoles = count === dto['roles'].length;
+         } catch {}
+
+         if (!isValidRoles) {
+            fieldsError.add('roles', FieldsException.NOT_FOULND);
+         }
+      }
+
+      if (existsUser) {
+         if (username && existsUser.username === username) {
             fieldsError.add('username', FieldsException.ALREADY_EXISTS);
          }
 
-         if (existsUser.email === email.toLowerCase()) {
+         if (existsUser.email === email) {
             fieldsError.add('email', FieldsException.ALREADY_EXISTS);
          }
-
-         fieldsError.validate();
       }
+
+      fieldsError.validate();
    }
 
    async signUp(data: UserSignUpDto): Promise<UserEntity> {
@@ -88,17 +94,16 @@ export class UserService extends BaseService implements CreateCRUDService {
    }
 
    async generateTokens(userId: string): Promise<AuthEntity['tokens']> {
-      const { jwt: jwtConfig } = appConfig;
+      const secret = appConfig.get<string>('jwt.secret');
       const jwt = Hash.jwt();
       const [access, refresh] = await Promise.all([
          jwt.sign(
             { id: userId },
-            { secret: jwtConfig.secret, iat: DateTime.now().addMinute(jwtConfig.accessExpiresInMinutes) },
+            { secret, exp: DateTime.now().addMinute(appConfig.get<number>('jwt.accessExpiresInMinutes')) },
          ),
-
          jwt.sign(
             { id: userId },
-            { secret: jwtConfig.secret, iat: DateTime.now().addMinute(jwtConfig.refreshExpiresInMinutes) },
+            { secret, exp: DateTime.now().addMinute(appConfig.get<number>('jwt.refreshExpiresInMinutes')) },
          ),
       ]);
 
@@ -106,13 +111,19 @@ export class UserService extends BaseService implements CreateCRUDService {
    }
 
    async signIn(data: UserSignInDto): Promise<AuthEntity> {
-      const { username, email, password } = data;
+      const { username, password } = data;
 
-      if (Is.empty([username, email], true)) {
+      if (Is.empty(username)) {
          ThrowException('Invalid credentials');
       }
 
-      const user = await this.prisma.user.findFirst({ where: { OR: [{ username }, { email }] } });
+      const OR: Prisma.UserWhereInput['OR'] = [{ username: { equals: username, mode: 'insensitive' } }];
+
+      if (Is.email(username)) {
+         OR.push({ email: { equals: username, mode: 'insensitive' } });
+      }
+
+      const user = await this.prisma.user.findFirst({ where: { OR } });
 
       if (!user || !(await argon2.verify(user.password, password))) {
          ThrowException('Invalid credentials');
@@ -125,27 +136,44 @@ export class UserService extends BaseService implements CreateCRUDService {
       const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.get('jwt.secret') });
       const user = await this.prisma.user.findUnique({ where: { id }, select: this.userSelect });
 
-      if (!user || user.status !== UserStatus.ACTIVE) {
+      if (!user || user.status !== UserStatus.Active) {
          ThrowException('Invalid credentials');
       }
 
       return new UserEntity(user);
    }
 
-   async create(data: CreateUserDto): Promise<UserEntity> {
-      await this.validateUserDto(data);
-      const { name, username, email, password, roles } = data;
-      const newUser = await this.prisma.user.create({
-         data: {
-            name,
-            username,
-            email,
-            password: await this.hashPassword(password),
-            userRoles: roles ? { create: roles.map((roleId) => ({ roleId })) } : undefined,
-         },
+   createCRUDService(): CRUDService<PrismaService, Prisma.UserSelect, any, any> {
+      return new CRUDService({
+         prisma: this.prisma,
+         model: 'user',
          select: this.userSelect,
-      });
+         events: {
+            onEntity: UserEntity,
+            onBeforeCreate: async (data: CreateUserDto) => {
+               await this.validateUserDto(data);
+               Object.assign(data, {
+                  userRoles: data.roles?.length ? { create: data.roles.map((roleId) => ({ roleId })) } : undefined,
+                  password: await this.hashPassword(data.password),
+               });
+            },
+            onBeforeUpdate: async (data: UpdateUserDto, record: UserEntity) => {
+               if (data.email || data.username || data.roles) {
+                  await this.validateUserDto(data, record.id);
+               }
 
-      return new UserEntity(newUser);
+               if (data.roles) {
+                  data['userRoles'] = {
+                     deleteMany: {},
+                     create: data.roles.length ? data.roles.map((roleId) => ({ roleId })) : undefined,
+                  };
+               }
+
+               if (data.password) {
+                  data.password = await this.hashPassword(data.password);
+               }
+            },
+         },
+      });
    }
 }

@@ -1,10 +1,23 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { EqualsRulesOptions, Is, IsValidType, ObjectRecord, Transform, Util } from '@mvanvu/ujs';
-import { CLASS_PROPERTIES, ClassConstructor, PropertyOptions, ThrowException } from '@lib';
+import { CLASS_PROPERTIES, ClassConstructor, PropertyOptions, ThrowException } from '@lib/common';
 
 export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstructor<any>, thisInstance?: any) {
-   if (!Is.object(data) || typeof DTOClassRef !== 'function') {
+   if (!Is.object(data) || !Is.class(DTOClassRef)) {
       return data;
+   }
+
+   if (!DTOClassRef.prototype['__INIT_PARENT_PROPERTIES__']) {
+      DTOClassRef.prototype['__INIT_PARENT_PROPERTIES__'] = true;
+      let parentClass = Object.getPrototypeOf(DTOClassRef);
+
+      while (Is.class(parentClass)) {
+         if (parentClass.prototype[CLASS_PROPERTIES]) {
+            Object.assign(DTOClassRef.prototype[CLASS_PROPERTIES], parentClass.prototype[CLASS_PROPERTIES]);
+         }
+
+         parentClass = Object.getPrototypeOf(parentClass);
+      }
    }
 
    const error: Record<string, Array<string | number>> = {};

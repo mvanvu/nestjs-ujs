@@ -1,4 +1,4 @@
-import { IPickType, Property } from '@lib';
+import { IPickType, Property } from '@lib/common';
 
 export class UserSignUpDto {
    @Property({
@@ -20,7 +20,7 @@ export class UserSignUpDto {
       swagger: { description: 'The email of user', example: 'rainy.mi@email.com' },
       validate: { is: 'email' },
    })
-   email?: string;
+   email: string;
 
    @Property({
       swagger: { description: 'The password of user', example: 'MyStr0ngPassWord!' },
@@ -35,4 +35,4 @@ export class UserSignUpDto {
    password2: string;
 }
 
-export class UserSignInDto extends IPickType(UserSignUpDto, ['username', 'email', 'password']) {}
+export class UserSignInDto extends IPickType(UserSignUpDto, ['username', 'password']) {}

@@ -5,18 +5,18 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "start:gateway:dev": "pm2 delete ujs-gateway && cross-env APP_ENV=gateway pm2 start nest --name ujs-gateway -- start -w",
-    "start:user:dev": "pm2 delete ujs-user && cross-env APP_ENV=user pm2 start nest --name ujs-user -- start -w",
-    "start:storage:dev": "pm2 delete ujs-storage && cross-env APP_ENV=storage pm2 start nest --name ujs-storage -- start -w",
+    "start:gateway:dev": "(pm2 delete ujs-gateway || true) && cross-env APP_ENV=gateway pm2 start nest --name ujs-gateway -- start -w",
+    "start:user:dev": "(pm2 delete ujs-user || true) && cross-env APP_ENV=user pm2 start nest --name ujs-user -- start -w",
+    "start:storage:dev": "(pm2 delete ujs-storage || true) && cross-env APP_ENV=storage pm2 start nest --name ujs-storage -- start -w",
     "start:all:dev": "yarn start:gateway:dev && yarn start:user:dev && yarn start:storage:dev && pm2 logs",
     "build": "nest build",
     "format": "prettier --write \"./**/src/**/*.ts\"",
     "docker:build": "(docker rmi mongodb:latest || true) && docker build -f ./docker/Dockerfile -t mongodb:latest .",
     "mongodb:replica": "docker compose exec mongodb-primary bash -c \"mongosh --port \\$MONGODB_PRIMARY_PORT < /init-replica-set.js\"",
-    "user:prisma:generate": "prisma generate --schema=src/service/user/provider/prisma/schema.prisma",
-    "user:prisma:push": "prisma db push --schema=src/service/user/provider/prisma/schema.prisma",
-    "storage:prisma:generate": "prisma generate --schema=src/service/storage/provider/prisma/schema.prisma",
-    "storage:prisma:push": "prisma db push --schema=src/service/storage/provider/prisma/schema.prisma"
+    "user:prisma:generate": "prisma generate --schema=src/microservice/user/provider/prisma/schema.prisma",
+    "user:prisma:push": "prisma db push --schema=src/microservice/user/provider/prisma/schema.prisma",
+    "storage:prisma:generate": "prisma generate --schema=src/microservice/storage/provider/prisma/schema.prisma",
+    "storage:prisma:push": "prisma db push --schema=src/microservice/storage/provider/prisma/schema.prisma"
   },
   "dependencies": {
     "@mvanvu/ujs": "file:../utils/dist",

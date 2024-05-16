@@ -1,4 +1,4 @@
-import { BaseEntity, Property } from '@lib';
+import { BaseEntity, Property } from '@lib/common';
 import { Provider, FileType } from '.prisma/storage';
 
 export class FileEntity extends BaseEntity {

@@ -1,4 +1,4 @@
-import { ThrowException } from '@lib';
+import { ThrowException } from '@lib/common';
 import { FileProviderInterface } from './file.provider.interface';
 import { google, drive_v3 as v3 } from 'googleapis';
 import { Readable } from 'stream';

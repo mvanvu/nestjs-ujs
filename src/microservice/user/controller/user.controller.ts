@@ -3,7 +3,7 @@ import { UserService } from '../provider/user.service';
 import { CreateUserDto, UserSignInDto, UserSignUpDto, UserEntity, AuthEntity, UpdateUserDto } from '@lib/service/user';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { serviceConfig } from '@config';
-import { CRUDResult } from '@lib';
+import { CRUDResult } from '@lib/common';
 
 @Controller()
 export class UserController {

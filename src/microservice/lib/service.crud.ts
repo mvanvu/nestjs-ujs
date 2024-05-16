@@ -1,5 +1,5 @@
 import { appConfig } from '@config';
-import { FieldsException, ThrowException } from '@lib/exception';
+import { FieldsException, ThrowException } from '@lib/common/exception';
 import {
    CRUDServiceOptions,
    OrderBy,
@@ -7,7 +7,7 @@ import {
    PaginationResult,
    GetPrismaModels,
    UpdateResult,
-} from '@lib/type';
+} from '@lib/common/type';
 import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
@@ -314,7 +314,7 @@ export class CRUDService<
          }
       }
 
-      if (Is.emptyObject(dto)) {
+      if (Is.emptyObject(Registry.from<any>(dto).omit(['createdBy', 'updatedBy']).valueOf())) {
          // Nothing to update, throw an exception
          ThrowException(`No data to ${id ? 'update' : 'create'}`);
       }
@@ -364,13 +364,13 @@ export class CRUDService<
    }
 
    async create<T>(data: CreateDto): Promise<T> {
-      // Validate first
-      await this.validate(data);
-
       if (this.options.events?.onBeforeCreate) {
          // Trigger an event before handle
          await Util.callAsync(this, this.options.events.onBeforeCreate, data);
       }
+
+      // Validate data
+      await this.validate(data);
 
       const record = await this.options.prisma[this.options.model]['create']({
          data,
@@ -381,8 +381,6 @@ export class CRUDService<
    }
 
    async update<T>(id: string, data: UpdateDto): Promise<UpdateResult<T>> {
-      // Validate first
-      await this.validate(data, id);
       const model = this.options.prisma[this.options.model];
       let oldRecord = await model['findFirst']({ where: { id }, select: this.options.select });
 
@@ -394,6 +392,9 @@ export class CRUDService<
          // Trigger an event before handle
          await Util.callAsync(this, this.options.events.onBeforeUpdate, data, oldRecord);
       }
+
+      // Validate
+      await this.validate(data, id);
 
       let record = await this.options.prisma[this.options.model]['update']({
          data,

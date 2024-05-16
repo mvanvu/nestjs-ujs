@@ -1,4 +1,4 @@
-import { IOmitType, Property } from '@lib';
+import { IOmitType, Property } from '@lib/common';
 import { FileType } from '.prisma/storage';
 import { FileEntity } from '../entity';
 

@@ -1,4 +1,4 @@
-import { Property } from '@lib/decorator';
+import { Property } from '@lib/common/decorator';
 
 export class PaginationQueryDto {
    @Property({ transform: { fromType: 'string', toType: 'trim' }, optional: true, swagger: 'The search query' })
@@ -33,7 +33,4 @@ export class PaginationQueryDto {
       swagger: 'Language code',
    })
    lang?: string;
-
-   @Property({ optional: true, swagger: 'Advance filters' })
-   filters?: string; // filters=id:1|2|3,email=admin@email.com
 }

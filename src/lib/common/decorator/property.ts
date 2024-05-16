@@ -1,5 +1,5 @@
 import { metadata } from '@lib/metadata';
-import { PropertyOptions } from '@lib/type';
+import { PropertyOptions } from '@lib/common/type';
 import { IsValidType, Registry } from '@mvanvu/ujs';
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
