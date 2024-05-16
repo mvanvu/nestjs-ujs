@@ -125,7 +125,7 @@ export class UserService extends BaseService implements CreateCRUDService {
 
       const user = await this.prisma.user.findFirst({ where: { OR } });
 
-      if (!user || !(await argon2.verify(user.password, password))) {
+      if (!user || user.status !== UserStatus.Active || !(await argon2.verify(user.password, password))) {
          ThrowException('Invalid credentials');
       }
 
