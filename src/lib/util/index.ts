@@ -1,4 +1,4 @@
-export function loadPermissionKeys(permission: object | string, permissionKeys?: string[]): string[] {
+export function loadPermissionKeys(permission?: object | string, permissionKeys?: string[]): string[] {
    if (!permissionKeys) {
       permissionKeys = [];
    }

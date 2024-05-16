@@ -37,14 +37,14 @@ export class AppModule {
       app.enableShutdownHooks();
       app.use(helmet());
 
-      const staticPath = appConfig.storage.localPath;
+      const staticPath = appConfig.get('storage.localPath');
 
       if (staticPath) {
          const rootPath = path.join(process.cwd(), staticPath, 'public');
          app.useStaticAssets(rootPath, { prefix: '/', index: false });
       }
 
-      const apiPrefix = appConfig.apiGateway.prefix;
+      const apiPrefix = appConfig.get('apiGateway.prefix');
 
       if (apiPrefix) {
          app.setGlobalPrefix(apiPrefix);
@@ -52,8 +52,11 @@ export class AppModule {
 
       app.enableVersioning({ defaultVersion: '1', type: VersioningType.URI });
 
-      if (appConfig.apiGateway.cors.enable) {
-         app.enableCors({ origin: appConfig.apiGateway.cors.origin, methods: appConfig.apiGateway.cors.methods });
+      if (appConfig.get('apiGateway.cors.enable')) {
+         app.enableCors({
+            origin: appConfig.get('apiGateway.cors.origin'),
+            methods: appConfig.get('apiGateway.cors.methods'),
+         });
       }
 
       app.useGlobalFilters(new ExceptionFilter());
@@ -67,7 +70,7 @@ export class AppModule {
          .build();
       const document = SwaggerModule.createDocument(app, swaggerConfig);
       SwaggerModule.setup('api-docs', app, document, { swaggerOptions: { persistAuthorization: true } });
-      const port = appConfig.apiGateway.port;
+      const port = appConfig.get('apiGateway.port');
 
       // Metadata
       metadata.setGateway(app);

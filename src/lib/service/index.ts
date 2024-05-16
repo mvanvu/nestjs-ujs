@@ -13,7 +13,7 @@ export const clientProxies = [serviceConfig.get('user.proxy'), serviceConfig.get
 
 // Load all permission keys
 export const permissionKeys: string[] = [];
-loadPermissionKeys(user.permissions ?? {}, permissionKeys);
-loadPermissionKeys(storage.permissions ?? {}, permissionKeys);
+loadPermissionKeys(user.permissions, permissionKeys);
+loadPermissionKeys(storage.permissions, permissionKeys);
 
 export default serviceConfig;

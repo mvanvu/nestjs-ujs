@@ -9,7 +9,7 @@ import { appConfig } from '@config';
 @Injectable()
 export class FileProvider {
    getStorageDriver(provider?: Provider): FileProviderInterface {
-      provider = provider ?? <Provider>appConfig.storage.provider;
+      provider = provider ?? <Provider>appConfig.get('storage.provider');
 
       switch (provider) {
          case Provider.GoogleDrive:

@@ -51,4 +51,4 @@ const appConfigData = {
 };
 
 export type AppConfigData = typeof appConfigData;
-export const appConfig: AppConfigData = appConfigData;
+export const appConfig = Registry.from<AppConfigData>(appConfigData, { consistent: true });

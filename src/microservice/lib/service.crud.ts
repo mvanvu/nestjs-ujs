@@ -1,6 +1,13 @@
 import { appConfig } from '@config';
 import { FieldsException, ThrowException } from '@lib/exception';
-import { CRUDServiceOptions, OrderBy, OrderDirection, PaginationResult, GetPrismaModels } from '@lib/type';
+import {
+   CRUDServiceOptions,
+   OrderBy,
+   OrderDirection,
+   PaginationResult,
+   GetPrismaModels,
+   UpdateResult,
+} from '@lib/type';
 import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
@@ -13,18 +20,27 @@ export class CRUDService<
 > {
    readonly logger: Logger;
 
-   constructor(public readonly options: CRUDServiceOptions<PrismaService, PrismaSelect>) {
+   constructor(readonly options: CRUDServiceOptions<PrismaService, PrismaSelect>) {
       this.logger = new Logger(this.constructor.name);
    }
 
-   async paginate<T>(query?: ObjectRecord): Promise<PaginationResult<T>> {
+   async paginate<T>(query?: ObjectRecord, where?: Record<string, any>): Promise<PaginationResult<T>> {
       const modelParams = {
          select: this.options.select,
-         where: { AND: [], OR: [] },
+         where: where ?? {},
          orderBy: <OrderBy[]>[],
          take: undefined,
          skip: undefined,
       };
+
+      // Init WHERE attributes
+      if (!modelParams.where.OR) {
+         modelParams.where.OR = [];
+      }
+
+      if (!modelParams.where.AND) {
+         modelParams.where.AND = [];
+      }
 
       query = query || {};
 
@@ -232,8 +248,8 @@ export class CRUDService<
       }
 
       // Take care pagination
-      const defaultLimit = appConfig.list.limit;
-      const maxLimit = this.options.list?.maxLimit ?? appConfig.list.maxLimit;
+      const defaultLimit = appConfig.get('list.limit');
+      const maxLimit = this.options.list?.maxLimit ?? appConfig.get('list.maxLimit');
       let limit: number =
          query.limit === undefined || !query.limit.toString().match(/^[0-9]+$/)
             ? defaultLimit
@@ -253,23 +269,27 @@ export class CRUDService<
          model['findMany'](modelParams),
          model['count']({ where: modelParams.where }),
       ]);
-
       let data = items;
 
       if (this.options.events?.onEntity) {
-         data = await Promise.all(
-            items.map((item: T) =>
-               Util.callAsync(this, this.options.events?.onEntity || item, item, { context: 'read', isList: true }),
-            ),
-         );
+         data = await Promise.all(items.map((item: T) => this.callOnEntity(item, { context: 'read', isList: true })));
       }
 
       return { data, meta: { totalCount, page, limit } };
    }
 
-   async read<T>(id: string): Promise<T> {
+   private async callOnEntity<T>(
+      item: T,
+      options: { context: 'read' | 'create' | 'update' | 'delete'; isList?: boolean },
+   ): Promise<T> {
+      const result = await Util.callAsync<T>(this, this.options.events.onEntity, item, options);
+
+      return Is.class(this.options.events.onEntity) ? result : item;
+   }
+
+   async read<T>(id: string, where?: Record<string, any>): Promise<T> {
       const record = await this.options.prisma[this.options.model]['findUnique']({
-         where: { id },
+         where: { ...(where ?? {}), id },
          select: this.options.select,
       });
 
@@ -278,7 +298,7 @@ export class CRUDService<
       }
 
       return this.options.events?.onEntity
-         ? await Util.callAsync(this, this.options.events.onEntity, record, { context: 'read', isList: false })
+         ? await this.callOnEntity(record, { context: 'read', isList: false })
          : record;
    }
 
@@ -287,17 +307,16 @@ export class CRUDService<
       const entityModel = this.options.prisma[modelName];
       const model = this.options.prisma.models[modelName];
 
-      // Validate unknown fields
+      // Remove unknown fields
       for (const fieldName in dto) {
-         const field = model.fields.find(({ name }) => name === fieldName);
-
-         if (!field) {
-            if (['createdBy', 'updatedBy'].includes(fieldName)) {
-               delete dto[fieldName];
-            } else {
-               ThrowException(`Unknown the field name: ${fieldName}`);
-            }
+         if (!model.fields.find(({ name }) => name === fieldName)) {
+            delete dto[fieldName];
          }
+      }
+
+      if (Is.emptyObject(dto)) {
+         // Nothing to update, throw an exception
+         ThrowException(`No data to ${id ? 'update' : 'create'}`);
       }
 
       // Validate some requirements
@@ -308,7 +327,7 @@ export class CRUDService<
       for (const field of model.fields) {
          const { name } = field;
          const value = dto[name];
-         const isNothing = Is.nullOrUndefined(value);
+         const isNothing = Is.nothing(value);
 
          if (!id && field.isRequired && isNothing && !field.relationName && !field.hasDefaultValue) {
             fieldsException.add(name, FieldsException.REQUIRED);
@@ -348,11 +367,6 @@ export class CRUDService<
       // Validate first
       await this.validate(data);
 
-      if (Is.emptyObject(data)) {
-         // Nothing to create, throw an exception
-         ThrowException('No data to create');
-      }
-
       if (this.options.events?.onBeforeCreate) {
          // Trigger an event before handle
          await Util.callAsync(this, this.options.events.onBeforeCreate, data);
@@ -363,24 +377,17 @@ export class CRUDService<
          select: this.options.select,
       });
 
-      return this.options.events?.onEntity
-         ? await Util.callAsync(this, this.options.events.onEntity, record, { context: 'create' })
-         : record;
+      return this.options.events?.onEntity ? await this.callOnEntity(record, { context: 'create' }) : record;
    }
 
-   async update<T>(id: string, data: UpdateDto): Promise<T> {
+   async update<T>(id: string, data: UpdateDto): Promise<UpdateResult<T>> {
       // Validate first
       await this.validate(data, id);
       const model = this.options.prisma[this.options.model];
-      const oldRecord = await model['findFirst']({ where: { id }, select: this.options.select });
+      let oldRecord = await model['findFirst']({ where: { id }, select: this.options.select });
 
       if (!oldRecord) {
          ThrowException(`The record with ID(${id}) doesn't exists`);
-      }
-
-      if (Is.emptyObject(data)) {
-         // Nothing to update, throw an exception
-         ThrowException('No data to update');
       }
 
       if (this.options.events?.onBeforeUpdate) {
@@ -388,15 +395,34 @@ export class CRUDService<
          await Util.callAsync(this, this.options.events.onBeforeUpdate, data, oldRecord);
       }
 
-      const record = await this.options.prisma[this.options.model]['update']({
+      let record = await this.options.prisma[this.options.model]['update']({
          data,
          select: this.options.select,
          where: { id },
       });
 
-      return this.options.events?.onEntity
-         ? await Util.callAsync(this, this.options.events.onEntity, record, { context: 'update' })
-         : record;
+      const { onEntity } = this.options.events ?? {};
+
+      if (onEntity) {
+         [oldRecord, record] = await Promise.all([
+            this.callOnEntity(oldRecord, { context: 'update' }),
+            this.callOnEntity(record, { context: 'update' }),
+         ]);
+      }
+
+      // Parse diff data
+      const diff: UpdateResult<T>['meta']['diff'] = {};
+
+      for (const field in oldRecord) {
+         const oldValue = oldRecord[field];
+         const newValue = record[field];
+
+         if (!Is.equals(oldValue, newValue)) {
+            diff[field] = { from: oldValue, to: newValue };
+         }
+      }
+
+      return { data: <T>record, meta: { diff } };
    }
 
    async delete<T>(id: string): Promise<T> {
@@ -416,8 +442,6 @@ export class CRUDService<
 
       await this.options.prisma[this.options.model]['delete']({ select: { id: true }, where: { id } });
 
-      return this.options.events?.onEntity
-         ? await Util.callAsync(this, this.options.events.onEntity, record, { context: 'delete' })
-         : record;
+      return this.options.events?.onEntity ? await this.callOnEntity(record, { context: 'delete' }) : record;
    }
 }

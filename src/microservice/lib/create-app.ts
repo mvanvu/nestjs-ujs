@@ -11,7 +11,7 @@ export async function createMicroserviceApp(
 ) {
    const app = await NestFactory.createMicroservice(AppModule, <MicroserviceOptions>{
       transport: Transport.RMQ,
-      options: { urls: [appConfig.rabbitMQ.url], queue, queueOptions: { durable: true } },
+      options: { urls: [appConfig.get('rabbitMQ.url')], queue, queueOptions: { durable: true } },
    });
 
    // API payload validation

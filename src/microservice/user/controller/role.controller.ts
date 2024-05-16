@@ -3,12 +3,12 @@ import { RoleService } from '../provider';
 import { RoleEntity, CreateRoleDto, UpdateRoleDto } from '@lib/service/user';
 import { serviceConfig } from '@config';
 import { MessagePattern } from '@nestjs/microservices';
-import { PaginationResult } from '@lib';
+import { CRUDResult } from '@lib';
 export class RoleController {
    @Inject(RoleService) readonly roleService: RoleService;
 
    @MessagePattern(serviceConfig.get('user.patterns.roleCRUD'))
-   CRUD(): Promise<RoleEntity | PaginationResult<RoleEntity>> {
+   CRUD(): Promise<CRUDResult<RoleEntity>> {
       return this.roleService.executeCRUD(CreateRoleDto, UpdateRoleDto);
    }
 }

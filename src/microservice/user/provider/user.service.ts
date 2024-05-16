@@ -1,13 +1,19 @@
-import { FieldsException, ThrowException } from '@lib';
+import {
+   FieldsException,
+   ThrowException,
+   CreateUserDto,
+   UserSignInDto,
+   UserSignUpDto,
+   AuthEntity,
+   UserEntity,
+} from '@lib';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-import { Prisma } from '.prisma/user';
-import { AuthEntity, UserEntity } from '../../../lib/service/user/entity/user';
+import { Prisma, UserStatus } from '.prisma/user';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is } from '@mvanvu/ujs';
 import { appConfig } from '@config';
 import { BaseService, CRUDService, CreateCRUDService } from '@service/lib';
-import { CreateUserDto, UserSignInDto, UserSignUpDto } from '@lib/service/user';
 
 @Injectable()
 export class UserService extends BaseService implements CreateCRUDService {
@@ -116,10 +122,10 @@ export class UserService extends BaseService implements CreateCRUDService {
    }
 
    async verify(token: string): Promise<UserEntity> {
-      const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.jwt.secret });
+      const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.get('jwt.secret') });
       const user = await this.prisma.user.findUnique({ where: { id }, select: this.userSelect });
 
-      if (!user || user.status !== this.prisma.enums.UserStatus.ACTIVE) {
+      if (!user || user.status !== UserStatus.ACTIVE) {
          ThrowException('Invalid credentials');
       }
 

@@ -3,14 +3,14 @@ import { UserService } from '../provider/user.service';
 import { CreateUserDto, UserSignInDto, UserSignUpDto, UserEntity, AuthEntity, UpdateUserDto } from '@lib/service/user';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { serviceConfig } from '@config';
-import { PaginationResult } from '@lib';
+import { CRUDResult } from '@lib';
 
 @Controller()
 export class UserController {
    @Inject(UserService) readonly userService: UserService;
 
    @MessagePattern(serviceConfig.get('user.patterns.userCRUD'))
-   CRUD(): Promise<UserEntity | PaginationResult<UserEntity>> {
+   CRUD(): Promise<CRUDResult<UserEntity>> {
       return this.userService.executeCRUD(CreateUserDto, UpdateUserDto);
    }
 

@@ -1,5 +1,5 @@
 import { ThrowException } from '@lib/exception';
-import { ClassConstructor, IPartialType, MessageMeta, PaginationResult, validateDTO } from '@lib';
+import { CRUDResult, ClassConstructor, MessageMeta, validateDTO } from '@lib';
 import { Is, Registry, Util } from '@mvanvu/ujs';
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CONTEXT, RequestContext } from '@nestjs/microservices';
@@ -34,8 +34,8 @@ export class BaseService {
 
    async executeCRUD<TResult, TCreateDTO, TUpdateDTO>(
       createDTO: ClassConstructor<TCreateDTO>,
-      updateDTO?: ClassConstructor<TUpdateDTO>,
-   ): Promise<TResult | PaginationResult<TResult>> {
+      updateDTO: ClassConstructor<TUpdateDTO>,
+   ): Promise<CRUDResult<TResult>> {
       if (!Is.callable(this['createCRUDService'])) {
          ThrowException(
             `Must implement createCRUDService for the service: ${this.constructor.name}`,
@@ -49,7 +49,7 @@ export class BaseService {
          const meta = this.meta;
          const recordId = meta.get('params.id');
          const userId = meta.get('headers.user.id');
-         const method = meta.get('method');
+         const method = meta.get('CRUD.method');
 
          if (!['read', 'write', 'delete'].includes(method)) {
             ThrowException(
@@ -60,21 +60,25 @@ export class BaseService {
 
          switch (method) {
             case 'read':
-               return recordId ? CRUDInstService.read(recordId) : CRUDInstService.paginate(meta.get('query'));
+               return recordId
+                  ? CRUDInstService.read<TResult>(recordId, meta.get('CRUD.where'))
+                  : CRUDInstService.paginate<TResult>(meta.get('query'), meta.get('CRUD.where'));
 
             case 'write':
-               // Handle validate
-               const DTOClassRef = recordId ? updateDTO ?? IPartialType(createDTO) : createDTO;
+               // Validate data
+               const DTOClassRef = recordId ? updateDTO : createDTO;
                const data = await validateDTO(this.ctx.getData(), DTOClassRef);
 
                if (userId) {
                   data[recordId ? 'updatedBy' : 'createdBy'] = userId;
                }
 
-               return recordId ? CRUDInstService.update(recordId, data) : CRUDInstService.create(data);
+               return recordId
+                  ? CRUDInstService.update<TResult>(recordId, data)
+                  : CRUDInstService.create<TResult>(data);
 
             case 'delete':
-               return CRUDInstService.delete(recordId);
+               return CRUDInstService.delete<TResult>(recordId);
          }
       } else {
          ThrowException(

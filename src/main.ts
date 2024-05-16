@@ -1,7 +1,7 @@
 import { appConfig } from './config';
 
 async function bootstrap() {
-   switch (appConfig.appEnv) {
+   switch (appConfig.get('appEnv')) {
       case 'gateway':
          return import('./gateway/app.module').then(({ AppModule }) => AppModule.bootstrap());
 

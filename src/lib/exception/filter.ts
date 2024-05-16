@@ -34,7 +34,7 @@ export class ExceptionFilter implements NestExceptionFilter {
             status = error.statusCode;
          }
 
-         if (appConfig.nodeEnv !== 'production') {
+         if (appConfig.get('nodeEnv') !== 'production') {
             jsonRes.stack = exception.stack;
          }
 

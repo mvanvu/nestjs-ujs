@@ -9,7 +9,7 @@ export function createClientAsyncOptions(name: string): ClientsProviderAsyncOpti
          return {
             transport: Transport.RMQ,
             options: {
-               urls: [appConfig.rabbitMQ.url],
+               urls: [appConfig.get<string>('rabbitMQ.url')],
                queue: `${name}Queue`,
                queueOptions: { durable: true },
             },

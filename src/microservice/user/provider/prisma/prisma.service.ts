@@ -1,5 +1,5 @@
 import { Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
-import { PrismaClient, $Enums, Prisma } from '.prisma/user';
+import { PrismaClient, Prisma } from '.prisma/user';
 import { Util } from '@mvanvu/ujs';
 import { PrismaModels, GetPrismaModels } from '@lib/type';
 
@@ -16,10 +16,6 @@ export class PrismaService extends PrismaClient implements GetPrismaModels, OnMo
       }
 
       return this._models;
-   }
-
-   get enums() {
-      return $Enums;
    }
 
    async onModuleInit() {

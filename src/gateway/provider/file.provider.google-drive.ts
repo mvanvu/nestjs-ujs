@@ -15,7 +15,7 @@ export class FileProviderGoogleDrive implements FileProviderInterface {
       this.storage = google.drive({
          version: 'v3',
          auth: new google.auth.GoogleAuth({
-            keyFile: `${process.cwd()}/${appConfig.storage.googleDriveCredentialsPath}`,
+            keyFile: `${process.cwd()}/${appConfig.get('storage.googleDriveCredentialsPath')}`,
             scopes: ['https://www.googleapis.com/auth/drive'],
          }),
       });
@@ -62,7 +62,7 @@ export class FileProviderGoogleDrive implements FileProviderInterface {
          return `https://drive.google.com/uc?id=${file.providerId}&export=download`;
       }
 
-      return `/${appConfig.apiGateway.prefix}/files/${file.id}/stream`;
+      return `/${appConfig.get('apiGateway.prefix')}/files/${file.id}/stream`;
    }
 
    async stream(file: FileEntity): Promise<StreamableFile> {

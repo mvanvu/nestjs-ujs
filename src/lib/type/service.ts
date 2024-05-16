@@ -54,11 +54,18 @@ export type PaginationResult<T> = {
    };
 };
 
+export type UpdateResult<T> = {
+   data: T;
+   meta: { diff: Record<string, { from: any; to: any }> };
+};
+
+export type CRUDResult<T> = T | PaginationResult<T> | UpdateResult<T>;
+
 export type MessageMeta = {
    query?: ObjectRecord;
    params?: ObjectRecord;
    headers?: RequestRegistryData;
-   method?: 'read' | 'write' | 'delete';
+   CRUD?: { method: 'read' | 'write' | 'delete'; where?: Record<string, any> };
 };
 
 export type MessageData<TData = any, TMeta = MessageMeta | Registry<MessageMeta>> = {
