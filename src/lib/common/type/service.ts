@@ -8,7 +8,7 @@ export interface GetPrismaModels {
    get models(): PrismaModels;
 }
 
-export type CRUDServiceOptions<TPrismaService extends GetPrismaModels, TPrismaSelect> = {
+export type CRUDServiceOptions<TPrismaService extends GetPrismaModels, TPrismaSelect = any, TPrismaInclude = any> = {
    prisma: TPrismaService;
    model: keyof Omit<
       TPrismaService,
@@ -27,6 +27,7 @@ export type CRUDServiceOptions<TPrismaService extends GetPrismaModels, TPrismaSe
       | symbol
    >;
    select?: TPrismaSelect;
+   include?: TPrismaInclude;
    list?: {
       orderFields?: string[];
       searchFields?: string[];
@@ -39,6 +40,18 @@ export type CRUDServiceOptions<TPrismaService extends GetPrismaModels, TPrismaSe
       onBeforeDelete?: Callable;
       onEntity?: Callable | ClassConstructor<any>;
    };
+};
+
+export type CRUDServiceClassOptions<
+   TCreateDTO extends ObjectRecord,
+   TUpdateDTO extends ObjectRecord = Partial<CreateDto>,
+   TPrismaSelect extends ObjectRecord = undefined,
+   PrismaInclude extends ObjectRecord = undefined,
+> = {
+   CreateDTO: TCreateDTO;
+   UpdateDTO?: TUpdateDTO;
+   PrismaSelect?: TPrismaSelect;
+   PrismaInclude?: PrismaInclude;
 };
 
 export type OrderDirection = 'asc' | 'desc';

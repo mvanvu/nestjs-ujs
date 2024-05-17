@@ -23,7 +23,7 @@ export class UserEntity extends BaseEntity {
 
    @Property({
       swagger: {
-         example: { id: '6631e55d89af4ff2b9b51aa3', name: 'Admin role', permissions: ['USER.READ'] },
+         example: { id: '6631e55d89af4ff2b9b51aa3', name: 'Admin role' },
          isArray: true,
       },
    })
@@ -55,6 +55,10 @@ export class UserEntity extends BaseEntity {
 
       if (isUserRoot) {
          return true;
+      }
+
+      if (!this.roles?.length) {
+         return false;
       }
 
       const userPermissions: string[] = [];

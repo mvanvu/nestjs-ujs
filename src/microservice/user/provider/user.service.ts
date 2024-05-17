@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma, UserStatus } from '.prisma/user';
 import * as argon2 from 'argon2';
-import { DateTime, Hash, Is } from '@mvanvu/ujs';
+import { DateTime, Hash, Is, Registry } from '@mvanvu/ujs';
 import { appConfig } from '@config';
 import { BaseService, CRUDService, CreateCRUDService } from '@service/lib';
 import { FieldsException, ThrowException } from '@lib/common';
@@ -32,10 +32,6 @@ export class UserService extends BaseService implements CreateCRUDService {
          },
       },
    };
-
-   async hashPassword(rawPassword: string): Promise<string> {
-      return await argon2.hash(rawPassword);
-   }
 
    private async validateUserDto(dto: UserSignUpDto | CreateUserDto | UpdateUserDto, id?: string) {
       const fieldsError = new FieldsException();
@@ -87,7 +83,7 @@ export class UserService extends BaseService implements CreateCRUDService {
       await this.validateUserDto(data);
       const { name, username, email, password } = data;
       const newUser = await this.prisma.user.create({
-         data: { name, username, email, password: await this.hashPassword(password) },
+         data: { name, username, email, password: await argon2.hash(password) },
       });
 
       return new UserEntity(newUser);
@@ -123,7 +119,10 @@ export class UserService extends BaseService implements CreateCRUDService {
          OR.push({ email: { equals: username, mode: 'insensitive' } });
       }
 
-      const user = await this.prisma.user.findFirst({ where: { OR } });
+      const user = await this.prisma.user.findFirst({
+         where: { OR },
+         select: this.userSelect,
+      });
 
       if (!user || user.status !== UserStatus.Active || !(await argon2.verify(user.password, password))) {
          ThrowException('Invalid credentials');
@@ -143,18 +142,23 @@ export class UserService extends BaseService implements CreateCRUDService {
       return new UserEntity(user);
    }
 
-   createCRUDService(): CRUDService<PrismaService, Prisma.UserSelect, any, any> {
+   createCRUDService(): CRUDService<
+      PrismaService,
+      { CreateDTO: CreateUserDto; UpdateDTO: UpdateUserDto; PrismaSelect: Prisma.UserSelect }
+   > {
       return new CRUDService({
          prisma: this.prisma,
          model: 'user',
-         select: this.userSelect,
+         select: Registry.from(this.userSelect, { clone: true })
+            .remove('userRoles.select.role.select.permissions')
+            .valueOf(),
          events: {
             onEntity: UserEntity,
             onBeforeCreate: async (data: CreateUserDto) => {
                await this.validateUserDto(data);
                Object.assign(data, {
                   userRoles: data.roles?.length ? { create: data.roles.map((roleId) => ({ roleId })) } : undefined,
-                  password: await this.hashPassword(data.password),
+                  password: await argon2.hash(data.password),
                });
             },
             onBeforeUpdate: async (data: UpdateUserDto, record: UserEntity) => {
@@ -170,7 +174,7 @@ export class UserService extends BaseService implements CreateCRUDService {
                }
 
                if (data.password) {
-                  data.password = await this.hashPassword(data.password);
+                  data.password = await argon2.hash(data.password);
                }
             },
          },

@@ -7,20 +7,18 @@ import {
    PaginationResult,
    GetPrismaModels,
    UpdateResult,
-} from '@lib/common/type';
+   CRUDServiceClassOptions,
+} from '@lib/common';
 import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
-export class CRUDService<
-   PrismaService extends GetPrismaModels,
-   PrismaSelect extends ObjectRecord,
-   CreateDto extends ObjectRecord,
-   UpdateDto extends ObjectRecord = Partial<CreateDto>,
-> {
+export class CRUDService<PrismaService extends GetPrismaModels, CRUDOptions extends CRUDServiceClassOptions> {
    readonly logger: Logger;
 
-   constructor(readonly options: CRUDServiceOptions<PrismaService, PrismaSelect>) {
+   constructor(
+      readonly options: CRUDServiceOptions<PrismaService, CRUDOptions.PrismaSelect, CRUDOptions.PrismaInclude>,
+   ) {
       this.logger = new Logger(this.constructor.name);
    }
 
