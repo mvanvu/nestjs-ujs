@@ -5,7 +5,6 @@ import {
    OrderBy,
    OrderDirection,
    PaginationResult,
-   GetPrismaModels,
    UpdateResult,
    CRUDServiceClassOptions,
 } from '@lib/common';
@@ -13,11 +12,15 @@ import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/u
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
-export class CRUDService<PrismaService extends GetPrismaModels, CRUDOptions extends CRUDServiceClassOptions> {
+export class CRUDService<CRUDOptions extends CRUDServiceClassOptions> {
    readonly logger: Logger;
 
    constructor(
-      readonly options: CRUDServiceOptions<PrismaService, CRUDOptions.PrismaSelect, CRUDOptions.PrismaInclude>,
+      readonly options: CRUDServiceOptions<
+         CRUDOptions['TPrismaService'],
+         CRUDOptions['TPrismaSelect'],
+         CRUDOptions['TPrismaInclude']
+      >,
    ) {
       this.logger = new Logger(this.constructor.name);
    }
@@ -300,7 +303,7 @@ export class CRUDService<PrismaService extends GetPrismaModels, CRUDOptions exte
          : record;
    }
 
-   async validate(dto: CreateDto | UpdateDto, id?: string): Promise<void> {
+   async validate(dto: CRUDOptions['TCreateDTO'] | CRUDOptions['TUpdateDTO'], id?: string): Promise<void> {
       const modelName = Util.uFirst(this.options.model as string);
       const entityModel = this.options.prisma[modelName];
       const model = this.options.prisma.models[modelName];
@@ -361,7 +364,7 @@ export class CRUDService<PrismaService extends GetPrismaModels, CRUDOptions exte
       fieldsException.validate();
    }
 
-   async create<T>(data: CreateDto): Promise<T> {
+   async create<T>(data: CRUDOptions['TCreateDTO']): Promise<T> {
       if (this.options.events?.onBeforeCreate) {
          // Trigger an event before handle
          await Util.callAsync(this, this.options.events.onBeforeCreate, data);
@@ -378,7 +381,7 @@ export class CRUDService<PrismaService extends GetPrismaModels, CRUDOptions exte
       return this.options.events?.onEntity ? await this.callOnEntity(record, { context: 'create' }) : record;
    }
 
-   async update<T>(id: string, data: UpdateDto): Promise<UpdateResult<T>> {
+   async update<T>(id: string, data: CRUDOptions['TUpdateDTO']): Promise<UpdateResult<T>> {
       const model = this.options.prisma[this.options.model];
       let oldRecord = await model['findFirst']({ where: { id }, select: this.options.select });
 

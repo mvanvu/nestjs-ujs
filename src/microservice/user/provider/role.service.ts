@@ -19,10 +19,12 @@ export class RoleService extends BaseService implements CreateCRUDService {
       editor: { select: { id: true, email: true, username: true } },
    };
 
-   createCRUDService(): CRUDService<
-      PrismaService,
-      { CreateDTO: CreateRoleDto; UpdateDTO: UpdateRoleDto; PrismaSelect: Prisma.RoleSelect }
-   > {
+   createCRUDService(): CRUDService<{
+      TPrismaService: PrismaService;
+      TCreateDTO: CreateRoleDto;
+      TUpdateDTO: UpdateRoleDto;
+      TPrismaSelect: Prisma.RoleSelect;
+   }> {
       return new CRUDService({
          prisma: this.prisma,
          model: 'role',

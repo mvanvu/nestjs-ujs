@@ -142,16 +142,16 @@ export class UserService extends BaseService implements CreateCRUDService {
       return new UserEntity(user);
    }
 
-   createCRUDService(): CRUDService<
-      PrismaService,
-      { CreateDTO: CreateUserDto; UpdateDTO: UpdateUserDto; PrismaSelect: Prisma.UserSelect }
-   > {
+   createCRUDService(): CRUDService<{
+      TPrismaService: PrismaService;
+      TCreateDTO: CreateUserDto;
+      TUpdateDTO: UpdateUserDto;
+      TPrismaSelect: Prisma.UserSelect;
+   }> {
       return new CRUDService({
          prisma: this.prisma,
          model: 'user',
-         select: Registry.from(this.userSelect, { clone: true })
-            .remove('userRoles.select.role.select.permissions')
-            .valueOf(),
+         select: Registry.from(this.userSelect).remove('userRoles.select.role.select.permissions').valueOf(),
          events: {
             onEntity: UserEntity,
             onBeforeCreate: async (data: CreateUserDto) => {

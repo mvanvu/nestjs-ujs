@@ -43,15 +43,17 @@ export type CRUDServiceOptions<TPrismaService extends GetPrismaModels, TPrismaSe
 };
 
 export type CRUDServiceClassOptions<
-   TCreateDTO extends ObjectRecord,
-   TUpdateDTO extends ObjectRecord = Partial<CreateDto>,
+   TPrismaService extends GetPrismaModels = any,
+   TCreateDTO extends ObjectRecord = any,
+   TUpdateDTO extends ObjectRecord = Partial<TCreateDTO>,
    TPrismaSelect extends ObjectRecord = undefined,
    PrismaInclude extends ObjectRecord = undefined,
 > = {
-   CreateDTO: TCreateDTO;
-   UpdateDTO?: TUpdateDTO;
-   PrismaSelect?: TPrismaSelect;
-   PrismaInclude?: PrismaInclude;
+   TPrismaService: TPrismaService;
+   TCreateDTO?: TCreateDTO;
+   TUpdateDTO?: TUpdateDTO;
+   TPrismaSelect?: TPrismaSelect;
+   TPrismaInclude?: PrismaInclude;
 };
 
 export type OrderDirection = 'asc' | 'desc';
