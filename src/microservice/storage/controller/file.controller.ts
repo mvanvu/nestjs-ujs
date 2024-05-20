@@ -10,6 +10,6 @@ export class FileController {
 
    @MessagePattern(serviceConfig.get('storage.patterns.upload'))
    upload(@Payload() data: FinalUploadDto): Promise<FileEntity> {
-      return this.fileService.execute(data);
+      return this.fileService.upload(data);
    }
 }

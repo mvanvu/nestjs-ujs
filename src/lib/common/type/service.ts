@@ -1,5 +1,5 @@
 import { ClassConstructor, RequestRegistryData } from './common';
-import { Callable, ObjectRecord, Registry } from '@mvanvu/ujs';
+import { ObjectRecord, Registry, IsEquals } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
 
 export type PrismaModels = Record<string, DMMF.Model>;
@@ -8,7 +8,13 @@ export interface GetPrismaModels {
    get models(): PrismaModels;
 }
 
-export type CRUDServiceOptions<TPrismaService extends GetPrismaModels, TPrismaSelect = any, TPrismaInclude = any> = {
+export type CRUDServiceOptions<
+   TPrismaService extends GetPrismaModels = any,
+   TCreateDTO extends ObjectRecord = any,
+   TUpdateDTO extends ObjectRecord = Partial<TCreateDTO>,
+   TPrismaSelect extends ObjectRecord = any,
+   TPrismaInclude extends ObjectRecord = any,
+> = {
    prisma: TPrismaService;
    model: keyof Omit<
       TPrismaService,
@@ -34,26 +40,18 @@ export type CRUDServiceOptions<TPrismaService extends GetPrismaModels, TPrismaSe
       filterFields?: string[];
       maxLimit?: number;
    };
+   softDelete?: boolean;
    events?: {
-      onBeforeCreate?: Callable;
-      onBeforeUpdate?: Callable;
-      onBeforeDelete?: Callable;
-      onEntity?: Callable | ClassConstructor<any>;
+      onBeforeCreate?: (data: TCreateDTO) => any | Promise<any>;
+      onBeforeUpdate?: <TRecord extends ObjectRecord>(data: TUpdateDTO, record: TRecord) => any | Promise<any>;
+      onBeforeDelete?: <TRecord extends ObjectRecord>(record: TRecord) => any | Promise<any>;
+      onEntity?:
+         | ClassConstructor<any>
+         | (<TContext extends 'read' | 'create' | 'update' | 'delete'>(
+              record: ObjectRecord,
+              options: { context: TContext; isList?: IsEquals<TContext, 'read' extends true ? boolean : never> },
+           ) => any | Promise<any>);
    };
-};
-
-export type CRUDServiceClassOptions<
-   TPrismaService extends GetPrismaModels = any,
-   TCreateDTO extends ObjectRecord = any,
-   TUpdateDTO extends ObjectRecord = Partial<TCreateDTO>,
-   TPrismaSelect extends ObjectRecord = undefined,
-   PrismaInclude extends ObjectRecord = undefined,
-> = {
-   TPrismaService: TPrismaService;
-   TCreateDTO?: TCreateDTO;
-   TUpdateDTO?: TUpdateDTO;
-   TPrismaSelect?: TPrismaSelect;
-   TPrismaInclude?: PrismaInclude;
 };
 
 export type OrderDirection = 'asc' | 'desc';

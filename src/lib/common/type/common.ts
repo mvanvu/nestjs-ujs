@@ -81,3 +81,6 @@ export type PropertyOptions<IsType extends IsValidType> = {
 };
 
 export type PermissionOptions = { key?: string; or?: string[]; and?: string[] } | string;
+
+// String for mongo ID, change to number if using MySQL/MSSQL...
+export type ID = string;

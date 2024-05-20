@@ -37,7 +37,7 @@ export class UserEntity extends BaseEntity {
       }
    }
 
-   authorise(permission?: PermissionOptions): boolean {
+   get isRoot(): boolean {
       let isUserRoot: boolean = false;
       const rootUid = appConfig.get('rootUid');
 
@@ -48,6 +48,12 @@ export class UserEntity extends BaseEntity {
             isUserRoot = this.id === rootUid || (this.username && this.username === rootUid);
          }
       }
+
+      return isUserRoot;
+   }
+
+   authorise(permission?: PermissionOptions): boolean {
+      const isUserRoot = this.isRoot;
 
       if ((!permission || Is.emptyObject(permission)) && !isUserRoot) {
          return false;
@@ -79,6 +85,40 @@ export class UserEntity extends BaseEntity {
       }
 
       return true;
+   }
+
+   compare(user: UserEntity, permission: PermissionOptions): number {
+      // Check the same root
+      const isSelfRoot = this.isRoot;
+      const isUserRoot = user.isRoot;
+
+      if (isSelfRoot && isUserRoot) {
+         return 0;
+      }
+
+      if (isSelfRoot) {
+         return 1;
+      }
+
+      if (isUserRoot) {
+         return -1;
+      }
+
+      // Check the same permission
+      const hasSelfPermission = this.authorise(permission);
+      const hasUserPermission = user.authorise(permission);
+
+      if (hasSelfPermission && hasUserPermission) {
+         return 0;
+      }
+
+      if (hasSelfPermission) {
+         return 1;
+      }
+
+      if (hasUserPermission) {
+         return -1;
+      }
    }
 }
 

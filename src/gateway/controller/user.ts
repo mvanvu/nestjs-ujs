@@ -7,6 +7,7 @@ import {
    ParseMongoIdPipe,
    EntityResponse,
    Pagination,
+   Permission,
 } from '@lib/common';
 import { CreateUserDto, UserSignInDto, UserSignUpDto, UserEntity, AuthEntity, UpdateUserDto } from '@lib/service/user';
 import { BaseController, BaseClientProxy } from '../lib';
@@ -35,6 +36,7 @@ export class UserController extends BaseController {
    }
 
    @Get()
+   @Permission({ key: serviceConfig.get('user.permissions.user.read') })
    @ApiBearerAuth()
    @ApiResultResponse(UserEntity, { summary: 'Admin get list pagination of the users' })
    paginate(@Query() query: PaginationQueryDto): Promise<Pagination<UserEntity>> {
@@ -42,6 +44,7 @@ export class UserController extends BaseController {
    }
 
    @Get(':id')
+   @Permission({ key: serviceConfig.get('user.permissions.user.read') })
    @ApiBearerAuth()
    @ApiResultResponse(UserEntity, { summary: 'Admin get the detail of user account' })
    read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
@@ -49,6 +52,7 @@ export class UserController extends BaseController {
    }
 
    @Post()
+   @Permission({ key: serviceConfig.get('user.permissions.user.write') })
    @ApiBearerAuth()
    @ApiResultResponse(UserEntity, { summary: 'Admin create a new user account', statusCode: HttpStatus.CREATED })
    create(@Body() data: CreateUserDto): Promise<EntityResponse<UserEntity>> {
@@ -57,6 +61,7 @@ export class UserController extends BaseController {
    }
 
    @Patch(':id')
+   @Permission({ key: serviceConfig.get('user.permissions.user.write') })
    @ApiBearerAuth()
    @ApiResultResponse(UserEntity, { summary: 'Admin update the user account' })
    update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateUserDto): Promise<EntityResponse<UserEntity>> {
@@ -64,9 +69,17 @@ export class UserController extends BaseController {
    }
 
    @Delete(':id')
+   @Permission({ key: serviceConfig.get('user.permissions.user.delete') })
    @ApiBearerAuth()
    @ApiResultResponse(UserEntity, { summary: 'Admin delete an user account' })
    delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
       return this.userProxy.send(userCRUDPattern, { meta: { params: { id }, CRUD: { method: 'delete' } } });
+   }
+
+   @Delete(':id')
+   @ApiBearerAuth()
+   @ApiResultResponse(UserEntity, { summary: 'The user delete his/her self' })
+   deleteSelf(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
+      return this.userProxy.send(serviceConfig.get('user.patterns.deleteSelf'), { meta: { params: { id } } });
    }
 }

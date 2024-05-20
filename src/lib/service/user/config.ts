@@ -4,6 +4,7 @@ export default {
       signIn: 'user.signIn',
       signUp: 'user.signUp',
       verify: 'user.verify',
+      deleteSeft: 'user.deleteSeft',
       userCRUD: 'user.CRUD',
       roleCRUD: 'role.CRUD',
    },
@@ -12,9 +13,13 @@ export default {
          create: 'role.create',
          read: 'role.read',
          update: 'role.update',
-         updateOwn: 'role.update.own',
          delete: 'role.delete',
-         deleteOwn: 'role.delete.own',
+      },
+      user: {
+         create: 'user.create',
+         read: 'user.read',
+         update: 'user.update',
+         delete: 'user.delete',
       },
    },
 };

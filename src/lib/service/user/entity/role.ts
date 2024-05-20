@@ -1,4 +1,4 @@
-import { RoleStatus } from '.prisma/user';
+import { RoleStatus, Role } from '.prisma/user';
 import { Property } from '@lib/common/decorator';
 import { BaseEntity } from '@lib/common/entity';
 
@@ -30,4 +30,12 @@ export class RoleEntity extends BaseEntity {
 
    @Property()
    permissions: string[];
+
+   @Property()
+   totalUsers?: number;
+
+   constructor(role?: Role & { _count: { userRoles: number } }) {
+      super(role);
+      this.totalUsers = role?._count?.userRoles ?? 0;
+   }
 }

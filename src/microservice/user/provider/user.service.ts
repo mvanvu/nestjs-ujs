@@ -4,12 +4,12 @@ import { PrismaService } from './prisma/prisma.service';
 import { Prisma, UserStatus } from '.prisma/user';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is, Registry } from '@mvanvu/ujs';
-import { appConfig } from '@config';
-import { BaseService, CRUDService, CreateCRUDService } from '@service/lib';
-import { FieldsException, ThrowException } from '@lib/common';
+import { appConfig, serviceConfig } from '@config';
+import { BaseService, CRUDService } from '@service/lib';
+import { FieldsException, ThrowException, ID } from '@lib/common';
 
 @Injectable()
-export class UserService extends BaseService implements CreateCRUDService {
+export class UserService extends BaseService {
    @Inject(PrismaService) readonly prisma: PrismaService;
 
    readonly userSelect: Prisma.UserSelect = {
@@ -142,15 +142,21 @@ export class UserService extends BaseService implements CreateCRUDService {
       return new UserEntity(user);
    }
 
-   createCRUDService(): CRUDService<{
-      TPrismaService: PrismaService;
-      TCreateDTO: CreateUserDto;
-      TUpdateDTO: UpdateUserDto;
-      TPrismaSelect: Prisma.UserSelect;
-   }> {
+   async deleteSelf(id: ID) {
+      const user = await this.prisma.user.update({
+         where: { id },
+         data: { status: UserStatus.Trashed },
+         select: this.userSelect,
+      });
+
+      return new UserEntity(user);
+   }
+
+   userCRUD(): CRUDService<PrismaService, CreateUserDto, UpdateUserDto, Prisma.UserSelect> {
       return new CRUDService({
          prisma: this.prisma,
          model: 'user',
+         softDelete: true,
          select: Registry.from(this.userSelect).remove('userRoles.select.role.select.permissions').valueOf(),
          events: {
             onEntity: UserEntity,
@@ -161,20 +167,71 @@ export class UserService extends BaseService implements CreateCRUDService {
                   password: await argon2.hash(data.password),
                });
             },
-            onBeforeUpdate: async (data: UpdateUserDto, record: UserEntity) => {
+            onBeforeUpdate: async (data: UpdateUserDto, user: UserEntity) => {
                if (data.email || data.username || data.roles) {
                   await this.validateUserDto(data, record.id);
                }
 
+               // Verify permission
+               const author = this.meta.get('headers.user');
+               const isSelf = author.id === user.id;
+
+               if (isSelf && author.status) {
+                  ThrowException(`You can't update your self status`);
+               }
+
                if (data.roles) {
+                  if (isSelf && !author.isRoot) {
+                     ThrowException(`You can't update your roles because you aren't a root user`);
+                  }
+
                   data['userRoles'] = {
                      deleteMany: {},
                      create: data.roles.length ? data.roles.map((roleId) => ({ roleId })) : undefined,
                   };
                }
 
+               // Check the current user is the author or editor of the target user, then will can update
+               const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
+
+               if (!isGranter) {
+                  const compare = author.compare(user, serviceConfig.get('user.permissions.user.update'));
+
+                  if (compare === 0) {
+                     ThrowException(`You can't update the user who has the same permission with you`);
+                  }
+
+                  if (compare === -1) {
+                     ThrowException(`You can't update the user who has the greater permissions than you`);
+                  }
+               }
+
                if (data.password) {
                   data.password = await argon2.hash(data.password);
+               }
+            },
+            onBeforeDelete(user: UserEntity) {
+               // Verify permission
+               const author = new UserEntity(this.meta.get('headers.user'));
+               const isSelf = author.id === user.id;
+
+               if (isSelf) {
+                  ThrowException(`You can't delete yourself`);
+               }
+
+               // Check the current user is the author or editor of the target user, then will can delete
+               const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
+
+               if (!isGranter) {
+                  const compare = author.compare(user, serviceConfig.get('user.permissions.user.delete'));
+
+                  if (compare === 0) {
+                     ThrowException(`You can't delete the user who has the same permission with you`);
+                  }
+
+                  if (compare === -1) {
+                     ThrowException(`You can't delete the user who has the greater permissions than you`);
+                  }
                }
             },
          },
