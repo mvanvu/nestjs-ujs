@@ -1,29 +1,6 @@
-import { Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaClient, Prisma } from '.prisma/user';
-import { Util } from '@mvanvu/ujs';
-import { PrismaModels, GetPrismaModels } from '@lib/common/type';
+import { CreatePrismaService } from '@service/lib';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements GetPrismaModels, OnModuleInit, OnApplicationShutdown {
-   private _models: PrismaModels;
-
-   get models(): PrismaModels {
-      if (!this._models) {
-         this._models = {};
-         Prisma.dmmf.datamodel.models.forEach((model: Prisma.DMMF.Model) => {
-            this._models[model.name] = model;
-         });
-      }
-
-      return this._models;
-   }
-
-   async onModuleInit() {
-      process.on('beforeExit', this.onApplicationShutdown);
-      await this.$connect().catch(Util.debugDev);
-   }
-
-   async onApplicationShutdown() {
-      await this.$disconnect();
-   }
-}
+export class PrismaService extends CreatePrismaService(PrismaClient, Prisma.dmmf.datamodel.models) {}

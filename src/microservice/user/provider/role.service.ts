@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma, UserStatus } from '.prisma/user';
-import { RoleEntity, CreateRoleDto, UpdateRoleDto } from '@lib/service/user';
-import { BaseService, CRUDService } from '@service/lib';
+import { RoleEntity } from '@lib/service/user';
+import { BaseService } from '@service/lib';
 import { ThrowException } from '@lib/common';
 
 @Injectable()
@@ -18,22 +18,22 @@ export class RoleService extends BaseService {
       updatedAt: true,
       author: { select: { id: true, email: true, username: true } },
       editor: { select: { id: true, email: true, username: true } },
-      _count: { userRoles: { where: { some: { user: { status: { not: UserStatus.Trashed } } } } } },
+      _count: {
+         select: {
+            userRoles: { where: { user: { status: { not: UserStatus.Trashed } } } },
+         },
+      },
    };
 
-   roleCRUD(): CRUDService<PrismaService, CreateRoleDto, UpdateRoleDto, Prisma.RoleSelect> {
-      return new CRUDService({
-         prisma: this.prisma,
-         model: 'role',
-         select: this.roleSelect,
-         events: {
-            onEntity: RoleEntity,
-            onBeforeDelete(role: RoleEntity) {
-               if (role.totalUsers) {
-                  ThrowException(`Can't delete the role which has some users who assigned to it`);
-               }
-            },
-         },
-      });
+   roleCRUD() {
+      return this.prisma
+         .createCRUD('role')
+         .select(this.roleSelect)
+         .entity(RoleEntity)
+         .beforeDelete((role: RoleEntity) => {
+            if (role.totalUsers) {
+               ThrowException(`Can't delete the role which has some users who assigned to it`);
+            }
+         });
    }
 }

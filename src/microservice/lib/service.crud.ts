@@ -1,38 +1,113 @@
 import { appConfig } from '@config';
 import { FieldsException, ThrowException } from '@lib/common/exception';
 import {
-   CRUDServiceOptions,
    OrderBy,
    OrderDirection,
    PaginationResult,
    UpdateResult,
    GetPrismaModels,
+   CRUDResult,
+   validateDTO,
+   ClassConstructor,
+   ID,
+   PrismaModelName,
 } from '@lib/common';
-import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
-import { HttpStatus, Injectable, Logger, validateDTO } from '@nestjs/common';
+import { DateTime, Is, IsEqual, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { BaseService } from './service.base';
 
+export type OnBeforeCreate<TData extends ObjectRecord = any> = (data: TData) => any | Promise<any>;
+export type OnBeforeUpdate<TData extends ObjectRecord = any, TRecord extends ObjectRecord = any> = (
+   data: TData,
+   record: TRecord,
+) => any | Promise<any>;
+export type OnBeforeDelete<TRecord extends ObjectRecord = any> = (record: TRecord) => any | Promise<any>;
+export type OnEntity =
+   | ClassConstructor<any>
+   | (<TRecord extends ObjectRecord = any, TContext extends 'read' | 'create' | 'update' | 'delete' = any>(
+        record: TRecord,
+        options: { context: TContext; isList?: IsEqual<TContext, 'read' extends true ? boolean : never> },
+     ) => any | Promise<any>);
+
 @Injectable()
-export class CRUDService<
-   TPrismaService extends GetPrismaModels = any,
-   TCreateDTO extends ObjectRecord = any,
-   TUpdateDTO extends ObjectRecord = Partial<TCreateDTO>,
-   TPrismaSelect extends ObjectRecord = any,
-   TPrismaInclude extends ObjectRecord = any,
-> extends BaseService {
+export class CRUDService<TPrismaService extends GetPrismaModels> extends BaseService {
    readonly logger: Logger;
 
+   private prismaSelect: ObjectRecord;
+
+   private prismaInclude: ObjectRecord;
+
+   private events: {
+      onBeforeCreate?: OnBeforeCreate;
+      onBeforeUpdate?: OnBeforeUpdate;
+      onBeforeDelete?: OnBeforeDelete;
+      onEntity?: OnEntity;
+   } = {};
+
+   private optionsCRUD?: {
+      softDelete?: boolean;
+      list?: {
+         orderFields?: string[];
+         searchFields?: string[];
+         filterFields?: string[];
+         maxLimit?: number;
+      };
+   };
+
    constructor(
-      readonly options: CRUDServiceOptions<TPrismaService, TCreateDTO, TUpdateDTO, TPrismaSelect, TPrismaInclude>,
+      private readonly prisma: TPrismaService,
+      private readonly model: PrismaModelName<TPrismaService>,
    ) {
       super();
       this.logger = new Logger(this.constructor.name);
    }
 
+   select<T extends ObjectRecord>(select?: T): this {
+      this.prismaSelect = select;
+
+      return this;
+   }
+
+   include<T extends ObjectRecord>(include?: T): this {
+      this.prismaInclude = include;
+
+      return this;
+   }
+
+   options(options?: typeof this.optionsCRUD): this {
+      this.optionsCRUD = options;
+
+      return this;
+   }
+
+   beforeCreate(callback: OnBeforeCreate): this {
+      this.events.onBeforeCreate = callback;
+
+      return this;
+   }
+
+   beforeUpdate(callback: OnBeforeUpdate): this {
+      this.events.onBeforeUpdate = callback;
+
+      return this;
+   }
+
+   beforeDelete(callback: OnBeforeDelete): this {
+      this.events.onBeforeDelete = callback;
+
+      return this;
+   }
+
+   entity(callback: OnEntity): this {
+      this.events.onEntity = callback;
+
+      return this;
+   }
+
    async paginate<T>(query?: ObjectRecord, where?: Record<string, any>): Promise<PaginationResult<T>> {
       const modelParams = {
-         select: this.options.select,
-         include: this.options.include,
+         select: this.prismaSelect,
+         include: this.prismaInclude,
          where: where ?? {},
          orderBy: <OrderBy[]>[],
          take: undefined,
@@ -67,8 +142,8 @@ export class CRUDService<
                }
 
                if (['asc', 'desc'].includes(direction)) {
-                  if (this.options.list?.orderFields?.length) {
-                     for (const orderField of this.options.list?.orderFields) {
+                  if (this.optionsCRUD?.list?.orderFields?.length) {
+                     for (const orderField of this.optionsCRUD.list.orderFields) {
                         const regex = /\[([a-z0-9_.,]+)\]/gi;
                         let fieldName = orderField;
                         let queryName = fieldName;
@@ -111,7 +186,7 @@ export class CRUDService<
       // Take care search
       const q = (query.q || '').toString().trim();
 
-      if (q && this.options.list?.searchFields?.length) {
+      if (q && this.optionsCRUD?.list?.searchFields?.length) {
          const where: Record<string, any>[] = [];
          const mode = 'insensitive';
          let searchCondition: Record<string, any> = { contains: q, mode };
@@ -151,7 +226,7 @@ export class CRUDService<
             }
          }
 
-         for (const searchField of this.options.list?.searchFields) {
+         for (const searchField of this.optionsCRUD.list.searchFields) {
             where.push({ [searchField]: searchCondition });
          }
 
@@ -159,7 +234,7 @@ export class CRUDService<
       }
 
       // Take care filter
-      const filterFields = this.options.list?.filterFields || [];
+      const filterFields = this.optionsCRUD?.list?.filterFields || [];
 
       if (filterFields.length) {
          for (const field of filterFields) {
@@ -260,13 +335,13 @@ export class CRUDService<
          }
       }
 
-      if (this.options.softDelete === true && !hasFilterByStatus) {
+      if (this.optionsCRUD?.softDelete === true && !hasFilterByStatus) {
          modelParams.where['status'] = { not: 'Trashed' };
       }
 
       // Take care pagination
       const defaultLimit = appConfig.get('list.limit');
-      const maxLimit = this.options.list?.maxLimit ?? appConfig.get('list.maxLimit');
+      const maxLimit = this.optionsCRUD?.list?.maxLimit ?? appConfig.get('list.maxLimit');
       let limit: number =
          query.limit === undefined || !query.limit.toString().match(/^[0-9]+$/)
             ? defaultLimit
@@ -281,14 +356,14 @@ export class CRUDService<
       Object.assign(query, { page, limit, q });
 
       // Prisma model
-      const model = this.options.prisma[this.options.model];
+      const model = this.prisma[this.model];
       const [items, totalCount] = await Promise.all([
          model['findMany'](modelParams),
          model['count']({ where: modelParams.where }),
       ]);
       let data = items;
 
-      if (this.options.events?.onEntity) {
+      if (this.events.onEntity) {
          data = await Promise.all(items.map((item: T) => this.callOnEntity(item, { context: 'read', isList: true })));
       }
 
@@ -299,37 +374,35 @@ export class CRUDService<
       item: T,
       options: { context: 'read' | 'create' | 'update' | 'delete'; isList?: boolean },
    ): Promise<T> {
-      const result = await Util.callAsync<T>(this, this.options.events.onEntity, item, options);
+      const result = await Util.callAsync<T>(this, this.events.onEntity, item, options);
 
-      return Is.class(this.options.events.onEntity) ? result : item;
+      return Is.class(this.events.onEntity) ? result : item;
    }
 
    async read<T>(id: string, where?: Record<string, any>): Promise<T> {
       where = { ...(where ?? {}), id };
 
-      if (this.options.softDelete === true && where['status'] === undefined) {
+      if (this.optionsCRUD?.softDelete === true && where['status'] === undefined) {
          where['status'] = { not: 'Trashed' };
       }
 
-      const record = await this.options.prisma[this.options.model]['findFirst']({
+      const record = await this.prisma[this.model]['findFirst']({
          where,
-         select: this.options.select,
-         include: this.options.include,
+         select: this.prismaSelect,
+         include: this.prismaInclude,
       });
 
       if (!record) {
          ThrowException(`Record with ID(${id}) not found`, HttpStatus.NOT_FOUND);
       }
 
-      return this.options.events?.onEntity
-         ? await this.callOnEntity(record, { context: 'read', isList: false })
-         : record;
+      return this.events.onEntity ? await this.callOnEntity(record, { context: 'read', isList: false }) : record;
    }
 
-   async validate(dto: TCreateDTO | TUpdateDTO, id?: string): Promise<void> {
-      const modelName = Util.uFirst(this.options.model as string);
-      const entityModel = this.options.prisma[modelName];
-      const model = this.options.prisma.models[modelName];
+   async validate<TData extends ObjectRecord>(dto: TData, id?: string): Promise<void> {
+      const modelName = Util.uFirst(this.model as string);
+      const entityModel = this.prisma[this.model];
+      const model = this.prisma.models[modelName];
 
       // Remove unknown fields
       for (const fieldName in dto) {
@@ -387,54 +460,54 @@ export class CRUDService<
       fieldsException.validate();
    }
 
-   async create<T>(data: TCreateDTO): Promise<T> {
-      if (this.options.events?.onBeforeCreate) {
+   async create<TResult, TData extends ObjectRecord>(data: TData): Promise<TResult> {
+      if (this.events.onBeforeCreate) {
          // Trigger an event before handle
-         await Util.callAsync(this, this.options.events.onBeforeCreate, data);
+         await Util.callAsync(this, this.events.onBeforeCreate, data);
       }
 
       // Validate data
       await this.validate(data);
 
-      const record = await this.options.prisma[this.options.model]['create']({
+      const record = await this.prisma[this.model]['create']({
          data,
-         select: this.options.select,
-         include: this.options.include,
+         select: this.prismaSelect,
+         include: this.prismaInclude,
       });
 
-      return this.options.events?.onEntity ? await this.callOnEntity(record, { context: 'create' }) : record;
+      return this.events.onEntity ? await this.callOnEntity(record, { context: 'create' }) : record;
    }
 
-   async update<T>(id: string, data: TUpdateDTO): Promise<UpdateResult<T>> {
-      const model = this.options.prisma[this.options.model];
+   async update<TResult, TData extends ObjectRecord>(id: ID, data: TData): Promise<UpdateResult<TResult>> {
+      const model = this.prisma[this.model];
       let oldRecord = await model['findFirst']({
          where: { id },
-         select: this.options.select,
-         include: this.options.include,
+         select: this.prismaSelect,
+         include: this.prismaInclude,
       });
 
       if (!oldRecord) {
          ThrowException(`The record with ID(${id}) doesn't exists`);
       }
 
-      const { onEntity } = this.options.events ?? {};
+      const { onEntity } = this.events;
 
       if (onEntity) {
          oldRecord = await this.callOnEntity(oldRecord, { context: 'update' });
       }
 
-      if (this.options.events?.onBeforeUpdate) {
+      if (this.events.onBeforeUpdate) {
          // Trigger an event before handle
-         await Util.callAsync(this, this.options.events.onBeforeUpdate, data, oldRecord);
+         await Util.callAsync(this, this.events.onBeforeUpdate, data, oldRecord);
       }
 
       // Validate
       await this.validate(data, id);
 
-      let record = await this.options.prisma[this.options.model]['update']({
+      let record = await this.prisma[this.model]['update']({
          data,
-         select: this.options.select,
-         include: this.options.include,
+         select: this.prismaSelect,
+         include: this.prismaInclude,
          where: { id },
       });
 
@@ -443,7 +516,7 @@ export class CRUDService<
       }
 
       // Parse diff data
-      const diff: UpdateResult<T>['meta']['diff'] = {};
+      const diff: UpdateResult<TResult>['meta']['diff'] = {};
 
       for (const field in oldRecord) {
          const oldValue = oldRecord[field];
@@ -454,43 +527,43 @@ export class CRUDService<
          }
       }
 
-      return { data: <T>record, meta: { diff } };
+      return { data: <TResult>record, meta: { diff } };
    }
 
-   async delete<T>(id: string): Promise<T> {
-      let record = await this.options.prisma[this.options.model]['findFirst']({
+   async delete<TResult>(id: ID): Promise<TResult> {
+      let record = await this.prisma[this.model]['findFirst']({
          where: { id },
-         select: this.options.select,
-         include: this.options.include,
+         select: this.prismaSelect,
+         include: this.prismaInclude,
       });
 
       if (!record) {
          ThrowException(`Record with ID(${id}) not found`);
       }
 
-      if (this.options.events?.onEntity) {
+      if (this.events.onEntity) {
          record = await this.callOnEntity(record, { context: 'delete' });
       }
 
-      if (this.options.events?.onBeforeDelete) {
+      if (this.events.onBeforeDelete) {
          // Trigger an event before handle
-         await Util.callAsync(this, this.options.events.onBeforeDelete, record);
+         await Util.callAsync(this, this.events.onBeforeDelete, record);
       }
 
-      if (this.options.softDelete === true) {
-         await this.options.prisma[this.options.model]['update']({
+      if (this.optionsCRUD?.softDelete === true) {
+         await this.prisma[this.model]['update']({
             select: { id: true },
             data: { status: 'Trashed' },
             where: { id },
          });
       } else {
-         await this.options.prisma[this.options.model]['delete']({ select: { id: true }, where: { id } });
+         await this.prisma[this.model]['delete']({ select: { id: true }, where: { id } });
       }
 
       return record;
    }
 
-   async execute<TResult>(): Promise<CRUDResult<TResult>> {
+   async execute<TResult>(createDto: any, updateDto: any): Promise<CRUDResult<TResult>> {
       const meta = this.meta;
       const recordId = meta.get('params.id');
       const userId = meta.get('headers.user.id');
@@ -511,14 +584,14 @@ export class CRUDService<
 
          case 'write':
             // Validate data
-            const DTOClassRef = recordId ? updateDTO : createDTO;
+            const DTOClassRef: ClassConstructor<any> = recordId ? updateDto : createDto;
             const data = await validateDTO(this.ctx.getData(), DTOClassRef);
 
             if (userId) {
                data[recordId ? 'updatedBy' : 'createdBy'] = userId;
             }
 
-            return recordId ? this.update<TResult>(recordId, data) : this.create<TResult>(data);
+            return recordId ? this.update<TResult, any>(recordId, data) : this.create<TResult, any>(data);
 
          case 'delete':
             return this.delete<TResult>(recordId);
