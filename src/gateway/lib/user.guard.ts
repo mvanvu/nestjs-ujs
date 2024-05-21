@@ -13,7 +13,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { UserEntity } from '@lib/service/user/entity';
 import { lastValueFrom, timeout } from 'rxjs';
 import { serviceConfig } from '@config';
-import { Is, Registry } from '@mvanvu/ujs';
+import { Is } from '@mvanvu/ujs';
 
 export const USER_PUBLIC_KEY = 'USER_PUBLIC_KEY';
 export const Public = () => SetMetadata(USER_PUBLIC_KEY, true);
@@ -29,7 +29,7 @@ export const GetUser = createParamDecorator(
    ) => {
       const { registry } = ctx.switchToHttp().getRequest<HttpRequest>();
       const isOptional = typeof property === 'object' && !Array.isArray(property) && property?.optional === true;
-      const user = registry.get('user');
+      const user = registry.get<UserEntity>('user');
 
       if (!user) {
          if (!isOptional) {
@@ -39,13 +39,11 @@ export const GetUser = createParamDecorator(
          return null;
       }
 
-      const reg = Registry.from(user);
-
       if (Is.string(property, true)) {
-         return (property as string[]).map((prop) => reg.get(prop));
+         return (property as string[]).map((prop) => user[prop]);
       }
 
-      return typeof property === 'string' ? reg.get(property) : reg.valueOf();
+      return typeof property === 'string' ? user[property] : user;
    },
 );
 
@@ -111,7 +109,7 @@ export class UserRoleGuard implements CanActivate {
       }
 
       const { registry } = context.switchToHttp().getRequest<HttpRequest>();
-      const user = registry.get<UserEntity>('user');
+      const user = registry.get('user');
 
       if (!user?.authorise(permission)) {
          throw new ForbiddenException();

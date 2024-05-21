@@ -5,12 +5,10 @@ import {
    OrderDirection,
    PaginationResult,
    UpdateResult,
-   GetPrismaModels,
    CRUDResult,
    validateDTO,
    ClassConstructor,
    ID,
-   PrismaModelName,
 } from '@lib/common';
 import { DateTime, Is, IsEqual, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
@@ -30,7 +28,7 @@ export type OnEntity =
      ) => any | Promise<any>);
 
 @Injectable()
-export class CRUDService<TPrismaService extends GetPrismaModels> extends BaseService {
+export class CRUDService<TPrismaService extends { models: ObjectRecord }> extends BaseService {
    readonly logger: Logger;
 
    private prismaSelect: ObjectRecord;
@@ -56,7 +54,7 @@ export class CRUDService<TPrismaService extends GetPrismaModels> extends BaseSer
 
    constructor(
       private readonly prisma: TPrismaService,
-      private readonly model: PrismaModelName<TPrismaService>,
+      private readonly model: string,
    ) {
       super();
       this.logger = new Logger(this.constructor.name);

@@ -1,23 +1,18 @@
-import { PrismaClient } from '@prisma/client';
-import { Util } from '@mvanvu/ujs';
-import { PrismaModels, ClassConstructor, GetPrismaModels, PrismaModelName } from '@lib/common';
-import { DMMF } from '@prisma/client/runtime/library';
+import { ObjectRecord, Util } from '@mvanvu/ujs';
+import { ClassConstructor } from '@lib/common';
 import { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { CRUDService } from './service.crud';
+import { PrismaClient } from '@prisma/client';
 
-export function CreatePrismaService(ClientRef: ClassConstructor<PrismaClient>, dataModels: DMMF.Datamodel['models']) {
-   class PrismaClientRef extends ClientRef implements GetPrismaModels, OnModuleInit, OnApplicationShutdown {
-      #models: PrismaModels;
+export function CreatePrismaService<TDataModel extends ObjectRecord>(
+   PrismaClientRef: ClassConstructor<PrismaClient>,
+   dataModel: TDataModel,
+) {
+   type ModelName = keyof TDataModel;
 
-      get models(): PrismaModels {
-         if (!this.#models) {
-            this.#models = {};
-            dataModels.forEach((model: DMMF.Model) => {
-               this.#models[model.name] = model;
-            });
-         }
-
-         return this.#models;
+   class BasePrismaService extends PrismaClientRef implements OnModuleInit, OnApplicationShutdown {
+      get models(): TDataModel {
+         return dataModel;
       }
 
       async onModuleInit() {
@@ -29,10 +24,10 @@ export function CreatePrismaService(ClientRef: ClassConstructor<PrismaClient>, d
          await this.$disconnect();
       }
 
-      createCRUD(model: PrismaModelName<this>): CRUDService<this> {
-         return new CRUDService(this, model);
+      createCRUD(model: ModelName): CRUDService<this> {
+         return new CRUDService(this, <string>model);
       }
    }
 
-   return PrismaClientRef;
+   return BasePrismaService;
 }
