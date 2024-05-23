@@ -1,15 +1,23 @@
 import { appConfig } from './config';
 
 async function bootstrap() {
-   switch (appConfig.get('appEnv')) {
-      case 'gateway':
-         return import('./gateway/app.module').then(({ AppModule }) => AppModule.bootstrap());
+   const appEnv = appConfig.get('appEnv');
+   const allApps: string[] = appEnv ? [appEnv] : ['gateway', 'user', 'storage'];
 
-      case 'user':
-         return import('./microservice/user/app.module').then(({ AppModule }) => AppModule.bootstrap());
+   for (const app of allApps) {
+      switch (app) {
+         case 'gateway':
+            import('./gateway/app.module').then(({ AppModule }) => AppModule.bootstrap());
+            break;
 
-      case 'storage':
-         return import('./microservice/storage/app.module').then(({ AppModule }) => AppModule.bootstrap());
+         case 'user':
+            import('./microservice/user/app.module').then(({ AppModule }) => AppModule.bootstrap());
+            break;
+
+         case 'storage':
+            import('./microservice/storage/app.module').then(({ AppModule }) => AppModule.bootstrap());
+            break;
+      }
    }
 }
 

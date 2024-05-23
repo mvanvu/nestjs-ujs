@@ -7,6 +7,6 @@ import { serviceConfig } from '@config';
 })
 export class AppModule {
    static bootstrap(): Promise<void> {
-      return createMicroserviceApp(AppModule, `${serviceConfig.get('storage.proxy')}Queue`);
+      return createMicroserviceApp(AppModule, serviceConfig.get('storage.name'));
    }
 }

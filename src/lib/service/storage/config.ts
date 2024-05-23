@@ -1,5 +1,5 @@
 export default {
-   proxy: 'StorageProxy',
+   name: 'storage',
    patterns: {
       upload: 'storage.upload',
    },

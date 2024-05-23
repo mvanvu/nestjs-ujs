@@ -74,7 +74,6 @@ export type TransformOptions = {
 };
 
 export type PropertyOptions<IsType extends IsValidType> = {
-   swagger?: { description?: string; example?: any; isArray?: boolean; type?: string; enum?: any[] } | string;
    validate?: ValidationOptions<IsType> | ValidationOptions<IsType>[];
    transform?: TransformOptions;
    optional?: boolean;

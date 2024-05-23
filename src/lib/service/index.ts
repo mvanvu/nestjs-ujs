@@ -10,7 +10,7 @@ import storage from './storage/config';
 import { loadPermissionKeys } from '@lib/common/util';
 
 const serviceConfig = Registry.from({ user, storage }, { consistent: true });
-export const clientProxies = [serviceConfig.get('user.proxy'), serviceConfig.get('storage.proxy')];
+export const serviceListNames: string[] = [serviceConfig.get('user.name'), serviceConfig.get('storage.name')];
 
 // Load all permission keys
 export const permissionKeys: string[] = [];

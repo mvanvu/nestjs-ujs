@@ -18,7 +18,7 @@ const roleCRUDPattern: string = serviceConfig.get('user.patterns.roleCRUD');
 @Controller('roles')
 export class RoleController extends BaseController {
    get userProxy(): BaseClientProxy {
-      return this.createClientProxy(serviceConfig.get('user.proxy'));
+      return this.createClientProxy(serviceConfig.get('user.name'));
    }
 
    @Permission({ key: serviceConfig.get('user.permissions.role.read') })

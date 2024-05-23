@@ -1,37 +1,36 @@
 import { RoleStatus, Role } from '.prisma/user';
-import { Property } from '@lib/common/decorator';
+import { EntityProperty } from '@lib/common/decorator';
 import { BaseEntity } from '@lib/common/entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class RoleEntity extends BaseEntity {
-   @Property()
+   @EntityProperty()
    id: string;
 
-   @Property()
+   @EntityProperty()
    name: string;
 
-   @Property()
+   @EntityProperty()
    status: RoleStatus;
 
-   @Property()
+   @EntityProperty()
    createdAt?: Date;
 
-   @Property()
+   @EntityProperty()
    updatedAt?: Date;
 
-   @Property({
-      swagger: { example: { id: '6631e55d89af4ff2b9b51aa3', email: 'john.due@email.com', username: 'john' } },
-   })
+   @ApiProperty({ example: { id: '6631e55d89af4ff2b9b51aa3', email: 'john.due@email.com', username: 'john' } })
+   @EntityProperty()
    author?: { id: string; email: string; username: string };
 
-   @Property({
-      swagger: { example: { id: '6631e55d89af4ff2b9b51aa3', email: 'john.due@email.com', username: 'john' } },
-   })
+   @ApiProperty({ example: { id: '6631e55d89af4ff2b9b51aa3', email: 'john.due@email.com', username: 'john' } })
+   @EntityProperty()
    editor?: { id: string; email: string; username: string };
 
-   @Property()
+   @EntityProperty()
    permissions: string[];
 
-   @Property()
+   @EntityProperty()
    totalUsers?: number;
 
    constructor(role?: Role & { _count: { userRoles: number } }) {

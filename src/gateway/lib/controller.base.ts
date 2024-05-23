@@ -45,10 +45,12 @@ export class BaseClientProxy {
 export class BaseController {
    @Inject(REQUEST) readonly req: HttpRequest;
 
-   createClientProxy(proxy: string): BaseClientProxy {
+   createClientProxy(serviceName: string): BaseClientProxy {
+      metadata.validateServiceName(serviceName);
+      const proxyName = serviceName.toUpperCase() + '_MICROSERVICE';
       class InstClientProxy extends BaseClientProxy {}
-      Object.defineProperty(InstClientProxy, 'name', { value: `Client${proxy}` });
+      Object.defineProperty(InstClientProxy, 'name', { value: proxyName });
 
-      return new InstClientProxy(metadata.getGateway().get<ClientProxy>(proxy), this.req);
+      return new InstClientProxy(metadata.getGateway().get<ClientProxy>(proxyName), this.req);
    }
 }

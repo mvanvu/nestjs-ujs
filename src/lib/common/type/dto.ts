@@ -1,36 +1,24 @@
-import { Property } from '@lib/common/decorator';
+import { EntityProperty } from '@lib/common/decorator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class PaginationQueryDto {
-   @Property({ transform: { fromType: 'string', toType: 'trim' }, optional: true, swagger: 'The search query' })
+   @ApiProperty({ description: 'The search query' })
+   @EntityProperty({ transform: { fromType: 'string', toType: 'trim' }, optional: true })
    q?: string;
 
-   @Property({
-      transform: { fromType: 'string', toType: 'toNumber' },
-      validate: { is: 'uInt' },
-      optional: true,
-      swagger: 'The page of the pagination',
-   })
+   @ApiProperty({ description: 'The page of the pagination' })
+   @EntityProperty({ transform: { fromType: 'string', toType: 'toNumber' }, validate: { is: 'uInt' }, optional: true })
    page?: number;
 
-   @Property({
-      transform: { fromType: 'string', toType: 'toNumber' },
-      validate: { is: 'uInt' },
-      optional: true,
-      swagger: 'The number of items on one row',
-   })
+   @ApiProperty({ description: 'The number of items on one row' })
+   @EntityProperty({ transform: { fromType: 'string', toType: 'toNumber' }, validate: { is: 'uInt' }, optional: true })
    limit?: number;
 
-   @Property({
-      transform: { fromType: 'string', toType: 'trim' },
-      optional: true,
-      swagger: 'Order by',
-   })
+   @ApiProperty({ description: 'Order by' })
+   @EntityProperty({ transform: { fromType: 'string', toType: 'trim' }, optional: true })
    order?: string;
 
-   @Property({
-      transform: { fromType: 'string', toType: 'trim' },
-      optional: true,
-      swagger: 'Language code',
-   })
+   @ApiProperty({ description: 'Language code' })
+   @EntityProperty({ transform: { fromType: 'string', toType: 'trim' }, optional: true })
    lang?: string;
 }

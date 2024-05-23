@@ -1,10 +1,17 @@
-import { type INestMicroservice } from '@nestjs/common';
+import { serviceListNames } from '@lib/service';
+import { NotImplementedException, type INestMicroservice } from '@nestjs/common';
 import { type NestExpressApplication } from '@nestjs/platform-express';
 
 class Metadata {
    private appGateway: NestExpressApplication;
 
-   private appService: INestMicroservice;
+   private appService: Record<string, INestMicroservice> = {};
+
+   validateServiceName(serviceName: string) {
+      if (!serviceListNames.includes(serviceName)) {
+         throw new NotImplementedException(`The serviceName must be in [${serviceListNames}]`);
+      }
+   }
 
    getGateway(): NestExpressApplication {
       return this.appGateway;
@@ -18,14 +25,15 @@ class Metadata {
       return this;
    }
 
-   getService(): INestMicroservice {
-      return this.appService;
+   getService(serviceName: string): INestMicroservice {
+      this.validateServiceName(serviceName);
+
+      return this.appService[serviceName];
    }
 
-   setService(app: INestMicroservice): this {
-      if (!this.appService) {
-         this.appService = app;
-      }
+   setService(serviceName: string, app: INestMicroservice): this {
+      this.validateServiceName(serviceName);
+      this.appService[serviceName] = app;
 
       return this;
    }
@@ -36,10 +44,6 @@ class Metadata {
 
    isMicroservice(): boolean {
       return !this.isGateway();
-   }
-
-   getApp(): NestExpressApplication | INestMicroservice {
-      return this.isGateway() ? this.getGateway() : this.getService();
    }
 }
 

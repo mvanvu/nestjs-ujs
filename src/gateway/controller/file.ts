@@ -13,7 +13,7 @@ export class FileController extends BaseController {
    @Inject(FileProvider) readonly fileProvider: FileProvider;
 
    get storageProxy(): BaseClientProxy {
-      return this.createClientProxy(serviceConfig.get('storage.proxy'));
+      return this.createClientProxy(serviceConfig.get('storage.name'));
    }
 
    @Post('upload')

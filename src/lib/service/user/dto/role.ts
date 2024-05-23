@@ -1,35 +1,29 @@
-import { IPartialType, Property } from '@lib/common';
-import { RoleStatus } from '.prisma/user';
-import { permissionKeys } from '@lib/service';
+import { IPartialType, EntityProperty } from '@lib/common';
+import { RoleStatus, UserStatus } from '.prisma/user';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateRoleDto {
-   @Property({
-      swagger: 'The name of the role',
+   @ApiProperty({ description: 'The name of the role' })
+   @EntityProperty({
       transform: { fromType: 'string', toType: 'trim' },
       validate: [{ is: 'string' }, { is: 'empty', not: true }],
    })
    name: string;
 
-   @Property({
-      swagger: 'The description of the role',
+   @ApiProperty({ description: 'The description of the role' })
+   @EntityProperty({
       optional: true,
       transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
       validate: { is: 'string' },
    })
    description?: string;
 
-   @Property({
-      swagger: { description: 'The status of the role', example: 'ACTIVE' },
-      optional: true,
-      validate: { is: 'string' },
-   })
+   @ApiProperty({ description: 'The status of the role', example: UserStatus.Active })
+   @EntityProperty({ optional: true, validate: { is: 'string' } })
    status?: RoleStatus;
 
-   @Property({
-      swagger: { description: 'The permissions of the role', example: permissionKeys },
-      optional: true,
-      validate: { is: 'inArray', meta: permissionKeys },
-   })
+   @ApiProperty({ description: 'The permissions of the role' })
+   @EntityProperty({ optional: true, validate: { is: 'inArray' } })
    permissions?: string[];
 }
 

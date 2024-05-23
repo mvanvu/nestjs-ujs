@@ -1,5 +1,5 @@
 export default {
-   proxy: 'UserProxy',
+   name: 'user',
    patterns: {
       signIn: 'user.signIn',
       signUp: 'user.signUp',

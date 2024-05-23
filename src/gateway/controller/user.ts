@@ -18,7 +18,7 @@ const userCRUDPattern: string = serviceConfig.get('user.patterns.userCRUD');
 @Controller('users')
 export class UserController extends BaseController {
    get userProxy(): BaseClientProxy {
-      return this.createClientProxy(serviceConfig.get('user.proxy'));
+      return this.createClientProxy(serviceConfig.get('user.name'));
    }
 
    @Public()
@@ -52,7 +52,7 @@ export class UserController extends BaseController {
    }
 
    @Post()
-   @Permission({ key: serviceConfig.get('user.permissions.user.write') })
+   @Permission({ key: serviceConfig.get('user.permissions.user.create') })
    @ApiBearerAuth()
    @ApiResultResponse(UserEntity, { summary: 'Admin create a new user account', statusCode: HttpStatus.CREATED })
    create(@Body() data: CreateUserDto): Promise<EntityResponse<UserEntity>> {
@@ -61,7 +61,7 @@ export class UserController extends BaseController {
    }
 
    @Patch(':id')
-   @Permission({ key: serviceConfig.get('user.permissions.user.write') })
+   @Permission({ key: serviceConfig.get('user.permissions.user.update') })
    @ApiBearerAuth()
    @ApiResultResponse(UserEntity, { summary: 'Admin update the user account' })
    update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateUserDto): Promise<EntityResponse<UserEntity>> {
@@ -74,12 +74,5 @@ export class UserController extends BaseController {
    @ApiResultResponse(UserEntity, { summary: 'Admin delete an user account' })
    delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
       return this.userProxy.send(userCRUDPattern, { meta: { params: { id }, CRUD: { method: 'delete' } } });
-   }
-
-   @Delete(':id')
-   @ApiBearerAuth()
-   @ApiResultResponse(UserEntity, { summary: 'The user delete his/her self' })
-   deleteSelf(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
-      return this.userProxy.send(serviceConfig.get('user.patterns.deleteSelf'), { meta: { params: { id } } });
    }
 }
