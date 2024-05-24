@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-
 export class PaginationResponse<TData> {
    @ApiProperty()
    success: true;

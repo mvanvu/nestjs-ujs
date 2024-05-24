@@ -1,4 +1,4 @@
-import { CLASS_PROPERTIES } from '@lib/common/decorator';
+import { CLASS_PROPERTIES } from '@lib/common/constant';
 import { PropertyOptions } from '@lib/common/type';
 import { Type } from '@nestjs/common';
 import { PickType, PartialType, OmitType } from '@nestjs/swagger';

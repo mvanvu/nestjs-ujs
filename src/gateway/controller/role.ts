@@ -22,21 +22,21 @@ export class RoleController extends BaseController {
    }
 
    @Permission({ key: serviceConfig.get('user.permissions.role.read') })
-   @ApiResultResponse(RoleEntity, { summary: 'Get list pagination of roles', pagination: true })
+   @ApiResultResponse(() => RoleEntity, { summary: 'Get list pagination of roles', pagination: true })
    @Get()
    paginate(@Query() query: PaginationQueryDto): Promise<Pagination<RoleEntity>> {
       return this.userProxy.send(roleCRUDPattern, { meta: { query, CRUD: { method: 'read' } } });
    }
 
    @Permission({ key: serviceConfig.get('user.permissions.role.read') })
-   @ApiResultResponse(RoleEntity, { summary: 'Get detail of roles' })
+   @ApiResultResponse(() => RoleEntity, { summary: 'Get detail of roles' })
    @Get(':id')
    read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<RoleEntity>> {
       return this.userProxy.send(roleCRUDPattern, { meta: { params: { id }, CRUD: { method: 'read' } } });
    }
 
    @Permission({ key: serviceConfig.get('user.permissions.role.create') })
-   @ApiResultResponse(RoleEntity, { summary: 'Create a new role', statusCode: HttpStatus.CREATED })
+   @ApiResultResponse(() => RoleEntity, { summary: 'Create a new role', statusCode: HttpStatus.CREATED })
    @Post()
    create(@Body() data: CreateRoleDto): Promise<EntityResponse<RoleEntity>> {
       return this.userProxy.send(roleCRUDPattern, { data, meta: { CRUD: { method: 'write' } } });
@@ -44,13 +44,13 @@ export class RoleController extends BaseController {
 
    @Permission({ key: serviceConfig.get('user.permissions.role.update') })
    @Patch(':id')
-   @ApiResultResponse(RoleEntity, { summary: 'Update new role' })
+   @ApiResultResponse(() => RoleEntity, { summary: 'Update new role' })
    update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateRoleDto): Promise<EntityResponse<RoleEntity>> {
       return this.userProxy.send(roleCRUDPattern, { data, meta: { params: { id }, CRUD: { method: 'write' } } });
    }
 
    @Permission({ key: serviceConfig.get('user.permissions.role.delete') })
-   @ApiResultResponse(RoleEntity, { summary: 'Delete a role' })
+   @ApiResultResponse(() => RoleEntity, { summary: 'Delete a role' })
    @Delete(':id')
    delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<RoleEntity>> {
       return this.userProxy.send(roleCRUDPattern, { meta: { params: { id }, CRUD: { method: 'delete' } } });

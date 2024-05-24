@@ -1,7 +1,7 @@
 import { Registry } from '@mvanvu/ujs';
 import dotenv from 'dotenv';
 import dotenvExpand from 'dotenv-expand';
-export { default as serviceConfig } from '@lib/service';
+export { serviceConfig } from '@lib/service';
 dotenvExpand.expand(dotenv.config());
 export const envConfig = Registry.from(process.env);
 

@@ -1,4 +1,4 @@
-import { CLASS_PROPERTIES } from '@lib/common/decorator';
+import { CLASS_PROPERTIES } from '@lib/common/constant';
 import { ClassConstructor } from '@lib/common/type';
 import { Is, ObjectRecord } from '@mvanvu/ujs';
 

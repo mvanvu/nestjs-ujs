@@ -23,14 +23,14 @@ export class UserController extends BaseController {
 
    @Public()
    @Post('signup')
-   @ApiResultResponse(UserEntity, { summary: 'Register a new user account' })
+   @ApiResultResponse(() => UserEntity, { summary: 'Register a new user account' })
    signUp(@Body() data: UserSignUpDto): Promise<UserEntity> {
       return this.userProxy.send(serviceConfig.get('user.patterns.signUp'), { data });
    }
 
    @Public()
    @Post('signin')
-   @ApiResultResponse(AuthEntity, { summary: 'Sign-in with the user account' })
+   @ApiResultResponse(() => AuthEntity, { summary: 'Sign-in with the user account' })
    signIn(@Body() data: UserSignInDto): Promise<AuthEntity> {
       return this.userProxy.send(serviceConfig.get('user.patterns.signIn'), { data });
    }
@@ -38,7 +38,7 @@ export class UserController extends BaseController {
    @Get()
    @Permission({ key: serviceConfig.get('user.permissions.user.read') })
    @ApiBearerAuth()
-   @ApiResultResponse(UserEntity, { summary: 'Admin get list pagination of the users' })
+   @ApiResultResponse(() => UserEntity, { summary: 'Admin get list pagination of the users' })
    paginate(@Query() query: PaginationQueryDto): Promise<Pagination<UserEntity>> {
       return this.userProxy.send(userCRUDPattern, { meta: { query, CRUD: { method: 'read' } } });
    }
@@ -46,7 +46,7 @@ export class UserController extends BaseController {
    @Get(':id')
    @Permission({ key: serviceConfig.get('user.permissions.user.read') })
    @ApiBearerAuth()
-   @ApiResultResponse(UserEntity, { summary: 'Admin get the detail of user account' })
+   @ApiResultResponse(() => UserEntity, { summary: 'Admin get the detail of user account' })
    read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
       return this.userProxy.send(userCRUDPattern, { meta: { params: { id }, CRUD: { method: 'read' } } });
    }
@@ -54,7 +54,7 @@ export class UserController extends BaseController {
    @Post()
    @Permission({ key: serviceConfig.get('user.permissions.user.create') })
    @ApiBearerAuth()
-   @ApiResultResponse(UserEntity, { summary: 'Admin create a new user account', statusCode: HttpStatus.CREATED })
+   @ApiResultResponse(() => UserEntity, { summary: 'Admin create a new user account', statusCode: HttpStatus.CREATED })
    create(@Body() data: CreateUserDto): Promise<EntityResponse<UserEntity>> {
       console.log({ data });
       return this.userProxy.send(userCRUDPattern, { data, meta: { CRUD: { method: 'write' } } });
@@ -63,7 +63,7 @@ export class UserController extends BaseController {
    @Patch(':id')
    @Permission({ key: serviceConfig.get('user.permissions.user.update') })
    @ApiBearerAuth()
-   @ApiResultResponse(UserEntity, { summary: 'Admin update the user account' })
+   @ApiResultResponse(() => UserEntity, { summary: 'Admin update the user account' })
    update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateUserDto): Promise<EntityResponse<UserEntity>> {
       return this.userProxy.send(userCRUDPattern, { data, meta: { params: { id }, CRUD: { method: 'write' } } });
    }
@@ -71,8 +71,15 @@ export class UserController extends BaseController {
    @Delete(':id')
    @Permission({ key: serviceConfig.get('user.permissions.user.delete') })
    @ApiBearerAuth()
-   @ApiResultResponse(UserEntity, { summary: 'Admin delete an user account' })
+   @ApiResultResponse(() => UserEntity, { summary: 'Admin delete an user account' })
    delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
       return this.userProxy.send(userCRUDPattern, { meta: { params: { id }, CRUD: { method: 'delete' } } });
+   }
+
+   @Delete(':id')
+   @ApiBearerAuth()
+   @ApiResultResponse(() => UserEntity, { summary: 'The user delete his/her self' })
+   deleteSelf(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
+      return this.userProxy.send(serviceConfig.get('user.patterns.deleteSelf'), { meta: { params: { id } } });
    }
 }

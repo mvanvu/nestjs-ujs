@@ -1,9 +1,9 @@
 import { Inject } from '@nestjs/common';
 import { RoleService } from '../provider';
-import { RoleEntity } from '@lib/service/user';
-import { serviceConfig } from '@config';
+import { RoleEntity } from '@lib/service';
 import { MessagePattern } from '@nestjs/microservices';
 import { CRUDResult } from '@lib/common';
+import { serviceConfig } from '@config';
 export class RoleController {
    @Inject(RoleService) readonly roleService: RoleService;
 
