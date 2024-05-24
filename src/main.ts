@@ -2,7 +2,7 @@ import { appConfig } from './config';
 
 async function bootstrap() {
    const appEnv = appConfig.get('appEnv');
-   const allApps: string[] = appEnv ? [appEnv] : ['gateway', 'user', 'storage'];
+   const allApps: string[] = appEnv !== 'all' ? [appEnv] : ['gateway', 'user', 'storage'];
 
    for (const app of allApps) {
       switch (app) {
@@ -21,4 +21,4 @@ async function bootstrap() {
    }
 }
 
-bootstrap();
+bootstrap().catch(console.debug);

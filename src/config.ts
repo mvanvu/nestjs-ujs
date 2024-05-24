@@ -7,7 +7,7 @@ export const envConfig = Registry.from(process.env);
 
 const appConfigData = {
    nodeEnv: envConfig.get<'development' | 'production' | 'test'>('NODE_ENV'),
-   appEnv: envConfig.get<'gateway' | 'user' | 'storage' | undefined>('APP_ENV'),
+   appEnv: envConfig.get<'gateway' | 'user' | 'storage' | 'all'>('APP_ENV', 'all'),
    apiGateway: {
       port: envConfig.get<number>('PORT', 9000, 'toUInt'),
       prefix: envConfig.get<string>('API_PREFIX', 'api'),
