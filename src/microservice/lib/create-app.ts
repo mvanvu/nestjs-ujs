@@ -6,12 +6,13 @@ import { appConfig } from '../../config';
 
 export async function createMicroserviceApp(
    AppModule: ClassConstructor<any>,
-   queue: string,
+   serviceName: string,
    onBeforeListen?: Callable,
 ) {
+   metadata.validateServiceName(serviceName);
    const app = await NestFactory.createMicroservice(AppModule, <MicroserviceOptions>{
       transport: Transport.RMQ,
-      options: { urls: [appConfig.get('rabbitMQ.url')], queue, queueOptions: { durable: true } },
+      options: { urls: [appConfig.get('rabbitMQ.url')], queue: `${serviceName}Queue`, queueOptions: { durable: true } },
    });
 
    // API payload validation
@@ -25,9 +26,9 @@ export async function createMicroserviceApp(
    }
 
    // Wrap the application with the metadata
-   metadata.setService(app);
+   metadata.setService(serviceName, app);
    await app
       .listen()
-      .then(() => console.log(`${queue} is listening`))
-      .catch((e) => console.debug(`${queue} listen ERR`, e));
+      .then(() => console.log(`The ${serviceName} microservice is listening`))
+      .catch((e) => console.debug(`The ${serviceName} microservice listen ERR`, e));
 }

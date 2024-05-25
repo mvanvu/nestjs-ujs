@@ -1,9 +1,9 @@
 import { Controller, Inject } from '@nestjs/common';
 import { UserService } from '../provider/user.service';
-import { UserSignInDto, UserSignUpDto, UserEntity, AuthEntity } from '@lib/service/user';
+import { UserSignInDto, UserSignUpDto, UserEntity, AuthEntity } from '@lib/service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { serviceConfig } from '@config';
 import { CRUDResult } from '@lib/common';
+import { serviceConfig } from '@config';
 
 @Controller()
 export class UserController {

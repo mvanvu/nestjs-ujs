@@ -1,10 +1,10 @@
 export default {
-   proxy: 'UserProxy',
+   name: 'user',
    patterns: {
       signIn: 'user.signIn',
       signUp: 'user.signUp',
       verify: 'user.verify',
-      deleteSeft: 'user.deleteSeft',
+      deleteSelf: 'user.deleteSelf',
       userCRUD: 'user.CRUD',
       roleCRUD: 'role.CRUD',
    },

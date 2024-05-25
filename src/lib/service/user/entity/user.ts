@@ -1,32 +1,29 @@
 import { appConfig } from '@config';
-import { Property } from '@lib/common/decorator';
+import { EntityProperty } from '@lib/common/decorator';
 import { BaseEntity } from '@lib/common/entity';
 import { PermissionOptions } from '@lib/common/type';
 import { Is, ObjectRecord } from '@mvanvu/ujs';
 import { UserStatus } from '.prisma/user';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UserEntity extends BaseEntity {
-   @Property()
+   @EntityProperty()
    id: string;
 
-   @Property()
+   @EntityProperty()
    status: UserStatus;
 
-   @Property()
+   @EntityProperty()
    name?: string;
 
-   @Property()
+   @EntityProperty()
    username?: string;
 
-   @Property()
+   @EntityProperty()
    email: string;
 
-   @Property({
-      swagger: {
-         example: { id: '6631e55d89af4ff2b9b51aa3', name: 'Admin role' },
-         isArray: true,
-      },
-   })
+   @ApiProperty({ example: { id: '6631e55d89af4ff2b9b51aa3', name: 'Admin role' }, isArray: true })
+   @EntityProperty()
    roles: { id: string; name: string; permissions: string[] }[];
 
    constructor(entity?: ObjectRecord) {
@@ -123,17 +120,17 @@ export class UserEntity extends BaseEntity {
 }
 
 export class AuthTokens {
-   @Property()
+   @EntityProperty()
    access: string;
 
-   @Property()
+   @EntityProperty()
    refresh: string;
 }
 
 export class AuthEntity extends BaseEntity {
-   @Property()
+   @EntityProperty()
    user: UserEntity;
 
-   @Property()
+   @EntityProperty()
    tokens: AuthTokens;
 }

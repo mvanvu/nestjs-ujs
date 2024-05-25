@@ -1,13 +1,13 @@
 import { Registry } from '@mvanvu/ujs';
 import dotenv from 'dotenv';
 import dotenvExpand from 'dotenv-expand';
-export { default as serviceConfig } from '@lib/service';
+export { serviceConfig } from '@lib/service';
 dotenvExpand.expand(dotenv.config());
 export const envConfig = Registry.from(process.env);
 
 const appConfigData = {
    nodeEnv: envConfig.get<'development' | 'production' | 'test'>('NODE_ENV'),
-   appEnv: envConfig.get<'gateway' | 'user' | 'storage'>('APP_ENV'),
+   appEnv: envConfig.get<'gateway' | 'user' | 'storage' | 'all'>('APP_ENV', 'all'),
    apiGateway: {
       port: envConfig.get<number>('PORT', 9000, 'toUInt'),
       prefix: envConfig.get<string>('API_PREFIX', 'api'),

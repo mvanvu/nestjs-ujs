@@ -8,6 +8,6 @@ import { serviceConfig } from '@config';
 })
 export class AppModule {
    static bootstrap(): Promise<void> {
-      return createMicroserviceApp(AppModule, `${serviceConfig.get('user.proxy')}Queue`);
+      return createMicroserviceApp(AppModule, serviceConfig.get('user.name'));
    }
 }
