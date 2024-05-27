@@ -121,7 +121,7 @@ export class UserService extends BaseService {
 
       const user = await this.prisma.user.findFirst({
          where: { OR },
-         select: this.userSelect,
+         select: { ...this.userSelect, password: true },
       });
 
       if (!user || user.status !== UserStatus.Active || !(await argon2.verify(user.password, password))) {

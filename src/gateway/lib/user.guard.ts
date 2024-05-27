@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
-import { UserEntity } from '@lib/service/user/entity';
+import { UserEntity } from '@lib/service/user';
 import { lastValueFrom, timeout } from 'rxjs';
 import { serviceConfig } from '@config';
 import { Is } from '@mvanvu/ujs';
@@ -71,7 +71,7 @@ export class UserAuthGuard implements CanActivate {
       try {
          const user = await lastValueFrom(
             app
-               .get<ClientProxy>(serviceConfig.get('user.proxy'))
+               .get<ClientProxy>(serviceConfig.get<string>('user.name').toUpperCase() + '_MICROSERVICE')
                .send(serviceConfig.get('user.patterns.verify'), token)
                .pipe(timeout(5000)),
          );

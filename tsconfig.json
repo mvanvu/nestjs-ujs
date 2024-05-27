@@ -29,6 +29,8 @@
          "@config": ["src/config"],
          "@lib": ["src/lib"],
          "@lib/*": ["src/lib/*"],
+         "@gateway": ["src/gateway"],
+         "@gateway/*": ["src/gateway/*"],
          "@service": ["src/microservice"],
          "@service/*": ["src/microservice/*"],
          "@": ["src"],

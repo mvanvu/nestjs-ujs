@@ -10,7 +10,7 @@ export function createClientAsyncOptions(name: string): ClientsProviderAsyncOpti
             transport: Transport.RMQ,
             options: {
                urls: [appConfig.get<string>('rabbitMQ.url')],
-               queue: `${name}Queue`,
+               queue: `${name}MicroserviceQueue`,
                queueOptions: { durable: true },
             },
          };
@@ -18,6 +18,6 @@ export function createClientAsyncOptions(name: string): ClientsProviderAsyncOpti
    };
 }
 
-export default serviceListNames.map((name) =>
+export const clientProxies = serviceListNames.map((name) =>
    ClientsModule.registerAsync({ isGlobal: true, clients: [createClientAsyncOptions(name)] }),
 );

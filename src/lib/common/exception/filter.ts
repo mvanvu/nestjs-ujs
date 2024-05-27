@@ -11,7 +11,6 @@ export class ExceptionFilter implements NestExceptionFilter {
    catch(exception: any, host: ArgumentsHost): void | Observable<any> {
       if (metadata.isGateway()) {
          const response = host.switchToHttp().getResponse<Response>();
-
          const exceptionResponse = Is.func(exception?.getResponse) ? exception.getResponse() : exception;
          const error =
             exceptionResponse?.error ||

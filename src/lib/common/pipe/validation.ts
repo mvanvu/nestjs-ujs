@@ -1,14 +1,20 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { EqualsRulesOptions, Is, IsValidType, ObjectRecord, Transform, Util } from '@mvanvu/ujs';
-import { CLASS_PROPERTIES, ClassConstructor, PropertyOptions, ThrowException } from '@lib/common';
+import {
+   CLASS_PROPERTIES,
+   ClassConstructor,
+   INIT_PARENT_PROPERTIES,
+   PropertyOptions,
+   ThrowException,
+} from '@lib/common';
 
 export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstructor<any>, thisInstance?: any) {
    if (!Is.object(data) || !Is.class(DTOClassRef)) {
       return data;
    }
 
-   if (!DTOClassRef.prototype['__INIT_PARENT_PROPERTIES__']) {
-      DTOClassRef.prototype['__INIT_PARENT_PROPERTIES__'] = true;
+   if (!DTOClassRef.prototype[INIT_PARENT_PROPERTIES]) {
+      DTOClassRef.prototype[INIT_PARENT_PROPERTIES] = true;
       let parentClass = Object.getPrototypeOf(DTOClassRef);
 
       while (Is.class(parentClass)) {

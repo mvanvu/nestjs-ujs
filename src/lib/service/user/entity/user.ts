@@ -6,25 +6,41 @@ import { Is, ObjectRecord } from '@mvanvu/ujs';
 import { UserStatus } from '.prisma/user';
 import { ApiProperty } from '@nestjs/swagger';
 
+export class RoleRefEntity {
+   @ApiProperty()
+   id: string;
+
+   @ApiProperty()
+   name: string;
+
+   @ApiProperty({ type: [String] })
+   permissions: string[];
+}
+
 export class UserEntity extends BaseEntity {
+   @ApiProperty()
    @EntityProperty()
    id: string;
 
+   @ApiProperty({ type: () => UserStatus, enum: UserStatus })
    @EntityProperty()
    status: UserStatus;
 
+   @ApiProperty()
    @EntityProperty()
    name?: string;
 
+   @ApiProperty()
    @EntityProperty()
    username?: string;
 
+   @ApiProperty()
    @EntityProperty()
    email: string;
 
-   @ApiProperty({ example: { id: '6631e55d89af4ff2b9b51aa3', name: 'Admin role' }, isArray: true })
+   @ApiProperty({ type: () => [RoleRefEntity] })
    @EntityProperty()
-   roles: { id: string; name: string; permissions: string[] }[];
+   roles: RoleRefEntity[];
 
    constructor(entity?: ObjectRecord) {
       super(entity);

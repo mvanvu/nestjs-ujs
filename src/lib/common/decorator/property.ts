@@ -1,5 +1,5 @@
-import { PropertyOptions } from '@lib/common/type';
-import { CLASS_PROPERTIES } from '@lib/common/constant';
+import { PropertyOptions } from '../type';
+import { CLASS_PROPERTIES } from '../constant';
 import { IsValidType } from '@mvanvu/ujs';
 
 export function EntityProperty<IsType extends IsValidType>(options?: PropertyOptions<IsType>): PropertyDecorator {

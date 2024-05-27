@@ -3,6 +3,17 @@ import { EntityProperty } from '@lib/common/decorator';
 import { BaseEntity } from '@lib/common/entity';
 import { ApiProperty } from '@nestjs/swagger';
 
+export class UserRefEntity {
+   @ApiProperty()
+   id: string;
+
+   @ApiProperty()
+   email: string;
+
+   @ApiProperty()
+   username: string;
+}
+
 export class RoleEntity extends BaseEntity {
    @EntityProperty()
    id: string;
@@ -19,11 +30,11 @@ export class RoleEntity extends BaseEntity {
    @EntityProperty()
    updatedAt?: Date;
 
-   @ApiProperty({ example: { id: '6631e55d89af4ff2b9b51aa3', email: 'john.due@email.com', username: 'john' } })
+   @ApiProperty({ type: () => UserRefEntity })
    @EntityProperty()
    author?: { id: string; email: string; username: string };
 
-   @ApiProperty({ example: { id: '6631e55d89af4ff2b9b51aa3', email: 'john.due@email.com', username: 'john' } })
+   @ApiProperty({ type: () => UserRefEntity })
    @EntityProperty()
    editor?: { id: string; email: string; username: string };
 

@@ -8,7 +8,7 @@
     "start:gateway:dev": "(pm2 delete ujs-gateway || true) && cross-env APP_ENV=gateway pm2 start nest --name ujs-gateway -- start -w",
     "start:user:dev": "(pm2 delete ujs-user || true) && cross-env APP_ENV=user pm2 start nest --name ujs-user -- start -w",
     "start:storage:dev": "(pm2 delete ujs-storage || true) && cross-env APP_ENV=storage pm2 start nest --name ujs-storage -- start -w",
-    "start:all:dev": "cross-env APP_ENV=all nest start -w",
+    "start:all:dev": "yarn start:gateway:dev && yarn start:user:dev && yarn start:storage:dev && pm2 logs",
     "build": "nest build",
     "format": "prettier --write \"./**/src/**/*.ts\"",
     "docker:build": "(docker rmi mongodb:latest || true) && docker build -f ./docker/Dockerfile -t mongodb:latest .",

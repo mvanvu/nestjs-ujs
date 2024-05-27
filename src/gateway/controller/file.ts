@@ -1,12 +1,13 @@
 import { Body, Controller, Inject, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { BaseClientProxy, BaseController } from '../lib';
+import { ApiConsumes, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { BaseClientProxy, BaseController, Permission } from '../lib';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { serviceConfig } from '@lib/service';
 import { FileProvider } from '../provider';
 import { FileEntity, UploadDto } from '@lib/service/storage';
-import { ApiResultResponse, Permission } from '@lib/common';
+import { ApiEntityResponse } from '@lib/common';
 
+@ApiBearerAuth()
 @ApiTags('Files')
 @Controller('files')
 export class FileController extends BaseController {
@@ -20,7 +21,7 @@ export class FileController extends BaseController {
    @Permission({ key: serviceConfig.get('storage.permissions.file.upload') })
    @UseInterceptors(FileInterceptor('file'))
    @ApiConsumes('multipart/form-data')
-   @ApiResultResponse(() => FileEntity, { summary: 'Upload a file' })
+   @ApiEntityResponse(FileEntity, { summary: 'Upload a file' })
    async upload(@Body() dto: UploadDto, @UploadedFile() file: Express.Multer.File): Promise<FileEntity> {
       const data = await this.fileProvider.upload({ ...dto, file });
 

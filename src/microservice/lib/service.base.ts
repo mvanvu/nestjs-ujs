@@ -1,10 +1,10 @@
 import { MessageMeta } from '@lib/common';
 import { UserEntity } from '@lib/service';
 import { Registry } from '@mvanvu/ujs';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Scope } from '@nestjs/common';
 import { CONTEXT, RequestContext } from '@nestjs/microservices';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class BaseService {
    @Inject(CONTEXT) readonly ctx: RequestContext;
 

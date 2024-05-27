@@ -1,6 +1,6 @@
 import { MiddlewareConsumer, Module, VersioningType } from '@nestjs/common';
 import { APP_GUARD, NestFactory } from '@nestjs/core';
-import proxies from './proxy.module';
+import { clientProxies } from './proxy.module';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
@@ -19,7 +19,7 @@ import { FileController, RoleController, UserController } from './controller';
 import { FileProvider } from './provider';
 
 @Module({
-   imports: proxies,
+   imports: [...clientProxies],
    controllers: [RoleController, UserController, FileController],
    providers: [
       {

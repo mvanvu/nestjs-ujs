@@ -5,7 +5,7 @@ import { type NestExpressApplication } from '@nestjs/platform-express';
 class Metadata {
    private appGateway: NestExpressApplication;
 
-   private appService: Record<string, INestMicroservice> = {};
+   private appService: INestMicroservice;
 
    validateServiceName(serviceName: string) {
       if (!serviceListNames.includes(serviceName)) {
@@ -25,15 +25,14 @@ class Metadata {
       return this;
    }
 
-   getService(serviceName: string): INestMicroservice {
-      this.validateServiceName(serviceName);
-
-      return this.appService[serviceName];
+   getService(): INestMicroservice {
+      return this.appService;
    }
 
-   setService(serviceName: string, app: INestMicroservice): this {
-      this.validateServiceName(serviceName);
-      this.appService[serviceName] = app;
+   setService(app: INestMicroservice): this {
+      if (!this.appService) {
+         this.appService = app;
+      }
 
       return this;
    }

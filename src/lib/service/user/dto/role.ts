@@ -18,7 +18,7 @@ export class CreateRoleDto {
    })
    description?: string;
 
-   @ApiProperty({ description: 'The status of the role', example: UserStatus.Active })
+   @ApiProperty({ description: 'The status of the role', type: 'string', example: UserStatus.Active })
    @EntityProperty({ optional: true, validate: { is: 'string' } })
    status?: RoleStatus;
 
