@@ -25,7 +25,7 @@ export class RoleService extends BaseService {
       },
    };
 
-   roleCRUD() {
+   executeCRUD() {
       return this.prisma
          .createCRUD('role')
          .select(this.roleSelect)

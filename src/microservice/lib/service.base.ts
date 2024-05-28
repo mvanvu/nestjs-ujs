@@ -9,9 +9,13 @@ export class BaseService {
    @Inject(CONTEXT) readonly ctx: RequestContext;
 
    get meta(): Registry<MessageMeta> {
+      return BaseService.parseMeta(this.ctx);
+   }
+
+   static parseMeta(ctx: RequestContext): Registry<MessageMeta> {
       const {
          properties: { headers },
-      } = this.ctx.getContext().getMessage();
+      } = ctx.getContext().getMessage();
 
       const meta = Registry.from<MessageMeta>(headers?.['x-meta']);
 

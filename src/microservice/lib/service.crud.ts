@@ -6,13 +6,14 @@ import {
    PaginationResult,
    UpdateResult,
    CRUDResult,
-   validateDTO,
+   // validateDTO,
    ClassConstructor,
    ID,
 } from '@lib/common';
 import { DateTime, Is, IsEqual, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { BaseService } from './service.base';
+import { RequestContext } from '@nestjs/microservices';
 
 export type OnBeforeCreate<TData extends ObjectRecord = any> = (data: TData) => any | Promise<any>;
 export type OnBeforeUpdate<TData extends ObjectRecord = any, TRecord extends ObjectRecord = any> = (
@@ -28,7 +29,7 @@ export type OnEntity =
      ) => any | Promise<any>);
 
 @Injectable()
-export class CRUDService<TPrismaService extends { models: ObjectRecord }> extends BaseService {
+export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    readonly logger: Logger;
 
    private prismaSelect: ObjectRecord;
@@ -56,7 +57,6 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> extend
       private readonly prisma: TPrismaService,
       private readonly model: string,
    ) {
-      super();
       this.logger = new Logger(this.constructor.name);
    }
 
@@ -561,8 +561,8 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> extend
       return record;
    }
 
-   async execute<TResult>(createDto: any, updateDto: any): Promise<CRUDResult<TResult>> {
-      const meta = this.meta;
+   async execute<TResult>(ctx: RequestContext): Promise<CRUDResult<TResult>> {
+      const meta = BaseService.parseMeta(ctx);
       const recordId = meta.get('params.id');
       const userId = meta.get('headers.user.id');
       const method = meta.get('CRUD.method');
@@ -582,8 +582,10 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> extend
 
          case 'write':
             // Validate data
-            const DTOClassRef: ClassConstructor<any> = recordId ? updateDto : createDto;
-            const data = await validateDTO(this.ctx.getData(), DTOClassRef);
+            // const DTOClassRef: ClassConstructor<any> = recordId ? updateDto : createDto;
+            // const data = await validateDTO(ctx.getData(), DTOClassRef);
+
+            const data = ctx.getData();
 
             if (userId) {
                data[recordId ? 'updatedBy' : 'createdBy'] = userId;

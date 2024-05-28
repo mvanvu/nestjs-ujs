@@ -11,8 +11,6 @@ export function CreatePrismaService<TDataModel extends ObjectRecord>(
    type ModelName = keyof TDataModel;
 
    class BasePrismaService extends PrismaClientRef implements OnModuleInit, OnApplicationShutdown {
-      readonly ctx: RequestContext;
-
       get models(): TDataModel {
          return dataModel;
       }

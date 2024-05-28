@@ -152,7 +152,7 @@ export class UserService extends BaseService {
       return new UserEntity(user);
    }
 
-   userCRUD() {
+   executeCRUD() {
       return this.prisma
          .createCRUD('user')
          .select(Registry.from(this.userSelect).remove('userRoles.select.role.select.permissions').valueOf())

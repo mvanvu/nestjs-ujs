@@ -11,7 +11,7 @@ export class UserController {
 
    @MessagePattern(serviceConfig.get('user.patterns.userCRUD'))
    CRUD(): Promise<CRUDResult<UserEntity>> {
-      return this.userService.userCRUD().execute();
+      return this.userService.executeCRUD();
    }
 
    @MessagePattern(serviceConfig.get('user.patterns.signUp'))
