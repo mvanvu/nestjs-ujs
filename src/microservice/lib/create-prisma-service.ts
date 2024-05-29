@@ -24,7 +24,7 @@ export function CreatePrismaService<TDataModel extends ObjectRecord>(
          await this.$disconnect();
       }
 
-      createCRUD(model: ModelName): CRUDService<this> {
+      createCRUDService(model: ModelName): CRUDService<this> {
          return new CRUDService(this, <string>model);
       }
    }

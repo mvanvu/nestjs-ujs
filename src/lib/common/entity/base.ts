@@ -14,7 +14,7 @@ export class BaseEntity {
       const entity = new cls();
 
       for (const prop of props) {
-         if (!Is.nothing(obj[prop])) {
+         if (!Is.undefined(obj[prop])) {
             entity[prop] = obj[prop];
          }
       }

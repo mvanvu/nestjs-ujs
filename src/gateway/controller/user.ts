@@ -7,6 +7,7 @@ import {
    Permission,
    ApiPaginationResponse,
    ApiEntityResponse,
+   GetUser,
 } from '@lib/common';
 import { CreateUserDto, UserSignInDto, UserSignUpDto, UserEntity, AuthEntity, UpdateUserDto } from '@lib/service/user';
 import { BaseController, BaseClientProxy, PaginationResponse, EntityResponse } from '../lib';
@@ -32,6 +33,13 @@ export class UserController extends BaseController {
    @ApiEntityResponse(AuthEntity, { summary: 'Sign-in with the user account' })
    signIn(@Body() data: UserSignInDto): Promise<AuthEntity> {
       return this.userProxy.send(serviceConfig.get('user.patterns.signIn'), { data });
+   }
+
+   @Get('me')
+   @ApiBearerAuth()
+   @ApiEntityResponse(UserEntity, { summary: 'Get the detail of the logged user' })
+   me(@GetUser() user: UserEntity): UserEntity {
+      return user;
    }
 
    @Get()

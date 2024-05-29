@@ -1,13 +1,11 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { BaseClientProxy, BaseController } from '../lib';
+import { BaseClientProxy, BaseController, EntityResponse, PaginationResponse } from '../lib';
 import {
    PaginationQueryDto,
    ParseMongoIdPipe,
    Permission,
    ApiPaginationResponse,
-   EntityResponse,
-   PaginationResponse,
    ApiEntityResponse,
 } from '@lib/common';
 import { serviceConfig } from '@config';

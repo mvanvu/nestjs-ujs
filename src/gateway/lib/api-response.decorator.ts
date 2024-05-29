@@ -42,11 +42,11 @@ export const ApiPaginationResponse = <TEntity extends Type<any>>(entity: TEntity
                { $ref: getSchemaPath(PaginationResponse) },
                {
                   properties: {
-                     meta: { $ref: getSchemaPath(PaginationMetaResponse) },
                      data: {
                         type: 'array',
                         items: { $ref: getSchemaPath(entity) },
                      },
+                     meta: { $ref: getSchemaPath(PaginationMetaResponse) },
                   },
                },
             ],

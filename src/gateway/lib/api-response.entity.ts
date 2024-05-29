@@ -15,10 +15,10 @@ export class PaginationResponse<TData> {
    @ApiProperty()
    success: true;
 
+   data: TData[];
+
    @ApiProperty({ type: () => PaginationMetaResponse })
    meta: PaginationMetaResponse;
-
-   data: TData[];
 }
 
 export class EntityResponse<TData> {

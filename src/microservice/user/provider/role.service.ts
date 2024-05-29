@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma, UserStatus } from '.prisma/user';
-import { RoleEntity } from '@lib/service/user';
+import { CreateRoleDto, RoleEntity } from '@lib/service/user';
 import { BaseService } from '@service/lib';
-import { ThrowException } from '@lib/common';
+import { CRUDResult, ThrowException } from '@lib/common';
 
 @Injectable()
 export class RoleService extends BaseService {
@@ -25,15 +25,17 @@ export class RoleService extends BaseService {
       },
    };
 
-   executeCRUD() {
+   executeCRUD(): Promise<CRUDResult<RoleEntity>> {
       return this.prisma
-         .createCRUD('role')
+         .createCRUDService('Role')
          .select(this.roleSelect)
+         .validateDTOPipe(CreateRoleDto)
          .entity(RoleEntity)
          .beforeDelete((role: RoleEntity) => {
             if (role.totalUsers) {
                ThrowException(`Can't delete the role which has some users who assigned to it`);
             }
-         });
+         })
+         .execute(this.ctx);
    }
 }

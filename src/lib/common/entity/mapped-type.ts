@@ -1,59 +1,102 @@
 import { CLASS_PROPERTIES } from '@lib/common/constant';
-import { PropertyOptions } from '@lib/common/type';
+import { ClassConstructor } from '@lib/common/type';
+import { Is } from '@mvanvu/ujs';
 import { Type } from '@nestjs/common';
 import { PickType, PartialType, OmitType } from '@nestjs/swagger';
 
-export function IPickType<T, K extends keyof T>(
-   classRef: Type<T>,
-   keys: readonly K[],
-): Type<Pick<T, (typeof keys)[number]>> {
-   const PickedClass = PickType(classRef, keys);
-   const props = classRef.prototype[CLASS_PROPERTIES] as Record<string, PropertyOptions<any>>;
+export function initParentProperties(ClassRef: ClassConstructor<any>): void {
+   if (!ClassRef.prototype[CLASS_PROPERTIES]) {
+      ClassRef.prototype[CLASS_PROPERTIES] = {};
+   }
 
-   if (props) {
-      PickedClass.prototype[CLASS_PROPERTIES] = {};
+   let parentClass = Object.getPrototypeOf(ClassRef);
 
-      for (const key of keys) {
-         if (props.hasOwnProperty(key)) {
-            PickedClass.prototype[CLASS_PROPERTIES][key] = props[key as string];
+   while (Is.class(parentClass)) {
+      if (parentClass.prototype[CLASS_PROPERTIES]) {
+         Object.assign(ClassRef.prototype[CLASS_PROPERTIES], parentClass.prototype[CLASS_PROPERTIES]);
+      }
+
+      parentClass = Object.getPrototypeOf(parentClass);
+   }
+}
+
+export function assignClassProperties(
+   ClassRefA: ClassConstructor<any>,
+   ClassRefB: ClassConstructor<any>,
+   options?: { includeKeys?: string[]; excludeKeys?: string[]; optional?: boolean },
+): void {
+   if (!ClassRefA.prototype[CLASS_PROPERTIES]) {
+      ClassRefA.prototype[CLASS_PROPERTIES] = {};
+   }
+
+   if (!ClassRefB.prototype[CLASS_PROPERTIES]) {
+      ClassRefB.prototype[CLASS_PROPERTIES] = {};
+   }
+
+   if (options?.includeKeys?.length || options?.excludeKeys?.length) {
+      if (options.includeKeys) {
+         for (const key of options.includeKeys) {
+            if (ClassRefB.prototype[CLASS_PROPERTIES].hasOwnProperty(key)) {
+               ClassRefA.prototype[CLASS_PROPERTIES][key] = ClassRefB.prototype[CLASS_PROPERTIES][key];
+
+               if (options.optional) {
+                  ClassRefA.prototype[CLASS_PROPERTIES][key].optional = true;
+               }
+            }
+         }
+      }
+
+      if (options.excludeKeys) {
+         for (const key in ClassRefB.prototype[CLASS_PROPERTIES]) {
+            if (ClassRefB.prototype[CLASS_PROPERTIES].hasOwnProperty(key) && !options.excludeKeys.includes(key)) {
+               ClassRefA.prototype[CLASS_PROPERTIES][key] = ClassRefB.prototype[CLASS_PROPERTIES][key];
+
+               if (options.optional) {
+                  ClassRefA.prototype[CLASS_PROPERTIES][key].optional = true;
+               }
+            }
+         }
+      }
+   } else {
+      Object.assign(ClassRefA.prototype[CLASS_PROPERTIES], ClassRefB.prototype[CLASS_PROPERTIES]);
+
+      if (options.optional) {
+         for (const key in ClassRefA.prototype[CLASS_PROPERTIES]) {
+            ClassRefA.prototype[CLASS_PROPERTIES][key].optional = true;
          }
       }
    }
+}
+
+export function IPickType<T, K extends keyof T>(
+   ClassRef: Type<T>,
+   keys: readonly K[],
+): Type<Pick<T, (typeof keys)[number]>> {
+   const PickedClass = PickType(ClassRef, keys);
+   initParentProperties(ClassRef);
+   assignClassProperties(PickedClass, ClassRef, { includeKeys: keys as unknown as string[] });
+   Object.defineProperty(PickedClass, 'name', { value: `Picked${ClassRef.constructor.name}` });
 
    return PickedClass;
 }
 
-export function IPartialType<T>(classRef: Type<T>, options?: { skipNullProperties?: boolean }): Type<Partial<T>> {
-   const PartialClass = PartialType(classRef, options);
-   const props = classRef.prototype[CLASS_PROPERTIES] as Record<string, PropertyOptions<any>>;
-
-   if (props) {
-      PartialClass.prototype[CLASS_PROPERTIES] = {};
-
-      for (const prop in props) {
-         PartialClass.prototype[CLASS_PROPERTIES][prop] = { ...props[prop], optional: true };
-      }
-   }
+export function IPartialType<T>(ClassRef: Type<T>, options?: { skipNullProperties?: boolean }): Type<Partial<T>> {
+   const PartialClass = PartialType(ClassRef, options);
+   initParentProperties(ClassRef);
+   assignClassProperties(PartialClass, ClassRef, { optional: true });
+   Object.defineProperty(PartialClass, 'name', { value: `Partial${ClassRef.constructor.name}` });
 
    return PartialClass;
 }
 
 export function IOmitType<T, K extends keyof T>(
-   classRef: Type<T>,
+   ClassRef: Type<T>,
    keys: readonly K[],
 ): Type<Omit<T, (typeof keys)[number]>> {
-   const OmitClass = OmitType(classRef, keys);
-   const props = classRef.prototype[CLASS_PROPERTIES] as Record<string, PropertyOptions<any>>;
-
-   if (props) {
-      OmitClass.prototype[CLASS_PROPERTIES] = {};
-
-      for (const prop in props) {
-         if (!(keys as unknown as string[]).includes(prop)) {
-            OmitClass.prototype[CLASS_PROPERTIES][prop] = props[prop];
-         }
-      }
-   }
+   const OmitClass = OmitType(ClassRef, keys);
+   initParentProperties(ClassRef);
+   assignClassProperties(OmitClass, ClassRef, { excludeKeys: keys as unknown as string[] });
+   Object.defineProperty(OmitClass, 'name', { value: `Omit${ClassRef.constructor.name}` });
 
    return OmitClass;
 }

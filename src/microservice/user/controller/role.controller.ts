@@ -8,7 +8,7 @@ export class RoleController {
    @Inject(RoleService) readonly roleService: RoleService;
 
    @MessagePattern(serviceConfig.get('user.patterns.roleCRUD'))
-   CRUD(): Promise<CRUDResult<RoleEntity>> {
+   executeCRUD(): Promise<CRUDResult<RoleEntity>> {
       return this.roleService.executeCRUD();
    }
 }

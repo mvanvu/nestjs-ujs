@@ -10,7 +10,7 @@ export class UserController {
    @Inject(UserService) readonly userService: UserService;
 
    @MessagePattern(serviceConfig.get('user.patterns.userCRUD'))
-   CRUD(): Promise<CRUDResult<UserEntity>> {
+   executeCRUD(): Promise<CRUDResult<UserEntity>> {
       return this.userService.executeCRUD();
    }
 
@@ -31,6 +31,6 @@ export class UserController {
 
    @MessagePattern(serviceConfig.get('user.patterns.deleteSelf'))
    deleteSelf(): Promise<UserEntity> {
-      return this.userService.deleteSelf(this.userService.meta.get<number>('headers.user.id'));
+      return this.userService.deleteSelf(this.userService.meta.get<string>('headers.user.id'));
    }
 }

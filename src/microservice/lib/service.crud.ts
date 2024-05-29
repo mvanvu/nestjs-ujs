@@ -6,9 +6,9 @@ import {
    PaginationResult,
    UpdateResult,
    CRUDResult,
-   // validateDTO,
    ClassConstructor,
-   ID,
+   IPartialType,
+   validateDTO,
 } from '@lib/common';
 import { DateTime, Is, IsEqual, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
@@ -35,6 +35,10 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    private prismaSelect: ObjectRecord;
 
    private prismaInclude: ObjectRecord;
+
+   private createDTO?: ClassConstructor<any>;
+
+   private updateDTO?: ClassConstructor<any>;
 
    private events: {
       onBeforeCreate?: OnBeforeCreate;
@@ -98,6 +102,16 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
 
    entity(callback: OnEntity): this {
       this.events.onEntity = callback;
+
+      return this;
+   }
+
+   validateDTOPipe<TCreateDTO = any, TUpdateDTO = TCreateDTO>(
+      createDTO: ClassConstructor<TCreateDTO>,
+      updateDTO?: ClassConstructor<TUpdateDTO>,
+   ): this {
+      this.createDTO = createDTO;
+      this.updateDTO = updateDTO;
 
       return this;
    }
@@ -476,7 +490,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       return this.events.onEntity ? await this.callOnEntity(record, { context: 'create' }) : record;
    }
 
-   async update<TResult, TData extends ObjectRecord>(id: ID, data: TData): Promise<UpdateResult<TResult>> {
+   async update<TResult, TData extends ObjectRecord>(id: string, data: TData): Promise<UpdateResult<TResult>> {
       const model = this.prisma[this.model];
       let oldRecord = await model['findFirst']({
          where: { id },
@@ -528,7 +542,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       return { data: <TResult>record, meta: { diff } };
    }
 
-   async delete<TResult>(id: ID): Promise<TResult> {
+   async delete<TResult>(id: string): Promise<TResult> {
       let record = await this.prisma[this.model]['findFirst']({
          where: { id },
          select: this.prismaSelect,
@@ -554,6 +568,8 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
             data: { status: 'Trashed' },
             where: { id },
          });
+
+         record.status = 'Trashed';
       } else {
          await this.prisma[this.model]['delete']({ select: { id: true }, where: { id } });
       }
@@ -581,11 +597,11 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
                : this.paginate<TResult>(meta.get('query'), meta.get('CRUD.where'));
 
          case 'write':
-            // Validate data
-            // const DTOClassRef: ClassConstructor<any> = recordId ? updateDto : createDto;
-            // const data = await validateDTO(ctx.getData(), DTOClassRef);
-
-            const data = ctx.getData();
+            // Check to validate data
+            const DTOClassRef: ClassConstructor<any> = recordId
+               ? this.updateDTO ?? (this.createDTO ? IPartialType(this.createDTO) : undefined)
+               : this.createDTO;
+            const data = DTOClassRef ? await validateDTO(ctx.getData(), DTOClassRef) : ctx.getData();
 
             if (userId) {
                data[recordId ? 'updatedBy' : 'createdBy'] = userId;

@@ -18,7 +18,7 @@ export class RoleRefEntity {
 }
 
 export class UserEntity extends BaseEntity {
-   @ApiProperty()
+   @ApiProperty({ type: String })
    @EntityProperty()
    id: string;
 
@@ -41,6 +41,22 @@ export class UserEntity extends BaseEntity {
    @ApiProperty({ type: () => [RoleRefEntity] })
    @EntityProperty()
    roles: RoleRefEntity[];
+
+   @ApiProperty()
+   @EntityProperty()
+   createdAt: Date;
+
+   @ApiProperty({ type: String })
+   @EntityProperty()
+   createdBy: string;
+
+   @ApiProperty()
+   @EntityProperty()
+   updatedAt: Date;
+
+   @ApiProperty()
+   @EntityProperty()
+   updatedBy: string;
 
    constructor(entity?: ObjectRecord) {
       super(entity);

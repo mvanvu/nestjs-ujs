@@ -2,7 +2,7 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Response, NextFunction } from 'express';
 import DeviceDetector from 'node-device-detector';
 import DeviceHelper from 'node-device-detector/helper';
-import { Registry } from '@mvanvu/ujs';
+import { Path, Registry } from '@mvanvu/ujs';
 import { HttpRequest, RequestRegistryData } from '@lib/common';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class HttpMiddleware implements NestMiddleware {
       }
 
       // Registry for local storage
-      req.registry = Registry.from<RequestRegistryData>({
+      req.registry = Registry.from<Path<RequestRegistryData>>({
          device,
          userAgent,
          ipAddress: req.ips.length ? req.ips[0] : req.ip,

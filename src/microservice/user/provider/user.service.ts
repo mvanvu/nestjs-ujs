@@ -6,7 +6,7 @@ import * as argon2 from 'argon2';
 import { DateTime, Hash, Is, Registry } from '@mvanvu/ujs';
 import { appConfig, serviceConfig } from '@config';
 import { BaseService } from '@service/lib';
-import { FieldsException, ThrowException, ID } from '@lib/common';
+import { FieldsException, ThrowException, CRUDResult } from '@lib/common';
 
 @Injectable()
 export class UserService extends BaseService {
@@ -18,7 +18,9 @@ export class UserService extends BaseService {
       name: true,
       email: true,
       createdAt: true,
+      createdBy: true,
       updatedAt: true,
+      updatedBy: true,
       status: true,
       userRoles: {
          select: {
@@ -142,7 +144,7 @@ export class UserService extends BaseService {
       return new UserEntity(user);
    }
 
-   async deleteSelf(id: ID) {
+   async deleteSelf(id: string) {
       const user = await this.prisma.user.update({
          where: { id },
          data: { status: UserStatus.Trashed },
@@ -152,12 +154,13 @@ export class UserService extends BaseService {
       return new UserEntity(user);
    }
 
-   executeCRUD() {
+   executeCRUD(): Promise<CRUDResult<UserEntity>> {
       return this.prisma
-         .createCRUD('user')
+         .createCRUDService('User')
          .select(Registry.from(this.userSelect).remove('userRoles.select.role.select.permissions').valueOf())
-         .options({ softDelete: true })
+         .options({ softDelete: true, list: { searchFields: ['name', 'username', 'email'] } })
          .entity(UserEntity)
+         .validateDTOPipe(CreateUserDto)
          .beforeCreate(async (data: CreateUserDto) => {
             await this.validateUserDto(data);
             Object.assign(data, {
@@ -167,7 +170,7 @@ export class UserService extends BaseService {
          })
          .beforeUpdate(async (data: UpdateUserDto, user: UserEntity) => {
             if (data.email || data.username || data.roles) {
-               await this.validateUserDto(data, record.id);
+               await this.validateUserDto(data, user.id);
             }
 
             // Verify permission

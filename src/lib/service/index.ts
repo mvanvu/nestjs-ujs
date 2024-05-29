@@ -1,4 +1,4 @@
-import { Registry } from '@mvanvu/ujs';
+import { Path, Registry } from '@mvanvu/ujs';
 
 // Service shared lib
 export * from './storage';
@@ -9,7 +9,8 @@ import user from './user/config';
 import storage from './storage/config';
 import { loadPermissionKeys } from '@lib/common/util';
 
-export const serviceConfig = Registry.from({ user, storage }, { consistent: true });
+const serviceConfigData = { user, storage };
+export const serviceConfig = Registry.from<Path<typeof serviceConfigData>>(serviceConfigData, { consistent: true });
 export const serviceListNames: string[] = [serviceConfig.get('user.name'), serviceConfig.get('storage.name')];
 
 // Load all permission keys

@@ -1,35 +1,19 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { EqualsRulesOptions, Is, IsValidType, ObjectRecord, Transform, Util } from '@mvanvu/ujs';
-import {
-   CLASS_PROPERTIES,
-   ClassConstructor,
-   INIT_PARENT_PROPERTIES,
-   PropertyOptions,
-   ThrowException,
-} from '@lib/common';
+import { CLASS_PROPERTIES, ClassConstructor, PropertyOptions, ThrowException, initParentProperties } from '@lib/common';
 
 export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstructor<any>, thisInstance?: any) {
    if (!Is.object(data) || !Is.class(DTOClassRef)) {
       return data;
    }
 
-   if (!DTOClassRef.prototype[INIT_PARENT_PROPERTIES]) {
-      DTOClassRef.prototype[INIT_PARENT_PROPERTIES] = true;
-      let parentClass = Object.getPrototypeOf(DTOClassRef);
-
-      while (Is.class(parentClass)) {
-         if (parentClass.prototype[CLASS_PROPERTIES]) {
-            Object.assign(DTOClassRef.prototype[CLASS_PROPERTIES], parentClass.prototype[CLASS_PROPERTIES]);
-         }
-
-         parentClass = Object.getPrototypeOf(parentClass);
-      }
-   }
-
+   initParentProperties(DTOClassRef);
    const error: Record<string, Array<string | number>> = {};
    const propertyOptions: Record<string, PropertyOptions<IsValidType>> | undefined =
       DTOClassRef.prototype[CLASS_PROPERTIES];
    const props: string[] = Object.keys(DTOClassRef.prototype[CLASS_PROPERTIES] || {});
+
+   // console.log(DTOClassRef, JSON.stringify(DTOClassRef.prototype[CLASS_PROPERTIES], null, 2));
 
    // Cleanup data
    for (const prop in data) {

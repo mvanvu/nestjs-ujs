@@ -1,4 +1,4 @@
-import { CommonType, IsValidOptions, IsValidType, Registry, Transform } from '@mvanvu/ujs';
+import { CommonType, IsValidOptions, IsValidType, Path, Registry, Transform } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { VersionValue } from '@nestjs/common/interfaces';
 import { UserEntity } from '@lib/service/user/entity';
@@ -15,7 +15,7 @@ export type RequestRegistryData = {
 };
 
 export interface HttpRequest extends Request {
-   registry: Registry<RequestRegistryData>;
+   registry: Registry<Path<RequestRegistryData>>;
 }
 
 export type ClassConstructor<T> = new (...arg: any[]) => T;
@@ -80,6 +80,3 @@ export type PropertyOptions<IsType extends IsValidType> = {
 };
 
 export type PermissionOptions = { key?: string; or?: string[]; and?: string[] } | string;
-
-// String for mongo ID, change to number if using MySQL/MSSQL...
-export type ID = string;
