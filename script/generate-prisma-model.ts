@@ -13,6 +13,7 @@ for (const name in models) {
    if (!fs.existsSync(filePath)) {
       fs.mkdirSync(filePath, { recursive: true });
    }
+
    models[name].dmmf.datamodel.models.forEach((model: DMMF.Model) => (contentJson[model.name] = model));
 
    // Write file data model

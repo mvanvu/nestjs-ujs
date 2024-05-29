@@ -231,6 +231,7 @@ export class UserService extends BaseService {
                   ThrowException(`You can't delete the user who has the greater permissions than you`);
                }
             }
-         });
+         })
+         .execute(this.ctx);
    }
 }

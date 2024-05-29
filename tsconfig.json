@@ -12,20 +12,13 @@
       "baseUrl": "./",
       "incremental": true,
       "skipLibCheck": true,
-      "resolveJsonModule": true,
-      "strict": true,
-      "esModuleInterop": true,
-      "useUnknownInCatchVariables": true,
-      "strictFunctionTypes": true,
-      "allowUnusedLabels": false,
-      "allowUnreachableCode": false,
-      "noPropertyAccessFromIndexSignature": false,
-      "forceConsistentCasingInFileNames": true,
-      "rootDir": ".",
       "strictNullChecks": false,
       "noImplicitAny": false,
-      "strictBindCallApply": true,
+      "strictBindCallApply": false,
+      "forceConsistentCasingInFileNames": false,
+      "noFallthroughCasesInSwitch": false,
       "allowJs": true,
+      "checkJs": true,
       "paths": {
          "@config": ["src/config"],
          "@lib": ["src/lib"],
@@ -37,5 +30,7 @@
          "@": ["src"],
          "@/*": ["src/*"]
       }
-   }
+   },
+   "include": ["src/**/*.ts"],
+   "exclude": ["node_modules", "**/node_modules/*", "dist"]
 }

@@ -31,6 +31,6 @@ export class UserController {
 
    @MessagePattern(serviceConfig.get('user.patterns.deleteSelf'))
    deleteSelf(): Promise<UserEntity> {
-      return this.userService.deleteSeft(this.meta.get<number>('headers.user.id'));
+      return this.userService.deleteSelf(this.userService.meta.get<number>('headers.user.id'));
    }
 }
