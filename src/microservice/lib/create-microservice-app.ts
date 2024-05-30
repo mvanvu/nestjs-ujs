@@ -1,15 +1,15 @@
-import { ClassConstructor, ValidationPipe, metadata, ExceptionFilter } from '@lib/common';
+import { ClassConstructor, ValidationPipe, ExceptionFilter } from '@lib/common';
 import { Callable, Util } from '@mvanvu/ujs';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { appConfig } from '../../config';
+import { metadata } from '@lib/metadata';
 
 export async function createMicroserviceApp(
    AppModule: ClassConstructor<any>,
    serviceName: string,
    onBeforeListen?: Callable,
 ) {
-   metadata.validateServiceName(serviceName);
    const app = await NestFactory.createMicroservice(AppModule, <MicroserviceOptions>{
       transport: Transport.RMQ,
       options: {

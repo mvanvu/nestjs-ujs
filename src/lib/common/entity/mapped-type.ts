@@ -1,8 +1,8 @@
-import { CLASS_PROPERTIES } from '@lib/common/constant';
-import { ClassConstructor } from '@lib/common/type';
 import { Is } from '@mvanvu/ujs';
 import { Type } from '@nestjs/common';
 import { PickType, PartialType, OmitType } from '@nestjs/swagger';
+import { ClassConstructor } from '../type';
+import { CLASS_PROPERTIES } from '../constant';
 
 export function initParentProperties(ClassRef: ClassConstructor<any>): void {
    if (!ClassRef.prototype[CLASS_PROPERTIES]) {

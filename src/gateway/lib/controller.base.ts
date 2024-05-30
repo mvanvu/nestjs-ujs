@@ -2,8 +2,9 @@ import { Registry, Util } from '@mvanvu/ujs';
 import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
-import { HttpRequest, MessageData, ServiceOptions, ThrowException, metadata } from '@lib/common';
+import { HttpRequest, MessageData, ServiceOptions, ThrowException } from '@lib/common';
 import { lastValueFrom, timeout } from 'rxjs';
+import { metadata } from '@lib/metadata';
 
 export class BaseClientProxy {
    constructor(
@@ -46,7 +47,6 @@ export class BaseController {
    @Inject(REQUEST) readonly req: HttpRequest;
 
    createClientProxy(serviceName: string): BaseClientProxy {
-      metadata.validateServiceName(serviceName);
       const proxyName = serviceName.toUpperCase() + '_MICROSERVICE';
       class InstClientProxy extends BaseClientProxy {}
       Object.defineProperty(InstClientProxy, 'name', { value: proxyName });

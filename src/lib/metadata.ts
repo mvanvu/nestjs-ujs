@@ -1,17 +1,10 @@
-import { serviceListNames } from '@lib/service';
-import { NotImplementedException, type INestMicroservice } from '@nestjs/common';
+import { type INestMicroservice } from '@nestjs/common';
 import { type NestExpressApplication } from '@nestjs/platform-express';
 
 class Metadata {
    private appGateway: NestExpressApplication;
 
    private appService: INestMicroservice;
-
-   validateServiceName(serviceName: string) {
-      if (!serviceListNames.includes(serviceName)) {
-         throw new NotImplementedException(`The serviceName must be in [${serviceListNames}]`);
-      }
-   }
 
    getGateway(): NestExpressApplication {
       return this.appGateway;

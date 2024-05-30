@@ -1,6 +1,6 @@
-import { CLASS_PROPERTIES } from '@lib/common/constant';
-import { ClassConstructor } from '@lib/common/type';
 import { Is, ObjectRecord } from '@mvanvu/ujs';
+import { ClassConstructor } from '../type';
+import { CLASS_PROPERTIES } from '../constant';
 
 export class BaseEntity {
    constructor(entity?: ObjectRecord) {

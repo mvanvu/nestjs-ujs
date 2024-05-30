@@ -1,60 +1,49 @@
 import { appConfig } from '@config';
-import { EntityProperty } from '@lib/common/decorator';
-import { BaseEntity } from '@lib/common/entity';
-import { PermissionOptions } from '@lib/common/type';
 import { Is, ObjectRecord } from '@mvanvu/ujs';
 import { UserStatus } from '.prisma/user';
-import { ApiProperty } from '@nestjs/swagger';
+import { EntityProperty } from '@lib/common/decorator/property';
+import { BaseEntity } from '@lib/common/entity/base';
+import { PermissionOptions } from '@lib/common/type/common';
 
 export class RoleRefEntity {
-   @ApiProperty()
+   @EntityProperty()
    id: string;
 
-   @ApiProperty()
+   @EntityProperty()
    name: string;
 
-   @ApiProperty({ type: [String] })
+   @EntityProperty()
    permissions: string[];
 }
 
 export class UserEntity extends BaseEntity {
-   @ApiProperty({ type: String })
    @EntityProperty()
    id: string;
 
-   @ApiProperty({ type: () => UserStatus, enum: UserStatus })
-   @EntityProperty()
+   @EntityProperty({ swagger: { type: UserStatus, enum: UserStatus } })
    status: UserStatus;
 
-   @ApiProperty()
    @EntityProperty()
    name?: string;
 
-   @ApiProperty()
    @EntityProperty()
    username?: string;
 
-   @ApiProperty()
    @EntityProperty()
    email: string;
 
-   @ApiProperty({ type: () => [RoleRefEntity] })
-   @EntityProperty()
+   @EntityProperty({ swagger: { type: [RoleRefEntity] } })
    roles: RoleRefEntity[];
 
-   @ApiProperty()
    @EntityProperty()
    createdAt: Date;
 
-   @ApiProperty({ type: String })
    @EntityProperty()
    createdBy: string;
 
-   @ApiProperty()
    @EntityProperty()
    updatedAt: Date;
 
-   @ApiProperty()
    @EntityProperty()
    updatedBy: string;
 

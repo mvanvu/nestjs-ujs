@@ -1,7 +1,7 @@
 import { CommonType, IsValidOptions, IsValidType, Registry, Transform } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
-import { VersionValue } from '@nestjs/common/interfaces';
-import { UserEntity } from '@lib/service/user/entity';
+import { Type, VersionValue } from '@nestjs/common/interfaces';
+import { type UserEntity } from '@lib/service/user/entity/user';
 import { Request } from 'express';
 
 export type UserRole = { id: string; name: string; permissions: string[] }[];
@@ -77,6 +77,12 @@ export type PropertyOptions<IsType extends IsValidType> = {
    validate?: ValidationOptions<IsType> | ValidationOptions<IsType>[];
    transform?: TransformOptions;
    optional?: boolean;
+   swagger?: {
+      disable?: boolean;
+      description?: string;
+      type?: Type<unknown> | Function | [Function] | string | Record<string, any>;
+      enum?: any[] | Record<string, any>;
+   };
 };
 
 export type PermissionOptions = { key?: string; or?: string[]; and?: string[] } | string;

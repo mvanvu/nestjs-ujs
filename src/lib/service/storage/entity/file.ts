@@ -1,5 +1,5 @@
 import { BaseEntity, EntityProperty } from '@lib/common';
-import { Provider, FileType } from '.prisma/storage';
+import { $Enums } from '.prisma/storage';
 
 export class FileEntity extends BaseEntity {
    @EntityProperty()
@@ -14,14 +14,14 @@ export class FileEntity extends BaseEntity {
    @EntityProperty()
    isPublic: boolean;
 
-   @EntityProperty()
-   type: FileType;
+   @EntityProperty({ swagger: { type: $Enums.FileType, enum: $Enums.FileType } })
+   type: $Enums.FileType;
 
    @EntityProperty()
    mime: string;
 
-   @EntityProperty()
-   provider: Provider;
+   @EntityProperty({ swagger: { type: $Enums.Provider, enum: $Enums.Provider } })
+   provider: $Enums.Provider;
 
    @EntityProperty()
    providerId: string;

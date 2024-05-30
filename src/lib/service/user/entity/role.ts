@@ -1,16 +1,15 @@
-import { RoleStatus, Role } from '.prisma/user';
+import { $Enums, Role } from '.prisma/user';
 import { EntityProperty } from '@lib/common/decorator';
 import { BaseEntity } from '@lib/common/entity';
-import { ApiProperty } from '@nestjs/swagger';
 
 export class UserRefEntity {
-   @ApiProperty()
+   @EntityProperty()
    id: string;
 
-   @ApiProperty()
+   @EntityProperty()
    email: string;
 
-   @ApiProperty()
+   @EntityProperty()
    username: string;
 }
 
@@ -21,8 +20,8 @@ export class RoleEntity extends BaseEntity {
    @EntityProperty()
    name: string;
 
-   @EntityProperty()
-   status: RoleStatus;
+   @EntityProperty({ swagger: { type: $Enums.RoleStatus, enum: $Enums.RoleStatus } })
+   status: $Enums.RoleStatus;
 
    @EntityProperty()
    createdAt?: Date;
@@ -30,12 +29,10 @@ export class RoleEntity extends BaseEntity {
    @EntityProperty()
    updatedAt?: Date;
 
-   @ApiProperty({ type: () => UserRefEntity })
-   @EntityProperty()
+   @EntityProperty({ swagger: { type: UserRefEntity } })
    author?: { id: string; email: string; username: string };
 
-   @ApiProperty({ type: () => UserRefEntity })
-   @EntityProperty()
+   @EntityProperty({ swagger: { type: UserRefEntity } })
    editor?: { id: string; email: string; username: string };
 
    @EntityProperty()

@@ -1,4 +1,4 @@
-import { metadata, HttpRequest, PermissionOptions } from '@lib/common';
+import { HttpRequest, PermissionOptions } from '@lib/common';
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
@@ -6,6 +6,7 @@ import { UserEntity } from '@lib/service/user';
 import { lastValueFrom, timeout } from 'rxjs';
 import { serviceConfig } from '@config';
 import { USER_PUBLIC_KEY, USER_ROLE_KEY } from './user.decorator';
+import { metadata } from '@lib/metadata';
 
 @Injectable()
 export class UserAuthGuard implements CanActivate {
