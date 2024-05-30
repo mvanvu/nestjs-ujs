@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma, UserStatus } from '.prisma/user';
 import * as argon2 from 'argon2';
-import { DateTime, Hash, Is, Registry } from '@mvanvu/ujs';
+import { DateTime, Hash, Is } from '@mvanvu/ujs';
 import { appConfig, serviceConfig } from '@config';
 import { BaseService } from '@service/lib';
 import { FieldsException, ThrowException, CRUDResult } from '@lib/common';
@@ -157,9 +157,9 @@ export class UserService extends BaseService {
    executeCRUD(): Promise<CRUDResult<UserEntity>> {
       return this.prisma
          .createCRUDService('User')
-         .select(Registry.from(this.userSelect).remove('userRoles.select.role.select.permissions').valueOf())
+         .select(this.userSelect)
          .options({ softDelete: true, list: { searchFields: ['name', 'username', 'email'] } })
-         .entity(UserEntity)
+         .entityResponse(UserEntity)
          .validateDTOPipe(CreateUserDto)
          .beforeCreate(async (data: CreateUserDto) => {
             await this.validateUserDto(data);
@@ -174,7 +174,7 @@ export class UserService extends BaseService {
             }
 
             // Verify permission
-            const author = this.meta.get('headers.user');
+            const author = this.user;
             const isSelf = author.id === user.id;
 
             if (isSelf && author.status) {
@@ -235,6 +235,6 @@ export class UserService extends BaseService {
                }
             }
          })
-         .execute(this.ctx);
+         .execute();
    }
 }

@@ -1,51 +1,11 @@
 import { metadata, HttpRequest, PermissionOptions } from '@lib/common';
-import {
-   CanActivate,
-   ExecutionContext,
-   ForbiddenException,
-   Injectable,
-   SetMetadata,
-   UnauthorizedException,
-   createParamDecorator,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
 import { UserEntity } from '@lib/service/user';
 import { lastValueFrom, timeout } from 'rxjs';
 import { serviceConfig } from '@config';
-import { Is } from '@mvanvu/ujs';
-
-export const USER_PUBLIC_KEY = 'USER_PUBLIC_KEY';
-export const Public = () => SetMetadata(USER_PUBLIC_KEY, true);
-
-export const USER_ROLE_KEY = 'USER_ROLE_KEY';
-export const Permission = (options?: { key?: string; or?: string[]; and?: string[] }) =>
-   SetMetadata(USER_ROLE_KEY, options ?? {});
-
-export const GetUser = createParamDecorator(
-   (
-      property: string | string[] | undefined | { optional?: boolean; property?: string | string[] },
-      ctx: ExecutionContext,
-   ) => {
-      const { registry } = ctx.switchToHttp().getRequest<HttpRequest>();
-      const isOptional = typeof property === 'object' && !Array.isArray(property) && property?.optional === true;
-      const user = registry.get<UserEntity>('user');
-
-      if (!user) {
-         if (!isOptional) {
-            throw new UnauthorizedException();
-         }
-
-         return null;
-      }
-
-      if (Is.string(property, true)) {
-         return (property as string[]).map((prop) => user[prop]);
-      }
-
-      return typeof property === 'string' ? user[property] : user;
-   },
-);
+import { USER_PUBLIC_KEY, USER_ROLE_KEY } from './user.decorator';
 
 @Injectable()
 export class UserAuthGuard implements CanActivate {

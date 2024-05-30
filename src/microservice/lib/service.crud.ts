@@ -32,6 +32,8 @@ export type OnEntity =
 export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    readonly logger: Logger;
 
+   private ctx: RequestContext;
+
    private prismaSelect: ObjectRecord;
 
    private prismaInclude: ObjectRecord;
@@ -62,6 +64,12 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       private readonly model: string,
    ) {
       this.logger = new Logger(this.constructor.name);
+   }
+
+   setCtx(ctx: RequestContext): this {
+      this.ctx = ctx;
+
+      return this;
    }
 
    select<T extends ObjectRecord>(select?: T): this {
@@ -100,15 +108,15 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       return this;
    }
 
-   entity(callback: OnEntity): this {
+   entityResponse(callback: OnEntity): this {
       this.events.onEntity = callback;
 
       return this;
    }
 
-   validateDTOPipe<TCreateDTO = any, TUpdateDTO = TCreateDTO>(
-      createDTO: ClassConstructor<TCreateDTO>,
-      updateDTO?: ClassConstructor<TUpdateDTO>,
+   validateDTOPipe<TCreateDTO extends ClassConstructor<any>, TUpdateDTO extends ClassConstructor<any> | undefined>(
+      createDTO: TCreateDTO,
+      updateDTO?: TUpdateDTO,
    ): this {
       this.createDTO = createDTO;
       this.updateDTO = updateDTO;
@@ -227,7 +235,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
                      break;
 
                   case '|':
-                     qValue = (qValue as string).split(/\s+/g).filter((qv: string) => !!qv.trim());
+                     qValue = (qValue as string).split(/[\s\n]+/g).filter((qv: string) => !!qv.trim());
 
                      if (qValue.length) {
                         searchCondition = { OR: qValue.map((qv: string) => ({ contains: qv, mode })) };
@@ -423,7 +431,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          }
       }
 
-      if (Is.emptyObject(Registry.from<any>(dto).omit(['createdBy', 'updatedBy']).valueOf())) {
+      if (Registry.from(dto).omit(['createdBy', 'updatedBy', 'createdAt', 'updatedAt']).isEmpty()) {
          // Nothing to update, throw an exception
          ThrowException(`No data to ${id ? 'update' : 'create'}`);
       }
@@ -577,8 +585,8 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       return record;
    }
 
-   async execute<TResult>(ctx: RequestContext): Promise<CRUDResult<TResult>> {
-      const meta = BaseService.parseMeta(ctx);
+   async execute<TResult>(ctx?: RequestContext): Promise<CRUDResult<TResult>> {
+      const meta = BaseService.parseMeta(ctx ?? this.ctx);
       const recordId = meta.get('params.id');
       const userId = meta.get('headers.user.id');
       const method = meta.get('CRUD.method');

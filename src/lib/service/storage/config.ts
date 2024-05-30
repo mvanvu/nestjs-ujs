@@ -8,4 +8,4 @@ export default {
          upload: 'file.upload',
       },
    },
-};
+} as const;

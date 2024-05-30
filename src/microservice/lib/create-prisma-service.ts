@@ -3,6 +3,7 @@ import { ClassConstructor } from '@lib/common';
 import { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { CRUDService } from './service.crud';
 import { PrismaClient } from '@prisma/client';
+import { BaseRpcContext } from '@nestjs/microservices';
 
 export function CreatePrismaService<TDataModel extends ObjectRecord>(
    PrismaClientRef: ClassConstructor<PrismaClient>,
@@ -25,7 +26,13 @@ export function CreatePrismaService<TDataModel extends ObjectRecord>(
       }
 
       createCRUDService(model: ModelName): CRUDService<this> {
-         return new CRUDService(this, <string>model);
+         const service = new CRUDService(this, <string>model);
+
+         if (this['ctx']?.getContext() instanceof BaseRpcContext) {
+            service.setCtx(this['ctx']);
+         }
+
+         return service;
       }
    }
 

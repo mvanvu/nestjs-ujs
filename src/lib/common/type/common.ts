@@ -1,4 +1,4 @@
-import { CommonType, IsValidOptions, IsValidType, Path, Registry, Transform } from '@mvanvu/ujs';
+import { CommonType, IsValidOptions, IsValidType, Registry, Transform } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { VersionValue } from '@nestjs/common/interfaces';
 import { UserEntity } from '@lib/service/user/entity';
@@ -15,7 +15,7 @@ export type RequestRegistryData = {
 };
 
 export interface HttpRequest extends Request {
-   registry: Registry<Path<RequestRegistryData>>;
+   registry: Registry<RequestRegistryData>;
 }
 
 export type ClassConstructor<T> = new (...arg: any[]) => T;

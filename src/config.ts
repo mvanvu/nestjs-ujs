@@ -1,4 +1,4 @@
-import { Path, Registry } from '@mvanvu/ujs';
+import { Registry } from '@mvanvu/ujs';
 import dotenv from 'dotenv';
 import dotenvExpand from 'dotenv-expand';
 export { serviceConfig } from '@lib/service';
@@ -48,7 +48,7 @@ const appConfigData = {
       maxLimit: envConfig.get<number>('LIST_ITEMS_MAX_LIMIT', 1000, 'toUInt'),
    },
    rootUid: envConfig.get<string>('ROOT_UID'),
-};
+} as const;
 
 export type AppConfigData = typeof appConfigData;
-export const appConfig = Registry.from<Path<AppConfigData>>(appConfigData, { consistent: true });
+export const appConfig = Registry.from<AppConfigData>(appConfigData, { consistent: true });

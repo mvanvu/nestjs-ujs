@@ -22,4 +22,4 @@ export default {
          delete: 'user.delete',
       },
    },
-};
+} as const;

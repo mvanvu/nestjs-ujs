@@ -26,13 +26,16 @@ for (const name in models) {
    fs.writeFileSync(
       `${filePath}/prisma.service.ts`,
       `
-      import { Injectable } from '@nestjs/common';
+      import { Inject, Injectable } from '@nestjs/common';
       import { PrismaClient } from '.prisma/${name}';
       import { ${name}DataModels } from './prisma.datamodel';
       import { CreatePrismaService } from '@service/lib';
+      import { CONTEXT, RequestContext } from '@nestjs/microservices';
       
       @Injectable()
-      export class PrismaService extends CreatePrismaService(PrismaClient, ${name}DataModels) {}
+      export class PrismaService extends CreatePrismaService(PrismaClient, ${name}DataModels) {
+         @Inject(CONTEXT) readonly ctx: RequestContext;
+      }
       `,
    );
 }

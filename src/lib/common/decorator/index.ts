@@ -1,2 +1,2 @@
-export * from '../../../gateway/lib/api-response.decorator';
+export * from './user';
 export * from './property';

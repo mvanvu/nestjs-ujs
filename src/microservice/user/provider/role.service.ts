@@ -30,12 +30,12 @@ export class RoleService extends BaseService {
          .createCRUDService('Role')
          .select(this.roleSelect)
          .validateDTOPipe(CreateRoleDto)
-         .entity(RoleEntity)
+         .entityResponse(RoleEntity)
          .beforeDelete((role: RoleEntity) => {
             if (role.totalUsers) {
                ThrowException(`Can't delete the role which has some users who assigned to it`);
             }
          })
-         .execute(this.ctx);
+         .execute();
    }
 }

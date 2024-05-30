@@ -16,7 +16,8 @@
     "user:prisma:generate": "prisma generate --schema=src/microservice/user/provider/prisma/schema.prisma",
     "user:prisma:push": "prisma db push --schema=src/microservice/user/provider/prisma/schema.prisma",
     "storage:prisma:generate": "prisma generate --schema=src/microservice/storage/provider/prisma/schema.prisma",
-    "storage:prisma:push": "prisma db push --schema=src/microservice/storage/provider/prisma/schema.prisma"
+    "storage:prisma:push": "prisma db push --schema=src/microservice/storage/provider/prisma/schema.prisma",
+    "prisma:generate:service": "ts-node scripts/generate-prisma-services.ts"
   },
   "dependencies": {
     "@mvanvu/ujs": "file:../utils/dist",
