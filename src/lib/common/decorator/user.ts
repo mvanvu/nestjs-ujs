@@ -37,9 +37,9 @@ export const GetUser = createParamDecorator(
       }
 
       if (Is.string(property, true)) {
-         return (property as string[]).map((prop) => user[prop]);
+         return property.map((prop) => user[prop]);
       }
 
-      return typeof property === 'string' ? user[property] : user;
+      return Is.string(property) ? user[property] : user;
    },
 );

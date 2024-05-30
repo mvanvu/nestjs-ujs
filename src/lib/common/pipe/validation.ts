@@ -13,8 +13,6 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
       DTOClassRef.prototype[CLASS_PROPERTIES];
    const props: string[] = Object.keys(DTOClassRef.prototype[CLASS_PROPERTIES] || {});
 
-   // console.log(DTOClassRef, JSON.stringify(DTOClassRef.prototype[CLASS_PROPERTIES], null, 2));
-
    // Cleanup data
    for (const prop in data) {
       if (!props.includes(prop)) {
