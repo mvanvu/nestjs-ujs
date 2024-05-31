@@ -6,9 +6,16 @@ export default {
       verify: 'user.verify',
       deleteSelf: 'user.deleteSelf',
       userCRUD: 'user.CRUD',
+      groupCRUD: 'group.CRUD',
       roleCRUD: 'role.CRUD',
    },
    permissions: {
+      group: {
+         create: 'group.create',
+         read: 'group.read',
+         update: 'group.update',
+         delete: 'group.delete',
+      },
       role: {
          create: 'role.create',
          read: 'role.read',

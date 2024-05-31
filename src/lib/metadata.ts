@@ -1,33 +1,31 @@
 import { type INestMicroservice } from '@nestjs/common';
 import { type NestExpressApplication } from '@nestjs/platform-express';
+import { Registry } from '@mvanvu/ujs';
+import { loadPermissionKeys } from './common';
+
+// Service shared config
+import user from './service/user/config';
+import storage from './service/storage/config';
+const serviceConfigData = { user, storage };
+type ServiceConfigData = typeof serviceConfigData;
 
 class Metadata {
-   private appGateway: NestExpressApplication;
+   private app: NestExpressApplication | INestMicroservice;
 
-   private appService: INestMicroservice;
+   readonly serviceConfig = Registry.from<ServiceConfigData>(serviceConfigData, { consistent: true });
 
-   getGateway(): NestExpressApplication {
-      return this.appGateway;
+   readonly serviceListNames = [this.serviceConfig.get('user.name'), this.serviceConfig.get('storage.name')];
+
+   readonly permissionKeys: string[] = [];
+
+   bootstrap(app: NestExpressApplication | INestMicroservice): void {
+      this.app = app;
+      loadPermissionKeys(user.permissions, this.permissionKeys);
+      loadPermissionKeys(storage.permissions, this.permissionKeys);
    }
 
-   setGateway(app: NestExpressApplication): this {
-      if (!this.appGateway) {
-         this.appGateway = app;
-      }
-
-      return this;
-   }
-
-   getService(): INestMicroservice {
-      return this.appService;
-   }
-
-   setService(app: INestMicroservice): this {
-      if (!this.appService) {
-         this.appService = app;
-      }
-
-      return this;
+   getApp<T extends 'Gateway' | 'Service', R = T extends 'Gateway' ? NestExpressApplication : INestMicroservice>(): R {
+      return <R>this.app;
    }
 
    isGateway(): boolean {

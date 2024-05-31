@@ -29,8 +29,8 @@ export async function createMicroserviceApp(
       await Util.call(app, onBeforeListen);
    }
 
-   // Wrap the application with the metadata
-   metadata.setService(app);
+   // Bootstrap Metadata
+   metadata.bootstrap(app);
    await app
       .listen()
       .then(() => console.log(`The ${serviceName} microservice is listening`))

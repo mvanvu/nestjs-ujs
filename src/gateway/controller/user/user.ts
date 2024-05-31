@@ -11,7 +11,7 @@ import {
    ApiPaginationResponse,
    Public,
    Permission,
-} from '../lib';
+} from '../../lib';
 import { serviceConfig } from '@config';
 
 const { name, permissions, patterns } = serviceConfig.get('user');

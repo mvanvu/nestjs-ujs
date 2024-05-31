@@ -1,21 +1,21 @@
 import { IOmitType, EntityProperty } from '@lib/common';
-import { FileType } from '.prisma/storage';
+import { $Enums } from '.prisma/storage';
 import { FileEntity } from '../entity';
-import { ApiProperty } from '@nestjs/swagger';
-
-const enumType = ['Image', 'Document', 'Unknown'];
 
 export class UploadDto {
-   @ApiProperty({ description: 'Is this file is public?', type: 'boolean' })
-   @EntityProperty({ transform: { fromType: 'string', toType: 'toBoolean' } })
+   @EntityProperty({
+      transform: { fromType: 'string', toType: 'toBoolean' },
+      swagger: { description: 'Is this file is public?' },
+   })
    isPublic: boolean;
 
-   @ApiProperty({ description: 'The type of file', type: 'enum', enum: enumType })
-   @EntityProperty({ validate: { is: 'inArray', meta: enumType } })
-   fileType: FileType;
+   @EntityProperty({
+      validate: { is: 'inArray', meta: Object.values($Enums.FileType) },
+      swagger: { description: 'The type of file', type: $Enums.FileType, enum: $Enums.FileType },
+   })
+   fileType: $Enums.FileType;
 
-   @ApiProperty({ description: 'The binary file', type: 'file' })
-   @EntityProperty()
+   @EntityProperty({ swagger: { description: 'The binary file', type: 'file' } })
    file: Express.Multer.File;
 }
 

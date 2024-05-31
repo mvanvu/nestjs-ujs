@@ -36,5 +36,7 @@ export function CreatePrismaService<TDataModel extends ObjectRecord>(
       }
    }
 
+   Object.defineProperty(BasePrismaService, 'name', { value: BasePrismaService.name });
+
    return BasePrismaService;
 }

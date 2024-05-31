@@ -8,14 +8,14 @@ import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib/comm
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpMiddleware } from './http.middleware';
 import { appConfig } from '@config';
-import { FileController, RoleController, UserController } from './controller';
-import { FileProvider } from './provider';
+import { FileController, GroupController, RoleController, UserController } from './controller';
+import { FileProvider } from './provider/file';
 import { UserAuthGuard, UserRoleGuard } from './lib';
 import { metadata } from '@lib/metadata';
 
 @Module({
    imports: [...clientProxies],
-   controllers: [RoleController, UserController, FileController],
+   controllers: [GroupController, RoleController, UserController, FileController],
    providers: [
       {
          provide: APP_GUARD,
@@ -74,8 +74,8 @@ export class AppModule {
       SwaggerModule.setup('api-docs', app, document, { swaggerOptions: { persistAuthorization: true } });
       const port = appConfig.get('apiGateway.port');
 
-      // Metadata
-      metadata.setGateway(app);
+      // Bootstrap Metadata
+      metadata.bootstrap(app);
 
       await app
          .listen(port, () => console.log(`Listening on port: ${port}`))

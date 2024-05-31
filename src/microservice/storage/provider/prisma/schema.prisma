@@ -25,6 +25,8 @@ enum Provider {
 
 enum FileType {
     Image
+    Video
+    Media
     Document
     Unknown
 }

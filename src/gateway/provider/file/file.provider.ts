@@ -7,6 +7,7 @@ import { FileProviderInterface } from './file.provider.interface';
 import { Transform } from '@mvanvu/ujs';
 import { appConfig } from '@config';
 import { ThrowException } from '@lib/common';
+import { allAcceptedFileTypes, fileTypes } from './file.mime';
 @Injectable()
 export class FileProvider {
    getStorageDriver(provider?: Provider): FileProviderInterface {
@@ -20,11 +21,52 @@ export class FileProvider {
             return new FileProviderLocal();
 
          default:
-            throw new ThrowException(`The media storage must be in (${Object.values(Provider)})`);
+            ThrowException(`The media storage must be in (${Object.values(Provider)})`);
       }
    }
 
    upload(dto: UploadDto): Promise<FinalUploadDto> {
+      // Validate file first
+      const { file, fileType } = dto;
+
+      switch (fileType) {
+         case 'Image':
+            if (!fileTypes.image.includes(file.mimetype)) {
+               ThrowException('File is not an image');
+            }
+
+            break;
+
+         case 'Video':
+            if (!fileTypes.video.includes(file.mimetype)) {
+               ThrowException('File is not a video');
+            }
+
+            break;
+
+         case 'Media':
+            if (!fileTypes.media.includes(file.mimetype)) {
+               ThrowException('File is not a media');
+            }
+
+            break;
+
+         case 'Document':
+            if (!fileTypes.document.includes(file.mimetype)) {
+               ThrowException('File is not a document');
+            }
+
+            break;
+
+         case 'Unknown':
+         default:
+            if (!allAcceptedFileTypes.includes(file.mimetype)) {
+               ThrowException('The type of file is not allow');
+            }
+
+            break;
+      }
+
       dto.file.filename = Transform.toSafeFileName(dto.file.originalname);
 
       return this.getStorageDriver().upload(dto);
