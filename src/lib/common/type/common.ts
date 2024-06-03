@@ -86,6 +86,7 @@ export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> |
       description?: string;
       type?: Type<unknown> | Function | [Function] | string | Record<string, any>;
       enum?: any[] | Record<string, any>;
+      example?: any;
    };
 };
 

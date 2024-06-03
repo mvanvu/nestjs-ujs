@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-import { CreateRoleDto, RoleEntity } from '@lib/service/user';
+import { CreateRoleDto, RoleEntity, UpdateRoleDto } from '@lib/service/user';
 import { BaseService } from '@service/lib';
 import { CRUDResult } from '@lib/common';
 
@@ -11,10 +11,10 @@ export class RoleService extends BaseService {
    executeCRUD(): Promise<CRUDResult<RoleEntity>> {
       return this.prisma
          .createCRUDService('Role')
-         .validateDTOPipe(CreateRoleDto)
+         .validateDTOPipe(CreateRoleDto, UpdateRoleDto)
          .entityResponse(RoleEntity)
-         .beforeSave((dto: CreateRoleDto) => {
-            if (!dto.permissions) {
+         .beforeSave((dto: CreateRoleDto | UpdateRoleDto, { context }) => {
+            if (!dto.permissions && context === 'create') {
                dto.permissions = [];
             }
          })

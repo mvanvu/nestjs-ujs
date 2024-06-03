@@ -12,7 +12,11 @@ import { FieldsException, ThrowException, CRUDResult } from '@lib/common';
 export class UserService extends BaseService {
    @Inject(PrismaService) readonly prisma: PrismaService;
 
-   private async validateUserDto(dto: UserSignUpDto | CreateUserDto | UpdateUserDto, id?: string) {
+   readonly userInclude: Prisma.UserInclude = {
+      group: { select: { id: true, name: true, roles: true, groups: true } },
+   };
+
+   private async validateUserDto(dto: Partial<UserSignUpDto & CreateUserDto & UpdateUserDto>, id?: string) {
       const fieldsError = new FieldsException();
       let { username, email } = dto;
       const OR: Prisma.UserWhereInput['OR'] = [];
@@ -32,16 +36,14 @@ export class UserService extends BaseService {
          select: { username: true, email: true },
       });
 
-      if (dto['roles']?.length) {
-         let isValidRoles = false;
+      if (dto.groupId) {
+         const group = await this.prisma.group.findUnique({
+            where: { id: dto.groupId },
+            select: { id: true },
+         });
 
-         try {
-            const count = await this.prisma.role.count({ where: { id: { in: dto['roles'] } } });
-            isValidRoles = count === dto['roles'].length;
-         } catch {}
-
-         if (!isValidRoles) {
-            fieldsError.add('roles', FieldsException.NOT_FOULND);
+         if (!group) {
+            fieldsError.add('groupId', FieldsException.NOT_FOULND);
          }
       }
 
@@ -98,7 +100,7 @@ export class UserService extends BaseService {
          OR.push({ email: { equals: username, mode: 'insensitive' } });
       }
 
-      const user = await this.prisma.user.findFirst({ where: { OR } });
+      const user = await this.prisma.user.findFirst({ where: { OR }, include: this.userInclude });
 
       if (!user || user.status !== UserStatus.Active || !(await argon2.verify(user.password, password))) {
          ThrowException('Invalid credentials');
@@ -109,7 +111,7 @@ export class UserService extends BaseService {
 
    async verify(token: string): Promise<UserEntity> {
       const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.get('jwt.secret') });
-      const user = await this.prisma.user.findUnique({ where: { id } });
+      const user = await this.prisma.user.findUnique({ where: { id }, include: this.userInclude });
 
       if (!user || user.status !== UserStatus.Active) {
          ThrowException('Invalid credentials');
@@ -130,71 +132,52 @@ export class UserService extends BaseService {
    executeCRUD(): Promise<CRUDResult<UserEntity>> {
       return this.prisma
          .createCRUDService('User')
-         .include(<Prisma.UserInclude>{
-            group: {
-               select: {
-                  id: true,
-                  name: true,
-                  groups: {
-                     select: { id: true, name: true, roles: { select: { id: true, name: true, permissions: true } } },
-                  },
-                  roles: { select: { id: true, name: true, permissions: true } },
-               },
-            },
-         })
          .options({ softDelete: true, list: { searchFields: ['name', 'username', 'email'] } })
          .entityResponse(UserEntity)
-         .validateDTOPipe(CreateUserDto)
-         .beforeCreate(async (data: CreateUserDto) => {
-            await this.validateUserDto(data);
-            Object.assign(data, {
-               userRoles: data.roles?.length ? { create: data.roles.map((roleId) => ({ roleId })) } : undefined,
-               password: await argon2.hash(data.password),
-            });
-         })
-         .beforeUpdate(async (data: UpdateUserDto, user: UserEntity) => {
-            if (data.email || data.username || data.roles) {
-               await this.validateUserDto(data, user.id);
-            }
+         .include(this.userInclude)
+         .validateDTOPipe(CreateUserDto, UpdateUserDto)
+         .beforeSave<Partial<CreateUserDto>, UserEntity>(
+            async (data: Partial<CreateUserDto>, { record: user, context }) => {
+               if (context === 'create') {
+                  await this.validateUserDto(data);
+               } else {
+                  if (data.email || data.username || data.groupId) {
+                     await this.validateUserDto(data, user.id);
+                  }
 
-            // Verify permission
-            const author = this.user;
-            const isSelf = author.id === user.id;
+                  // Verify permission
+                  const author = this.user;
+                  const isSelf = author.id === user.id;
 
-            if (isSelf && author.status) {
-               ThrowException(`You can't update your self status`);
-            }
+                  if (isSelf && author.status) {
+                     ThrowException(`You can't update yourself status`);
+                  }
 
-            if (data.roles) {
-               if (isSelf && !author.isRoot) {
-                  ThrowException(`You can't update your roles because you aren't a root user`);
+                  if (data.groupId && isSelf && !author.isRoot) {
+                     ThrowException(`You can't update your group because you aren't a root user`);
+                  }
+
+                  // Check the current user is the author or editor of the target user, then will can update
+                  const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
+
+                  if (!isGranter) {
+                     const compare = author.compare(user, serviceConfig.get('user.permissions.user.update'));
+
+                     if (compare === 0) {
+                        ThrowException(`You can't update the user who has the same permission with you`);
+                     }
+
+                     if (compare === -1) {
+                        ThrowException(`You can't update the user who has the greater permissions than you`);
+                     }
+                  }
                }
 
-               data['userRoles'] = {
-                  deleteMany: {},
-                  create: data.roles.length ? data.roles.map((roleId) => ({ roleId })) : undefined,
-               };
-            }
-
-            // Check the current user is the author or editor of the target user, then will can update
-            const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
-
-            if (!isGranter) {
-               const compare = author.compare(user, serviceConfig.get('user.permissions.user.update'));
-
-               if (compare === 0) {
-                  ThrowException(`You can't update the user who has the same permission with you`);
+               if (data.password) {
+                  data.password = await argon2.hash(data.password);
                }
-
-               if (compare === -1) {
-                  ThrowException(`You can't update the user who has the greater permissions than you`);
-               }
-            }
-
-            if (data.password) {
-               data.password = await argon2.hash(data.password);
-            }
-         })
+            },
+         )
          .beforeDelete((user: UserEntity) => {
             // Verify permission
             const author = new UserEntity(this.meta.get('headers.user'));

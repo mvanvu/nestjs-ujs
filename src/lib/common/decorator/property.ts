@@ -4,7 +4,7 @@ import { IsValidType } from '@mvanvu/ujs';
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-export function EntityProperty<IsType extends IsValidType | ClassConstructor<any> | [ClassConstructor<any>]>(
+export function IProperty<IsType extends IsValidType | ClassConstructor<any> | [ClassConstructor<any>]>(
    options?: PropertyOptions<IsType>,
 ): PropertyDecorator {
    const decorators = [

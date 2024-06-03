@@ -1,16 +1,16 @@
-import { IPartialType, EntityProperty } from '@lib/common';
+import { IPartialType, IProperty } from '@lib/common';
 import { $Enums } from '.prisma/user';
 import { permissionKeys } from '@metadata';
 
 export class CreateRoleDto {
-   @EntityProperty({
+   @IProperty({
       transform: { fromType: 'string', toType: 'trim' },
       validate: [{ is: 'string' }, { is: 'empty', not: true }],
       swagger: { description: 'The name of the role' },
    })
    name: string;
 
-   @EntityProperty({
+   @IProperty({
       optional: true,
       transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
       validate: { is: 'string' },
@@ -18,14 +18,14 @@ export class CreateRoleDto {
    })
    description?: string;
 
-   @EntityProperty({
+   @IProperty({
       optional: true,
       validate: { is: 'inArray', meta: Object.values($Enums.AvailableStatus) },
       swagger: { description: 'The status of the role', enum: $Enums.AvailableStatus },
    })
    status?: $Enums.AvailableStatus;
 
-   @EntityProperty({
+   @IProperty({
       optional: true,
       validate: [{ is: 'arrayUnique' }, { is: 'inArray', each: true, meta: permissionKeys }],
       swagger: { description: 'The permissions of the role' },

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-import { CreateGroupDto, GroupEntity } from '@lib/service/user';
+import { CreateGroupDto, GroupEntity, UpdateGroupDto } from '@lib/service/user';
 import { BaseService } from '@service/lib';
 import { CRUDResult, ThrowException } from '@lib/common';
 
@@ -11,17 +11,17 @@ export class GroupService extends BaseService {
    executeCRUD(): Promise<CRUDResult<GroupEntity>> {
       return this.prisma
          .createCRUDService('Group')
-         .validateDTOPipe(CreateGroupDto)
+         .validateDTOPipe(CreateGroupDto, UpdateGroupDto)
          .entityResponse(GroupEntity)
-         .transaction(async (tx: PrismaService, options: { record: GroupEntity; data: Partial<CreateGroupDto> }) => {
-            const { record, data } = options;
-            const groupsData = [];
-            const rolesData = [];
+         .beforeSave(async (data: Partial<CreateGroupDto>, { context }) => {
+            const roles = [];
 
-            if (data.groupIds.length) {
+            if (data.groupIds?.length) {
+               const groups = [];
+
                await Promise.all(
                   data.groupIds.map((groupId) => async () => {
-                     const group = await tx.group.findUnique({
+                     const group = await this.prisma.group.findUnique({
                         where: { id: groupId },
                         select: { id: true, name: true, roles: true },
                      });
@@ -30,15 +30,17 @@ export class GroupService extends BaseService {
                         ThrowException(`The group ID(${groupId}) doesn't exists`);
                      }
 
-                     groupsData.push(group);
+                     groups.push(group);
                   }),
                );
+
+               data['groups'] = groups;
             }
 
-            if (data.roleIds.length) {
+            if (data.roleIds?.length) {
                await Promise.all(
                   data.roleIds.map((roleId) => async () => {
-                     const role = await tx.role.findUnique({
+                     const role = await this.prisma.role.findUnique({
                         where: { id: roleId },
                         select: { id: true, name: true, permissions: true },
                      });
@@ -47,19 +49,44 @@ export class GroupService extends BaseService {
                         ThrowException(`The role ID(${roleId}) doesn't exists`);
                      }
 
-                     rolesData.push(role);
+                     roles.push(role);
                   }),
                );
+
+               data['roles'] = roles;
             }
 
-            if (groupsData.length || rolesData.length) {
-               await tx.group.update({
-                  where: { id: record.id },
-                  data: {
-                     groups: groupsData.length ? groupsData : undefined,
-                     roles: rolesData.length ? rolesData : undefined,
-                  },
-               });
+            if (context === 'create') {
+               if (!data['groups']) {
+                  data['groups'] = [];
+               }
+
+               if (!data['roles']) {
+                  data['roles'] = [];
+               }
+            }
+         })
+         .transaction<Partial<CreateGroupDto>, GroupEntity>(async (tx: PrismaService, { data, record, context }) => {
+            if (context === 'create' || (!data.groupIds?.length && !data.roleIds?.length)) {
+               return;
+            }
+
+            const groups = await tx.group.findMany({
+               where: { groups: { some: { id: record.id } } },
+               select: { id: true, groups: true },
+            });
+
+            if (groups.length) {
+               await Promise.all(
+                  groups.map((group) => {
+                     const index = group.groups.findIndex(({ id }) => id === record.id);
+
+                     if (index !== -1) {
+                        group.groups[index] = { id: record.id, name: record.name, roles: record.roles };
+                        return tx.group.update({ data: { groups: group.groups }, where: { id: group.id } });
+                     }
+                  }),
+               );
             }
          })
          .execute();

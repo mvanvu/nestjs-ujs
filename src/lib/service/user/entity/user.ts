@@ -1,58 +1,70 @@
 import { appConfig } from '@metadata';
-import { Is, ObjectRecord } from '@mvanvu/ujs';
+import { Is } from '@mvanvu/ujs';
 import { UserStatus } from '.prisma/user';
-import { EntityProperty } from '@lib/common/decorator/property';
+import { IProperty } from '@lib/common/decorator/property';
 import { BaseEntity } from '@lib/common/entity/base';
 import { PermissionOptions } from '@lib/common/type/common';
+import { IPickType } from '@lib/common';
+import { GroupEntity } from './group';
 
-export class RoleRefEntity {
-   @EntityProperty()
-   id: string;
-
-   @EntityProperty()
-   name: string;
-
-   @EntityProperty()
-   permissions: string[];
-}
+export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
 
 export class UserEntity extends BaseEntity {
-   @EntityProperty()
+   @IProperty()
    id: string;
 
-   @EntityProperty({ swagger: { type: UserStatus, enum: UserStatus } })
+   @IProperty({ swagger: { enum: UserStatus } })
    status: UserStatus;
 
-   @EntityProperty()
+   @IProperty()
    name?: string;
 
-   @EntityProperty()
+   @IProperty()
    username?: string;
 
-   @EntityProperty()
+   @IProperty()
    email: string;
 
-   @EntityProperty({ swagger: { type: [RoleRefEntity] } })
-   roles: RoleRefEntity[];
+   @IProperty({ swagger: { type: UserGroupEntity } })
+   group: UserGroupEntity;
 
-   @EntityProperty()
+   @IProperty()
    createdAt: Date;
 
-   @EntityProperty()
+   @IProperty()
    createdBy: string;
 
-   @EntityProperty()
+   @IProperty()
    updatedAt: Date;
 
-   @EntityProperty()
+   @IProperty()
    updatedBy: string;
 
-   constructor(entity?: ObjectRecord) {
-      super(entity);
+   private _permissions: string[];
 
-      if (Array.isArray(entity?.userRoles)) {
-         this.roles = entity.userRoles.map(({ role }) => role);
+   get permissions(): string[] {
+      if (!this._permissions) {
+         this._permissions = [];
+
+         if (this.group?.roles?.length) {
+            for (const { permissions } of this.group.roles) {
+               this._permissions.push(...permissions);
+            }
+         }
+
+         if (this.group?.groups?.length) {
+            for (const group of this.group.groups) {
+               for (const { permissions } of group.roles) {
+                  this._permissions.push(...permissions);
+               }
+            }
+         }
+
+         // Make unique permissions
+         this._permissions = Array.from(new Set(this._permissions));
       }
+
+      return this._permissions;
    }
 
    get isRoot(): boolean {
@@ -72,6 +84,7 @@ export class UserEntity extends BaseEntity {
 
    authorise(permission?: PermissionOptions): boolean {
       const isUserRoot = this.isRoot;
+      const userPermissions = this.permissions;
 
       if ((!permission || Is.emptyObject(permission)) && !isUserRoot) {
          return false;
@@ -81,12 +94,9 @@ export class UserEntity extends BaseEntity {
          return true;
       }
 
-      if (!this.roles?.length) {
+      if (!userPermissions.length) {
          return false;
       }
-
-      const userPermissions: string[] = [];
-      this.roles.forEach((role) => userPermissions.push(...role.permissions));
 
       if (typeof permission === 'string') {
          permission = { key: permission };
@@ -141,17 +151,17 @@ export class UserEntity extends BaseEntity {
 }
 
 export class AuthTokens {
-   @EntityProperty()
+   @IProperty()
    access: string;
 
-   @EntityProperty()
+   @IProperty()
    refresh: string;
 }
 
 export class AuthEntity extends BaseEntity {
-   @EntityProperty()
+   @IProperty()
    user: UserEntity;
 
-   @EntityProperty()
+   @IProperty()
    tokens: AuthTokens;
 }

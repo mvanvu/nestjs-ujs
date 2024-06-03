@@ -1,16 +1,21 @@
-import { IPartialType, EntityProperty } from '@lib/common';
+import { IPartialType, IProperty } from '@lib/common';
 import { UserSignUpDto } from './auth';
-import { ApiProperty } from '@nestjs/swagger';
 import { UserStatus } from '.prisma/user';
 
 export class CreateUserDto extends UserSignUpDto {
-   @ApiProperty({ description: 'The user status', enum: UserStatus })
-   @EntityProperty({ optional: true, validate: { is: 'inArray', meta: Object.keys(UserStatus) } })
+   @IProperty({
+      optional: true,
+      validate: { is: 'inArray', meta: Object.keys(UserStatus) },
+      swagger: { description: 'The user status', enum: UserStatus },
+   })
    status?: UserStatus;
 
-   @ApiProperty({ description: 'The role IDs which assigned to the user', isArray: true, type: 'string' })
-   @EntityProperty({ optional: true, validate: { is: 'string', each: true } })
-   roles?: string[];
+   @IProperty({
+      optional: true,
+      validate: { is: 'mongoId' },
+      swagger: { description: 'The group ID which assigned to the user' },
+   })
+   groupId?: string;
 }
 
 export class UpdateUserDto extends IPartialType(CreateUserDto) {}

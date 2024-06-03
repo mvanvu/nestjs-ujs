@@ -15,23 +15,27 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { BaseService } from './service.base';
 import { RequestContext } from '@nestjs/microservices';
 
-export type OnBeforeSave<TData extends ObjectRecord = any, TRecord = ObjectRecord> = (
+export type CRUDContext = 'read' | 'create' | 'update' | 'delete';
+
+export type CRUDWriteContext = 'create' | 'update';
+
+export type OnBeforeSave<TData extends ObjectRecord, TRecord extends ObjectRecord> = (
    data: TData,
-   options?: { record?: TRecord; context: 'create' | 'update' },
+   options?: { record?: TRecord; context: CRUDWriteContext },
 ) => any | Promise<any>;
 export type OnBeforeCreate<TData extends ObjectRecord = any> = (data: TData) => any | Promise<any>;
 export type OnBeforeUpdate<TData extends ObjectRecord = any, TRecord extends ObjectRecord = any> = (
    data: TData,
    record: TRecord,
 ) => any | Promise<any>;
-export type OnBeforeDelete<TRecord extends ObjectRecord = any> = (record: TRecord) => any | Promise<any>;
+export type OnBeforeDelete<TRecord extends ObjectRecord> = (record: TRecord) => any | Promise<any>;
 export type OnEntity =
    | ClassConstructor<any>
-   | (<TRecord extends ObjectRecord = any, TContext extends 'read' | 'create' | 'update' | 'delete' = any>(
+   | (<TRecord extends ObjectRecord = any, TContext extends CRUDContext = any>(
         record: TRecord,
         options: { context: TContext; isList?: IsEqual<TContext, 'read' extends true ? boolean : never> },
      ) => any | Promise<any>);
-export type OnTransaction<T = any, TData extends ObjectRecord = any> = (tx: T, data: TData) => Promise<any>;
+export type OnTransaction<TX, TData extends ObjectRecord> = (tx: TX, data: TData) => Promise<any>;
 
 @Injectable()
 export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
@@ -48,9 +52,9 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    private updateDTO?: ClassConstructor<any>;
 
    private events: {
-      onBeforeSave?: OnBeforeSave;
-      onBeforeDelete?: OnBeforeDelete;
-      onTransaction?: OnTransaction;
+      onBeforeSave?: OnBeforeSave<any, any>;
+      onBeforeDelete?: OnBeforeDelete<any>;
+      onTransaction?: OnTransaction<any, any>;
       onEntity?: OnEntity;
    } = {};
 
@@ -95,13 +99,13 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       return this;
    }
 
-   beforeSave(callback: OnBeforeSave): this {
+   beforeSave<TData, TRecord>(callback: OnBeforeSave<TData, TRecord>): this {
       this.events.onBeforeSave = callback;
 
       return this;
    }
 
-   beforeDelete(callback: OnBeforeDelete): this {
+   beforeDelete<TRecord>(callback: OnBeforeDelete<TRecord>): this {
       this.events.onBeforeDelete = callback;
 
       return this;
@@ -113,11 +117,8 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       return this;
    }
 
-   transaction<TRecord = ObjectRecord, TData = ObjectRecord>(
-      fn: (
-         tx: TPrismaService,
-         options?: { record: TRecord; data: TData; context: 'create' | 'update' },
-      ) => Promise<any>,
+   transaction<TData, TRecord>(
+      fn: (tx: TPrismaService, options?: { record: TRecord; data: TData; context: CRUDWriteContext }) => Promise<any>,
    ): this {
       this.events.onTransaction = fn;
 
@@ -400,10 +401,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       return { data, meta: { totalCount, page, limit } };
    }
 
-   private async callOnEntity<T>(
-      item: T,
-      options: { context: 'read' | 'create' | 'update' | 'delete'; isList?: boolean },
-   ): Promise<T> {
+   private async callOnEntity<T>(item: T, options: { context: CRUDContext; isList?: boolean }): Promise<T> {
       const result = await Util.callAsync<T>(this, this.events.onEntity, item, options);
 
       return Is.class(this.events.onEntity) ? result : item;
