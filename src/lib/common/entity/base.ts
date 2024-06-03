@@ -1,22 +1,20 @@
-import { Is, ObjectRecord } from '@mvanvu/ujs';
+import { ObjectRecord } from '@mvanvu/ujs';
 import { ClassConstructor } from '../type';
 import { CLASS_PROPERTIES } from '../constant';
 
-export class BaseEntity {
-   constructor(entity?: ObjectRecord) {
+export class BaseEntity<TEntity extends object = ObjectRecord> {
+   constructor(entity?: TEntity) {
       if (entity) {
          this.bind(entity);
       }
    }
 
-   static bindToClass<T>(cls: ClassConstructor<T>, obj: ObjectRecord): T {
-      const props: string[] = Object.keys(cls.prototype[CLASS_PROPERTIES] || {});
-      const entity = new cls();
+   static bindToClass<T>(ClassRef: ClassConstructor<T>, obj: ObjectRecord): T {
+      const props: string[] = Object.keys(ClassRef.prototype[CLASS_PROPERTIES] || {});
+      const entity = new ClassRef();
 
       for (const prop of props) {
-         if (!Is.undefined(obj[prop])) {
-            entity[prop] = obj[prop];
-         }
+         entity[prop] = obj[prop] ?? undefined;
       }
 
       return entity;

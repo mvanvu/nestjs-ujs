@@ -29,14 +29,14 @@ export class CreateGroupDto {
       validate: [{ is: 'mongoId', each: true }, { is: 'arrayUnique' }],
       swagger: { description: 'The children of the group' },
    })
-   groupIds?: string[];
+   groups?: string[];
 
    @IProperty({
       optional: true,
       validate: [{ is: 'mongoId', each: true }, { is: 'arrayUnique' }],
       swagger: { description: 'The children of the group' },
    })
-   roleIds?: string[];
+   roles?: string[];
 }
 
 export class UpdateGroupDto extends IPartialType(CreateGroupDto) {}

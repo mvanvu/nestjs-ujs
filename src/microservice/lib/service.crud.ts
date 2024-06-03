@@ -19,6 +19,8 @@ export type CRUDContext = 'read' | 'create' | 'update' | 'delete';
 
 export type CRUDWriteContext = 'create' | 'update';
 
+export type CRUDTransactionContext = 'create' | 'update' | 'delete';
+
 export type OnBeforeSave<TData extends ObjectRecord, TRecord extends ObjectRecord> = (
    data: TData,
    options?: { record?: TRecord; context: CRUDWriteContext },
@@ -118,7 +120,10 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    }
 
    transaction<TData, TRecord>(
-      fn: (tx: TPrismaService, options?: { record: TRecord; data: TData; context: CRUDWriteContext }) => Promise<any>,
+      fn: (
+         tx: TPrismaService,
+         options?: { record: TRecord; data: TData; context: CRUDTransactionContext },
+      ) => Promise<any>,
    ): this {
       this.events.onTransaction = fn;
 
@@ -596,17 +601,24 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          await Util.callAsync(this, this.events.onBeforeDelete, record);
       }
 
-      if (this.optionsCRUD?.softDelete === true) {
-         await this.prisma[this.model]['update']({
-            select: { id: true },
-            data: { status: 'Trashed' },
-            where: { id },
-         });
+      await this.prisma['$transaction'](async (tx: TPrismaService) => {
+         if (this.optionsCRUD?.softDelete === true) {
+            await tx[this.model]['update']({
+               select: { id: true },
+               data: { status: 'Trashed' },
+               where: { id },
+            });
 
-         record.status = 'Trashed';
-      } else {
-         await this.prisma[this.model]['delete']({ select: { id: true }, where: { id } });
-      }
+            record.status = 'Trashed';
+         } else {
+            await tx[this.model]['delete']({ select: { id: true }, where: { id } });
+         }
+
+         if (Is.callable(this.events.onTransaction)) {
+            // Trigger an event before return results
+            await Util.callAsync(this, this.events.onTransaction, tx, { record, context: 'delete' });
+         }
+      });
 
       return record;
    }

@@ -149,7 +149,7 @@ export class UserService extends BaseService {
                   const author = this.user;
                   const isSelf = author.id === user.id;
 
-                  if (isSelf && author.status) {
+                  if (isSelf && data.status) {
                      ThrowException(`You can't update yourself status`);
                   }
 
@@ -160,7 +160,7 @@ export class UserService extends BaseService {
                   // Check the current user is the author or editor of the target user, then will can update
                   const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
 
-                  if (!isGranter) {
+                  if (!isGranter && !(isSelf && author.isRoot)) {
                      const compare = author.compare(user, serviceConfig.get('user.permissions.user.update'));
 
                      if (compare === 0) {

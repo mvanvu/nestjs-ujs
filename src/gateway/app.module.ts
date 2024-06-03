@@ -1,5 +1,5 @@
 import { MiddlewareConsumer, Module, VersioningType } from '@nestjs/common';
-import { APP_GUARD, NestFactory } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, NestFactory } from '@nestjs/core';
 import { clientProxies } from './proxy.module';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -7,16 +7,34 @@ import * as path from 'path';
 import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpMiddleware } from './http.middleware';
-import { UserAuthGuard, UserRoleGuard } from './lib';
+import { HttpCacheInterceptor, UserAuthGuard, UserRoleGuard } from './lib';
 import { bootstrap, appConfig } from '@metadata';
 import { GroupController, RoleController, UserController } from './user/controller';
 import { FileController } from './storage/controller';
 import { FileProvider } from './storage/provider';
+import { redisStore } from 'cache-manager-redis-yet';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
-   imports: [...clientProxies],
+   imports: [
+      ...clientProxies,
+      CacheModule.registerAsync({
+         isGlobal: true,
+         useFactory: async () => ({
+            store: await redisStore({
+               url: appConfig.get('redis.url'),
+               ttl: appConfig.get('cache.ttl'),
+               commandsQueueMaxLength: appConfig.get('cache.maxItems'),
+            }),
+         }),
+      }),
+   ],
    controllers: [GroupController, RoleController, UserController, FileController],
    providers: [
+      {
+         provide: APP_INTERCEPTOR,
+         useClass: HttpCacheInterceptor,
+      },
       {
          provide: APP_GUARD,
          useClass: UserAuthGuard,

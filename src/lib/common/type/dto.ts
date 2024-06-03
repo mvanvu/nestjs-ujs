@@ -1,24 +1,40 @@
-import { EntityProperty } from '@lib/common/decorator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IProperty } from '@lib/common/decorator';
 
 export class PaginationQueryDto {
-   @ApiProperty({ description: 'The search query', required: false })
-   @EntityProperty({ transform: { fromType: 'string', toType: 'trim' }, optional: true })
+   @IProperty({
+      transform: { fromType: 'string', toType: 'trim' },
+      optional: true,
+      swagger: { description: 'The search query' },
+   })
    q?: string;
 
-   @ApiProperty({ description: 'The page of the pagination', required: false })
-   @EntityProperty({ transform: { fromType: 'string', toType: 'toNumber' }, validate: { is: 'uInt' }, optional: true })
+   @IProperty({
+      transform: { fromType: 'string', toType: 'toNumber' },
+      validate: { is: 'uInt' },
+      optional: true,
+      swagger: { description: 'The page of the pagination' },
+   })
    page?: number;
 
-   @ApiProperty({ description: 'The number of items on one row', required: false })
-   @EntityProperty({ transform: { fromType: 'string', toType: 'toNumber' }, validate: { is: 'uInt' }, optional: true })
+   @IProperty({
+      transform: { fromType: 'string', toType: 'toNumber' },
+      validate: { is: 'uInt' },
+      optional: true,
+      swagger: { description: 'The number of items on one row' },
+   })
    limit?: number;
 
-   @ApiProperty({ description: 'Order by', required: false })
-   @EntityProperty({ transform: { fromType: 'string', toType: 'trim' }, optional: true })
+   @IProperty({
+      transform: { fromType: 'string', toType: 'trim' },
+      optional: true,
+      swagger: { description: 'Order by' },
+   })
    order?: string;
 
-   @ApiProperty({ description: 'Language code', required: false })
-   @EntityProperty({ transform: { fromType: 'string', toType: 'trim' }, optional: true })
+   @IProperty({
+      transform: { fromType: 'string', toType: 'trim' },
+      optional: true,
+      swagger: { description: 'Language code' },
+   })
    lang?: string;
 }

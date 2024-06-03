@@ -10,7 +10,7 @@ const patterns = serviceConfig.get('user.patterns');
 export class UserController {
    @Inject(UserService) readonly userService: UserService;
 
-   @MessagePattern(patterns.roleCRUD)
+   @MessagePattern(patterns.userCRUD)
    executeCRUD(): Promise<CRUDResult<UserEntity>> {
       return this.userService.executeCRUD();
    }

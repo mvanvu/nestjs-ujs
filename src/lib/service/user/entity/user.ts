@@ -4,7 +4,7 @@ import { UserStatus } from '.prisma/user';
 import { IProperty } from '@lib/common/decorator/property';
 import { BaseEntity } from '@lib/common/entity/base';
 import { PermissionOptions } from '@lib/common/type/common';
-import { IPickType } from '@lib/common';
+import { IPickType } from '@lib/common/entity/mapped-type';
 import { GroupEntity } from './group';
 
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}

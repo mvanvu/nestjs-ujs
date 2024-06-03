@@ -33,3 +33,4 @@ lerna-debug.log*
 node_modules
 dist
 /storage
+credentials

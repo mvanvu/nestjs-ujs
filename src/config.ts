@@ -24,11 +24,15 @@ const appConfigData = {
    },
    jwt: {
       secret: envConfig.get<string>('JWT_SECRET_KEY'),
-      accessExpiresInMinutes: envConfig.get<number>('JWT_ACCESS_EXPIRES_IN_MINUTES', 60, 'UInt'),
-      refreshExpiresInMinutes: envConfig.get<number>('JWT_REFRESH_EXPIRES_IN_MINUTES', 70, 'UInt'),
+      accessExpiresInMinutes: envConfig.get<number>('JWT_ACCESS_EXPIRES_IN_MINUTES', 60, 'toUInt'),
+      refreshExpiresInMinutes: envConfig.get<number>('JWT_REFRESH_EXPIRES_IN_MINUTES', 70, 'toUInt'),
    },
    redis: {
       url: envConfig.get<string>('REDIS_URL'),
+   },
+   cache: {
+      ttl: envConfig.get<number>('CACHE_TTL_IN_SECONDS', 60, 'toUInt') * 1000,
+      maxItems: envConfig.get<number>('CACHE_MAX_ITEMS', 1000, 'toUInt'),
    },
    rabbitMQ: {
       url: envConfig.get<string>('RABBITMQ_URL'),

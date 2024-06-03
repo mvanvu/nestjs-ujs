@@ -3,6 +3,8 @@ import { PrismaService } from './prisma/prisma.service';
 import { CreateGroupDto, GroupEntity, UpdateGroupDto } from '@lib/service/user';
 import { BaseService } from '@service/lib';
 import { CRUDResult, ThrowException } from '@lib/common';
+import { Prisma, AvailableStatus } from '.prisma/user';
+import { Is } from '@mvanvu/ujs';
 
 @Injectable()
 export class GroupService extends BaseService {
@@ -11,46 +13,50 @@ export class GroupService extends BaseService {
    executeCRUD(): Promise<CRUDResult<GroupEntity>> {
       return this.prisma
          .createCRUDService('Group')
+         .include(<Prisma.GroupInclude>{ _count: { select: { users: { where: { status: AvailableStatus.Active } } } } })
          .validateDTOPipe(CreateGroupDto, UpdateGroupDto)
          .entityResponse(GroupEntity)
          .beforeSave(async (data: Partial<CreateGroupDto>, { context }) => {
-            const roles = [];
-
-            if (data.groupIds?.length) {
+            if (data.groups?.length) {
                const groups = [];
 
                await Promise.all(
-                  data.groupIds.map((groupId) => async () => {
-                     const group = await this.prisma.group.findUnique({
-                        where: { id: groupId },
-                        select: { id: true, name: true, roles: true },
-                     });
+                  data.groups.map((groupId) =>
+                     (async () => {
+                        const group = await this.prisma.group.findUnique({
+                           where: { id: groupId },
+                           select: { id: true, name: true, roles: true },
+                        });
 
-                     if (!group) {
-                        ThrowException(`The group ID(${groupId}) doesn't exists`);
-                     }
+                        if (!group) {
+                           ThrowException(`The group ID(${groupId}) doesn't exists`);
+                        }
 
-                     groups.push(group);
-                  }),
+                        groups.push(group);
+                     })(),
+                  ),
                );
 
                data['groups'] = groups;
             }
 
-            if (data.roleIds?.length) {
+            if (data.roles?.length) {
+               const roles = [];
                await Promise.all(
-                  data.roleIds.map((roleId) => async () => {
-                     const role = await this.prisma.role.findUnique({
-                        where: { id: roleId },
-                        select: { id: true, name: true, permissions: true },
-                     });
+                  data.roles.map((roleId) =>
+                     (async () => {
+                        const role = await this.prisma.role.findUnique({
+                           where: { id: roleId },
+                           select: { id: true, name: true, permissions: true },
+                        });
 
-                     if (!role) {
-                        ThrowException(`The role ID(${roleId}) doesn't exists`);
-                     }
+                        if (!role) {
+                           ThrowException(`The role ID(${roleId}) doesn't exists`);
+                        }
 
-                     roles.push(role);
-                  }),
+                        roles.push(role);
+                     })(),
+                  ),
                );
 
                data['roles'] = roles;
@@ -66,8 +72,13 @@ export class GroupService extends BaseService {
                }
             }
          })
+         .beforeDelete((group: GroupEntity) => {
+            if (group.totalActiveUsers) {
+               ThrowException(`The group name(${group.name}) has some users who assigned to it, can't delete`);
+            }
+         })
          .transaction<Partial<CreateGroupDto>, GroupEntity>(async (tx: PrismaService, { data, record, context }) => {
-            if (context === 'create' || (!data.groupIds?.length && !data.roleIds?.length)) {
+            if (context === 'create' || (!Is.array(data.groups) && !Is.array(data.roles))) {
                return;
             }
 
