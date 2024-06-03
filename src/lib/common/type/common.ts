@@ -1,4 +1,4 @@
-import { CommonType, IsValidOptions, IsValidType, Registry, Transform } from '@mvanvu/ujs';
+import { CommonType, IsValidOptions, IsValidType, ObjectRecord, Registry, Transform } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { Type, VersionValue } from '@nestjs/common/interfaces';
 import { type UserEntity } from '@lib/service/user/entity/user';
@@ -56,13 +56,13 @@ export type IRouteOptions = {
 
 export type EntityConstructor<T> = new (...args: any[]) => T;
 
-export type ValidationCode = string | number;
+export type ValidationCode = string | number | ObjectRecord;
 
-export type ValidationOptions<T> = {
-   is: T;
+export type ValidationOptions<TIs> = {
+   is: TIs;
    each?: boolean;
    not?: boolean;
-   meta?: IsValidOptions<T>['meta'];
+   meta?: IsValidOptions<TIs>['meta'];
    code?: ValidationCode;
 };
 
@@ -73,8 +73,12 @@ export type TransformOptions = {
    fromType?: CommonType | CommonType[];
 };
 
-export type PropertyOptions<IsType extends IsValidType> = {
-   validate?: ValidationOptions<IsType> | ValidationOptions<IsType>[];
+export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> | [ClassConstructor<any>]> = {
+   validate?:
+      | ValidationOptions<ClassConstructor<any>>
+      | [ValidationOptions<ClassConstructor<any>>]
+      | ValidationOptions<IsType>
+      | Array<ValidationOptions<IsType>>;
    transform?: TransformOptions;
    optional?: boolean;
    swagger?: {

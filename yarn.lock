@@ -703,8 +703,8 @@
     got "^11.8.5"
     os-filter-obj "^2.0.0"
 
-"@mvanvu/ujs@file:../utils/dist":
-  version "0.0.0"
+"@mvanvu/ujs@file:../utils":
+  version "0.0.6"
 
 "@nestjs/cli@^10.3.1":
   version "10.3.2"

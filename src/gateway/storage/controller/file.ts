@@ -2,11 +2,11 @@ import { Body, Controller, Inject, Post, UploadedFile, UseInterceptors } from '@
 import { ApiConsumes, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { ApiEntityResponse, BaseClientProxy, BaseController, Permission } from '../../lib';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FileProvider } from '../../provider/file';
+import { FileProvider } from '../provider/file.provider';
 import { FileEntity, UploadDto } from '@lib/service/storage';
-import { metadata } from '@lib/metadata';
+import { serviceConfig } from '@metadata';
 
-const { name, permissions, patterns } = metadata.serviceConfig.get('storage');
+const { name, permissions, patterns } = serviceConfig.get('storage');
 
 @ApiBearerAuth()
 @ApiTags('Files')

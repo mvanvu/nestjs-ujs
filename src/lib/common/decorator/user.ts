@@ -2,7 +2,7 @@ import { ExecutionContext, UnauthorizedException, createParamDecorator } from '@
 import { HttpRequest, MessageMeta } from '../type';
 import { UserEntity } from '@lib/service/user/entity/user';
 import { Is, Registry } from '@mvanvu/ujs';
-import { metadata } from '@lib/metadata';
+import { isGateway } from '@metadata';
 
 export const GetUser = createParamDecorator(
    (
@@ -11,7 +11,7 @@ export const GetUser = createParamDecorator(
    ) => {
       let user: UserEntity;
 
-      if (metadata.isGateway()) {
+      if (isGateway()) {
          const { registry } = ctx.switchToHttp().getRequest<HttpRequest>();
          user = registry.get('user');
       } else {

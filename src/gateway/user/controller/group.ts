@@ -8,10 +8,10 @@ import {
    EntityResponse,
    PaginationResponse,
    Permission,
-} from '../../lib';
+} from '@gateway/lib';
 import { PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
-import { serviceConfig } from '@config';
-import { CreateRoleDto, RoleEntity, UpdateRoleDto } from '@lib/service/user';
+import { serviceConfig } from '@metadata';
+import { GroupEntity, CreateGroupDto, UpdateGroupDto } from '@lib/service/user';
 const { name, permissions, patterns } = serviceConfig.get('user');
 
 @ApiBearerAuth()
@@ -23,37 +23,40 @@ export class GroupController extends BaseController {
    }
 
    @Permission({ key: permissions.group.read })
-   @ApiPaginationResponse(RoleEntity, { summary: 'Get list pagination of groups' })
+   @ApiPaginationResponse(GroupEntity, { summary: 'Get list pagination of user groups' })
    @Get()
-   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<RoleEntity>> {
+   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<GroupEntity>> {
       return this.userProxy.send(patterns.groupCRUD, { meta: { query, CRUD: { method: 'read' } } });
    }
 
    @Permission({ key: permissions.group.read })
-   @ApiEntityResponse(RoleEntity, { summary: 'Get detail of groups' })
+   @ApiEntityResponse(GroupEntity, { summary: 'Get detail of the user group' })
    @Get(':id')
-   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<RoleEntity>> {
+   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<GroupEntity>> {
       return this.userProxy.send(patterns.groupCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } });
    }
 
    @Permission({ key: permissions.group.create })
-   @ApiEntityResponse(RoleEntity, { summary: 'Create a new group', statusCode: HttpStatus.CREATED })
+   @ApiEntityResponse(GroupEntity, { summary: 'Create a new user group', statusCode: HttpStatus.CREATED })
    @Post()
-   create(@Body() data: CreateRoleDto): Promise<EntityResponse<RoleEntity>> {
+   create(@Body() data: CreateGroupDto): Promise<EntityResponse<GroupEntity>> {
       return this.userProxy.send(patterns.groupCRUD, { data, meta: { CRUD: { method: 'write' } } });
    }
 
    @Permission({ key: permissions.group.update })
    @Patch(':id')
-   @ApiEntityResponse(RoleEntity, { summary: 'Update new group' })
-   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateRoleDto): Promise<EntityResponse<RoleEntity>> {
+   @ApiEntityResponse(GroupEntity, { summary: 'Update an user group' })
+   update(
+      @Param('id', ParseMongoIdPipe) id: string,
+      @Body() data: UpdateGroupDto,
+   ): Promise<EntityResponse<GroupEntity>> {
       return this.userProxy.send(patterns.groupCRUD, { data, meta: { params: { id }, CRUD: { method: 'write' } } });
    }
 
    @Permission({ key: permissions.group.delete })
-   @ApiEntityResponse(RoleEntity, { summary: 'Delete a group' })
+   @ApiEntityResponse(GroupEntity, { summary: 'Delete an user group' })
    @Delete(':id')
-   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<RoleEntity>> {
+   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<GroupEntity>> {
       return this.userProxy.send(patterns.groupCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } });
    }
 }

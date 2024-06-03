@@ -1,4 +1,4 @@
-import { appConfig } from '@config';
+import { appConfig } from '@metadata';
 import { FieldsException, ThrowException } from '@lib/common/exception';
 import {
    OrderBy,
@@ -15,6 +15,10 @@ import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { BaseService } from './service.base';
 import { RequestContext } from '@nestjs/microservices';
 
+export type OnBeforeSave<TData extends ObjectRecord = any, TRecord = ObjectRecord> = (
+   data: TData,
+   options?: { record?: TRecord; context: 'create' | 'update' },
+) => any | Promise<any>;
 export type OnBeforeCreate<TData extends ObjectRecord = any> = (data: TData) => any | Promise<any>;
 export type OnBeforeUpdate<TData extends ObjectRecord = any, TRecord extends ObjectRecord = any> = (
    data: TData,
@@ -27,6 +31,7 @@ export type OnEntity =
         record: TRecord,
         options: { context: TContext; isList?: IsEqual<TContext, 'read' extends true ? boolean : never> },
      ) => any | Promise<any>);
+export type OnTransaction<T = any, TData extends ObjectRecord = any> = (tx: T, data: TData) => Promise<any>;
 
 @Injectable()
 export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
@@ -43,9 +48,9 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    private updateDTO?: ClassConstructor<any>;
 
    private events: {
-      onBeforeCreate?: OnBeforeCreate;
-      onBeforeUpdate?: OnBeforeUpdate;
+      onBeforeSave?: OnBeforeSave;
       onBeforeDelete?: OnBeforeDelete;
+      onTransaction?: OnTransaction;
       onEntity?: OnEntity;
    } = {};
 
@@ -90,14 +95,8 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       return this;
    }
 
-   beforeCreate(callback: OnBeforeCreate): this {
-      this.events.onBeforeCreate = callback;
-
-      return this;
-   }
-
-   beforeUpdate(callback: OnBeforeUpdate): this {
-      this.events.onBeforeUpdate = callback;
+   beforeSave(callback: OnBeforeSave): this {
+      this.events.onBeforeSave = callback;
 
       return this;
    }
@@ -110,6 +109,17 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
 
    entityResponse(callback: OnEntity): this {
       this.events.onEntity = callback;
+
+      return this;
+   }
+
+   transaction<TRecord = ObjectRecord, TData = ObjectRecord>(
+      fn: (
+         tx: TPrismaService,
+         options?: { record: TRecord; data: TData; context: 'create' | 'update' },
+      ) => Promise<any>,
+   ): this {
+      this.events.onTransaction = fn;
 
       return this;
    }
@@ -439,7 +449,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       // Validate some requirements
       const promises: Promise<any>[] = [];
       const fieldsException = new FieldsException();
-      const uniqueFields: Record<string, any> = {};
+      const uniqueFields: ObjectRecord = {};
 
       for (const field of model.fields) {
          const { name } = field;
@@ -456,7 +466,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       }
 
       if (!Is.emptyObject(uniqueFields)) {
-         for (const name in uniqueFields) {
+         for (const name in <ObjectRecord>uniqueFields) {
             promises.push(
                entityModel['findFirst']({
                   where: {
@@ -481,18 +491,27 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    }
 
    async create<TResult, TData extends ObjectRecord>(data: TData): Promise<TResult> {
-      if (this.events.onBeforeCreate) {
+      if (Is.callable(this.events.onBeforeSave)) {
          // Trigger an event before handle
-         await Util.callAsync(this, this.events.onBeforeCreate, data);
+         await Util.callAsync(this, this.events.onBeforeSave, data, { context: 'create' });
       }
 
       // Validate data
       await this.validate(data);
 
-      const record = await this.prisma[this.model]['create']({
-         data,
-         select: this.prismaSelect,
-         include: this.prismaInclude,
+      const record = await this.prisma['$transaction'](async (tx: TPrismaService) => {
+         const item = await tx[this.model]['create']({
+            data,
+            select: this.prismaSelect,
+            include: this.prismaInclude,
+         });
+
+         if (Is.callable(this.events.onTransaction)) {
+            // Trigger an event before return results
+            await Util.callAsync(this, this.events.onTransaction, tx, { record: item, data, context: 'create' });
+         }
+
+         return item;
       });
 
       return this.events.onEntity ? await this.callOnEntity(record, { context: 'create' }) : record;
@@ -516,19 +535,28 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          oldRecord = await this.callOnEntity(oldRecord, { context: 'update' });
       }
 
-      if (this.events.onBeforeUpdate) {
+      if (this.events.onBeforeSave) {
          // Trigger an event before handle
-         await Util.callAsync(this, this.events.onBeforeUpdate, data, oldRecord);
+         await Util.callAsync(this, this.events.onBeforeSave, data, { record: oldRecord, context: 'update' });
       }
 
       // Validate
       await this.validate(data, id);
 
-      let record = await this.prisma[this.model]['update']({
-         data,
-         select: this.prismaSelect,
-         include: this.prismaInclude,
-         where: { id },
+      let record = await this.prisma['$transaction'](async (tx: TPrismaService) => {
+         const item = await tx[this.model]['update']({
+            data,
+            select: this.prismaSelect,
+            include: this.prismaInclude,
+            where: { id },
+         });
+
+         if (Is.callable(this.events.onTransaction)) {
+            // Trigger an event before return results
+            await Util.callAsync(this, this.events.onTransaction, tx, { record: item, data, context: 'update' });
+         }
+
+         return item;
       });
 
       if (onEntity) {
@@ -586,7 +614,8 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    }
 
    async execute<TResult>(ctx?: RequestContext): Promise<CRUDResult<TResult>> {
-      const meta = BaseService.parseMeta(ctx ?? this.ctx);
+      ctx = ctx ?? this.ctx;
+      const meta = BaseService.parseMeta(ctx);
       const recordId = meta.get('params.id');
       const userId = meta.get('headers.user.id');
       const method = meta.get('CRUD.method');

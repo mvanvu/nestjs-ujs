@@ -1,5 +1,5 @@
-import { appConfig } from '@config';
-import { metadata } from '@lib/metadata';
+import { appConfig } from '@metadata';
+import { isGateway } from '@metadata';
 import { Is } from '@mvanvu/ujs';
 import { ExceptionFilter as NestExceptionFilter, Catch, ArgumentsHost, HttpStatus } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
@@ -9,7 +9,7 @@ import { Observable, throwError } from 'rxjs';
 @Catch()
 export class ExceptionFilter implements NestExceptionFilter {
    catch(exception: any, host: ArgumentsHost): void | Observable<any> {
-      if (metadata.isGateway()) {
+      if (isGateway()) {
          const response = host.switchToHttp().getResponse<Response>();
          const exceptionResponse = Is.func(exception?.getResponse) ? exception.getResponse() : exception;
          const error =

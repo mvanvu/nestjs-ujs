@@ -4,7 +4,7 @@ import { REQUEST } from '@nestjs/core';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import { HttpRequest, MessageData, ServiceOptions, ThrowException } from '@lib/common';
 import { lastValueFrom, timeout } from 'rxjs';
-import { metadata } from '@lib/metadata';
+import { app } from '@metadata';
 
 export class BaseClientProxy {
    constructor(
@@ -51,6 +51,6 @@ export class BaseController {
       class InstClientProxy extends BaseClientProxy {}
       Object.defineProperty(InstClientProxy, 'name', { value: proxyName });
 
-      return new InstClientProxy(metadata.getGateway().get<ClientProxy>(proxyName), this.req);
+      return new InstClientProxy(app().get<ClientProxy>(proxyName), this.req);
    }
 }

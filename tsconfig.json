@@ -20,7 +20,7 @@
       "allowJs": true,
       "checkJs": true,
       "paths": {
-         "@config": ["src/config"],
+         "@metadata": ["src/metadata"],
          "@lib": ["src/lib"],
          "@lib/*": ["src/lib/*"],
          "@gateway": ["src/gateway"],

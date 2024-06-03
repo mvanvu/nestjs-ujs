@@ -3,7 +3,7 @@ import { Callable, Util } from '@mvanvu/ujs';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { appConfig } from '../../config';
-import { metadata } from '@lib/metadata';
+import { bootstrap } from '@metadata';
 
 export async function createMicroserviceApp(
    AppModule: ClassConstructor<any>,
@@ -30,7 +30,7 @@ export async function createMicroserviceApp(
    }
 
    // Bootstrap Metadata
-   metadata.bootstrap(app);
+   bootstrap(app);
    await app
       .listen()
       .then(() => console.log(`The ${serviceName} microservice is listening`))

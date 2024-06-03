@@ -12,7 +12,7 @@ import {
    Public,
    Permission,
 } from '../../lib';
-import { serviceConfig } from '@config';
+import { serviceConfig } from '@metadata';
 
 const { name, permissions, patterns } = serviceConfig.get('user');
 

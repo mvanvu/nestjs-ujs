@@ -1,4 +1,4 @@
-import { appConfig } from '@config';
+import { appConfig } from '@metadata';
 import { Is, ObjectRecord } from '@mvanvu/ujs';
 import { UserStatus } from '.prisma/user';
 import { EntityProperty } from '@lib/common/decorator/property';

@@ -1,30 +1,42 @@
 import { IPartialType, EntityProperty } from '@lib/common';
 import { $Enums } from '.prisma/user';
-import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateGroupDto {
-   @ApiProperty({ description: 'The name of the group' })
    @EntityProperty({
       transform: { fromType: 'string', toType: 'trim' },
       validate: [{ is: 'string' }, { is: 'empty', not: true }],
+      swagger: { description: 'The name of the group' },
    })
    name: string;
 
-   @ApiProperty({ description: 'The description of the group' })
    @EntityProperty({
       optional: true,
       transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
       validate: { is: 'string' },
+      swagger: { description: 'The description of the group' },
    })
    description?: string;
 
-   @ApiProperty({ description: 'The status of the group', enum: $Enums.AvailableStatus })
-   @EntityProperty({ optional: true, validate: { is: 'inArray', meta: Object.values($Enums.AvailableStatus) } })
+   @EntityProperty({
+      optional: true,
+      validate: { is: 'inArray', meta: Object.values($Enums.AvailableStatus) },
+      swagger: { description: 'The status of the group', enum: $Enums.AvailableStatus },
+   })
    status?: $Enums.AvailableStatus;
 
-   @ApiProperty({ description: 'The permissions of the group' })
-   @EntityProperty({ optional: true, validate: { is: 'inArray' } })
-   permissions?: string[];
+   @EntityProperty({
+      optional: true,
+      validate: [{ is: 'mongoId', each: true }, { is: 'arrayUnique' }],
+      swagger: { description: 'The children of the group' },
+   })
+   groupIds?: string[];
+
+   @EntityProperty({
+      optional: true,
+      validate: [{ is: 'mongoId', each: true }, { is: 'arrayUnique' }],
+      swagger: { description: 'The children of the group' },
+   })
+   roleIds?: string[];
 }
 
 export class UpdateGroupDto extends IPartialType(CreateGroupDto) {}

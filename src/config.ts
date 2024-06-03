@@ -1,7 +1,6 @@
 import { Registry } from '@mvanvu/ujs';
 import dotenv from 'dotenv';
 import dotenvExpand from 'dotenv-expand';
-export { serviceConfig } from '@lib/service';
 dotenvExpand.expand(dotenv.config());
 export const envConfig = Registry.from(process.env);
 
@@ -50,5 +49,5 @@ const appConfigData = {
    rootUid: envConfig.get<string>('ROOT_UID'),
 } as const;
 
-export type AppConfigData = typeof appConfigData;
+type AppConfigData = typeof appConfigData;
 export const appConfig = Registry.from<AppConfigData>(appConfigData, { consistent: true });

@@ -5,7 +5,7 @@ import { FileProviderGoogleDrive } from './file.provider.google-drive';
 import { Provider } from '.prisma/storage';
 import { FileProviderInterface } from './file.provider.interface';
 import { Transform } from '@mvanvu/ujs';
-import { appConfig } from '@config';
+import { appConfig } from '@metadata';
 import { ThrowException } from '@lib/common';
 import { allAcceptedFileTypes, fileTypes } from './file.mime';
 @Injectable()

@@ -3,7 +3,7 @@ import { RoleService } from '../provider';
 import { RoleEntity } from '@lib/service';
 import { MessagePattern } from '@nestjs/microservices';
 import { CRUDResult } from '@lib/common';
-import { serviceConfig } from '@config';
+import { serviceConfig } from '@metadata';
 const patterns = serviceConfig.get('user.patterns');
 export class RoleController {
    @Inject(RoleService) readonly roleService: RoleService;

@@ -5,7 +5,7 @@ import { Readable } from 'stream';
 import { Provider } from '.prisma/storage';
 import { Util } from '@mvanvu/ujs';
 import { StreamableFile } from '@nestjs/common';
-import { appConfig } from '@config';
+import { appConfig } from '@metadata';
 import { FileEntity, FinalUploadDto, UploadDto } from '@lib/service/storage';
 
 export class FileProviderGoogleDrive implements FileProviderInterface {

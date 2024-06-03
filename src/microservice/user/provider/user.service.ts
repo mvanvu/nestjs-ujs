@@ -4,36 +4,13 @@ import { PrismaService } from './prisma/prisma.service';
 import { Prisma, UserStatus } from '.prisma/user';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is } from '@mvanvu/ujs';
-import { appConfig, serviceConfig } from '@config';
+import { appConfig, serviceConfig } from '@metadata';
 import { BaseService } from '@service/lib';
 import { FieldsException, ThrowException, CRUDResult } from '@lib/common';
 
 @Injectable()
 export class UserService extends BaseService {
    @Inject(PrismaService) readonly prisma: PrismaService;
-
-   readonly userSelect: Prisma.UserSelect = {
-      id: true,
-      username: true,
-      name: true,
-      email: true,
-      createdAt: true,
-      createdBy: true,
-      updatedAt: true,
-      updatedBy: true,
-      status: true,
-      userRoles: {
-         select: {
-            role: {
-               select: {
-                  id: true,
-                  name: true,
-                  permissions: true,
-               },
-            },
-         },
-      },
-   };
 
    private async validateUserDto(dto: UserSignUpDto | CreateUserDto | UpdateUserDto, id?: string) {
       const fieldsError = new FieldsException();
@@ -121,10 +98,7 @@ export class UserService extends BaseService {
          OR.push({ email: { equals: username, mode: 'insensitive' } });
       }
 
-      const user = await this.prisma.user.findFirst({
-         where: { OR },
-         select: { ...this.userSelect, password: true },
-      });
+      const user = await this.prisma.user.findFirst({ where: { OR } });
 
       if (!user || user.status !== UserStatus.Active || !(await argon2.verify(user.password, password))) {
          ThrowException('Invalid credentials');
@@ -135,7 +109,7 @@ export class UserService extends BaseService {
 
    async verify(token: string): Promise<UserEntity> {
       const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.get('jwt.secret') });
-      const user = await this.prisma.user.findUnique({ where: { id }, select: this.userSelect });
+      const user = await this.prisma.user.findUnique({ where: { id } });
 
       if (!user || user.status !== UserStatus.Active) {
          ThrowException('Invalid credentials');
@@ -148,7 +122,6 @@ export class UserService extends BaseService {
       const user = await this.prisma.user.update({
          where: { id },
          data: { status: UserStatus.Trashed },
-         select: this.userSelect,
       });
 
       return new UserEntity(user);
@@ -157,7 +130,18 @@ export class UserService extends BaseService {
    executeCRUD(): Promise<CRUDResult<UserEntity>> {
       return this.prisma
          .createCRUDService('User')
-         .select(this.userSelect)
+         .include(<Prisma.UserInclude>{
+            group: {
+               select: {
+                  id: true,
+                  name: true,
+                  groups: {
+                     select: { id: true, name: true, roles: { select: { id: true, name: true, permissions: true } } },
+                  },
+                  roles: { select: { id: true, name: true, permissions: true } },
+               },
+            },
+         })
          .options({ softDelete: true, list: { searchFields: ['name', 'username', 'email'] } })
          .entityResponse(UserEntity)
          .validateDTOPipe(CreateUserDto)

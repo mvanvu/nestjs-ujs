@@ -5,8 +5,8 @@ import { CRUDService } from './service.crud';
 import { PrismaClient } from '@prisma/client';
 import { BaseRpcContext } from '@nestjs/microservices';
 
-export function CreatePrismaService<TDataModel extends ObjectRecord>(
-   PrismaClientRef: ClassConstructor<PrismaClient>,
+export function CreatePrismaService<TClientRef extends ClassConstructor<PrismaClient>, TDataModel extends ObjectRecord>(
+   PrismaClientRef: TClientRef,
    dataModel: TDataModel,
 ) {
    type ModelName = keyof TDataModel;

@@ -4,14 +4,14 @@ import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
 import { UserEntity } from '@lib/service/user';
 import { lastValueFrom, timeout } from 'rxjs';
-import { serviceConfig } from '@config';
+import { serviceConfig } from '@metadata';
 import { USER_PUBLIC_KEY, USER_ROLE_KEY } from './user.decorator';
-import { metadata } from '@lib/metadata';
+import { app as getApplication } from '@metadata';
 
 @Injectable()
 export class UserAuthGuard implements CanActivate {
    async canActivate(context: ExecutionContext): Promise<boolean> {
-      const app = metadata.getGateway();
+      const app = getApplication();
       const reflector = app.get(Reflector);
       const isPublic = reflector.getAllAndOverride<boolean>(USER_PUBLIC_KEY, [
          context.getHandler(),
@@ -58,7 +58,7 @@ export class UserAuthGuard implements CanActivate {
 @Injectable()
 export class UserRoleGuard implements CanActivate {
    async canActivate(context: ExecutionContext): Promise<boolean> {
-      const app = metadata.getGateway();
+      const app = getApplication();
       const reflector = app.get(Reflector);
       const permission = reflector.getAllAndOverride<PermissionOptions | undefined>(USER_ROLE_KEY, [
          context.getHandler(),

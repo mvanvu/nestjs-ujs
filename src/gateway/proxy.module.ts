@@ -1,6 +1,5 @@
 import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/microservices';
-import { appConfig } from '@config';
-import { serviceListNames } from '@lib/service';
+import { appConfig, serviceListNames } from '@metadata';
 
 export function createClientAsyncOptions(name: string): ClientsProviderAsyncOptions {
    return {

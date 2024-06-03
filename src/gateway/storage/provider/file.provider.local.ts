@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { FileProviderInterface } from './file.provider.interface';
-import { appConfig } from '@config';
+import { appConfig } from '@metadata';
 import { Util } from '@mvanvu/ujs';
 import { FileEntity, FinalUploadDto, UploadDto } from '@lib/service';
 

@@ -1,11 +1,12 @@
-import { PropertyOptions } from '../type';
+import { ClassConstructor, PropertyOptions } from '../type';
 import { CLASS_PROPERTIES } from '../constant';
 import { IsValidType } from '@mvanvu/ujs';
 import { applyDecorators } from '@nestjs/common';
-import { metadata } from '@lib/metadata';
 import { ApiProperty } from '@nestjs/swagger';
 
-export function EntityProperty<IsType extends IsValidType>(options?: PropertyOptions<IsType>): PropertyDecorator {
+export function EntityProperty<IsType extends IsValidType | ClassConstructor<any> | [ClassConstructor<any>]>(
+   options?: PropertyOptions<IsType>,
+): PropertyDecorator {
    const decorators = [
       (target: Object, propertyKey: PropertyKey): void => {
          if (!target.hasOwnProperty(CLASS_PROPERTIES)) {
@@ -16,8 +17,8 @@ export function EntityProperty<IsType extends IsValidType>(options?: PropertyOpt
       },
    ];
 
-   if (metadata.isGateway() && options?.swagger?.disable !== true) {
-      decorators.push(ApiProperty({ ...(options?.swagger || {}) }));
+   if (options?.swagger?.disable !== true) {
+      decorators.push(ApiProperty({ ...(options?.swagger || {}), required: options?.optional !== true }));
    }
 
    return applyDecorators(...decorators);

@@ -24,6 +24,18 @@ enum AvailableStatus {
     Trashed
 }
 
+type RoleRef {
+    id          String   @db.ObjectId
+    name        String
+    permissions String[]
+}
+
+type ChildGroup {
+    id    String    @db.ObjectId
+    name  String
+    roles RoleRef[]
+}
+
 model User {
     id        String     @id @default(auto()) @map("_id") @db.ObjectId
     username  String?    @unique
@@ -39,6 +51,18 @@ model User {
     updatedBy String?    @db.ObjectId
 }
 
+model Role {
+    id          String          @id @default(auto()) @map("_id") @db.ObjectId
+    name        String          @unique
+    description String?
+    status      AvailableStatus @default(Drafted)
+    createdAt   DateTime        @default(now())
+    createdBy   String?         @db.ObjectId
+    updatedAt   DateTime?       @updatedAt
+    updatedBy   String?         @db.ObjectId
+    permissions String[]
+}
+
 model Group {
     id          String          @id @default(auto()) @map("_id") @db.ObjectId
     name        String          @unique
@@ -48,21 +72,7 @@ model Group {
     createdBy   String?         @db.ObjectId
     updatedAt   DateTime?       @updatedAt
     updatedBy   String?         @db.ObjectId
-    roles       Role[]
     users       User[]
-}
-
-model Role {
-    id          String          @id @default(auto()) @map("_id") @db.ObjectId
-    name        String          @unique
-    description String?
-    status      AvailableStatus @default(Drafted)
-    root        Boolean         @default(false)
-    createdAt   DateTime        @default(now())
-    createdBy   String?         @db.ObjectId
-    updatedAt   DateTime?       @updatedAt
-    updatedBy   String?         @db.ObjectId
-    permissions String[]
-    group       Group?          @relation(fields: [groupId], references: [id], onDelete: SetNull)
-    groupId     String?         @db.ObjectId
+    groups      ChildGroup[]
+    roles       RoleRef[]
 }

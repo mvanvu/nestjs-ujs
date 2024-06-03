@@ -7,11 +7,11 @@ import * as path from 'path';
 import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpMiddleware } from './http.middleware';
-import { appConfig } from '@config';
-import { FileController, GroupController, RoleController, UserController } from './controller';
-import { FileProvider } from './provider/file';
 import { UserAuthGuard, UserRoleGuard } from './lib';
-import { metadata } from '@lib/metadata';
+import { bootstrap, appConfig } from '@metadata';
+import { GroupController, RoleController, UserController } from './user/controller';
+import { FileController } from './storage/controller';
+import { FileProvider } from './storage/provider';
 
 @Module({
    imports: [...clientProxies],
@@ -75,7 +75,7 @@ export class AppModule {
       const port = appConfig.get('apiGateway.port');
 
       // Bootstrap Metadata
-      metadata.bootstrap(app);
+      bootstrap(app);
 
       await app
          .listen(port, () => console.log(`Listening on port: ${port}`))

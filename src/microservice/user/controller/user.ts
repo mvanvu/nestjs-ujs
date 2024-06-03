@@ -3,7 +3,7 @@ import { UserService } from '../provider/user.service';
 import { UserSignInDto, UserSignUpDto, UserEntity, AuthEntity } from '@lib/service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CRUDResult } from '@lib/common';
-import { serviceConfig } from '@config';
+import { serviceConfig } from '@metadata';
 const patterns = serviceConfig.get('user.patterns');
 
 @Controller()

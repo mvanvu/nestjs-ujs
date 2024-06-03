@@ -10,7 +10,7 @@ import {
    Permission,
 } from '../../lib';
 import { PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
-import { serviceConfig } from '@config';
+import { serviceConfig } from '@metadata';
 import { CreateRoleDto, RoleEntity, UpdateRoleDto } from '@lib/service/user';
 const { name, permissions, patterns } = serviceConfig.get('user');
 
