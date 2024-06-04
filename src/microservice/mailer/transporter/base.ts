@@ -1,11 +1,11 @@
 import * as nodemailer from 'nodemailer';
 import { Transform } from '@mvanvu/ujs';
-import { MessageInfoEntity, SendMailDto, TransporterInterface, TransporterMessageInfo } from '@lib/service/mailer';
+import { MessageInfoEntity, SendMailDto, TransporterMessageInfo } from '@lib/service/mailer';
 
-export abstract class BaseTransporter implements TransporterInterface {
-   abstract readonly transporter: nodemailer.Transporter<TransporterMessageInfo>;
+export abstract class BaseTransporter {
+   protected abstract readonly transporter: nodemailer.Transporter<TransporterMessageInfo>;
 
-   abstract readonly testTransporter: nodemailer.Transporter<TransporterMessageInfo>;
+   protected abstract readonly testTransporter: nodemailer.Transporter<TransporterMessageInfo>;
 
    async send(dto: SendMailDto, test?: boolean): Promise<MessageInfoEntity> {
       try {

@@ -37,10 +37,10 @@ export class UserSignUpDto {
 
 export class UserSignInDto extends IPickType(UserSignUpDto, ['username', 'password']) {}
 
-export class RefreshTokenDto {
+export class AuthTokenDto {
    @IProperty({
       validate: [{ is: 'string' }, { is: 'empty', not: true }],
-      swagger: { description: 'The refresh token to verify' },
+      swagger: { description: 'The token to verify' },
    })
    token: string;
 }

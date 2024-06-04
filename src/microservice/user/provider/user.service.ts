@@ -1,4 +1,12 @@
-import { CreateUserDto, UserSignInDto, UserSignUpDto, AuthEntity, UserEntity, UpdateUserDto } from '@lib/service';
+import {
+   CreateUserDto,
+   UserSignInDto,
+   UserSignUpDto,
+   AuthEntity,
+   UserEntity,
+   UpdateUserDto,
+   AuthTokenEntity,
+} from '@lib/service';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma, UserStatus } from '.prisma/user';
@@ -70,7 +78,7 @@ export class UserService extends BaseService {
       return new UserEntity(newUser);
    }
 
-   async generateTokens(userId: string): Promise<AuthEntity['tokens']> {
+   async generateTokens(userId: string): Promise<AuthTokenEntity> {
       const jwtConfig = appConfig.get('jwt');
       const secret = jwtConfig.secret;
       const jwt = Hash.jwt();
@@ -106,7 +114,7 @@ export class UserService extends BaseService {
 
    async verifyToken(token: string): Promise<UserEntity> {
       try {
-         const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.get('jwt') });
+         const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.get('jwt.secret') });
          const user = await this.prisma.user.findUnique({ where: { id }, include: this.userInclude });
 
          if (user?.status !== UserStatus.Active) {
@@ -123,10 +131,10 @@ export class UserService extends BaseService {
       }
    }
 
-   async refreshToken(token: string): Promise<AuthEntity> {
+   async refreshToken(token: string): Promise<AuthTokenEntity> {
       const user = await this.verifyToken(token);
 
-      return new AuthEntity({ user, tokens: await this.generateTokens(user.id) });
+      return await this.generateTokens(user.id);
    }
 
    executeCRUD(): Promise<CRUDResult<UserEntity>> {

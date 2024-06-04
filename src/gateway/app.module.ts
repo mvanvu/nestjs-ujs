@@ -1,23 +1,40 @@
 import { MiddlewareConsumer, Module, VersioningType } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, NestFactory } from '@nestjs/core';
-import { clientProxies } from './proxy.module';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
 import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { HttpMiddleware } from './http.middleware';
-import { EventEmitterModule, HttpCacheInterceptor, UserAuthGuard, UserRoleGuard } from './lib';
-import { bootstrap, appConfig } from '@metadata';
+import { EventEmitterModule, HttpCacheInterceptor, HttpMiddleware, UserAuthGuard, UserRoleGuard } from './lib';
+import { bootstrap, appConfig, serviceListNames } from '@metadata';
 import { GroupController, RoleController, UserController } from './user/controller';
 import { FileController } from './storage/controller';
 import { FileProvider } from './storage/provider';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/microservices';
+import { MailController } from './mailer/controller';
 
+const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => {
+   return {
+      name: name.toUpperCase() + '_MICROSERVICE',
+      useFactory: () => {
+         return {
+            transport: Transport.RMQ,
+            options: {
+               urls: [appConfig.get<string>('rabbitMQ.url')],
+               queue: `${name}MicroserviceQueue`,
+               queueOptions: { durable: true },
+            },
+         };
+      },
+   };
+};
 @Module({
    imports: [
-      ...clientProxies,
+      ...serviceListNames.map((name) =>
+         ClientsModule.registerAsync({ isGlobal: true, clients: [createClientAsyncOptions(name)] }),
+      ),
       EventEmitterModule,
       CacheModule.registerAsync({
          isGlobal: true,
@@ -30,7 +47,7 @@ import { CacheModule } from '@nestjs/cache-manager';
          }),
       }),
    ],
-   controllers: [GroupController, RoleController, UserController, FileController],
+   controllers: [GroupController, RoleController, UserController, FileController, MailController],
    providers: [
       {
          provide: APP_INTERCEPTOR,

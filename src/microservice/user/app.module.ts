@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { createMicroserviceApp } from '../lib';
-import { UserModule } from './user.module';
 import { serviceConfig } from '@metadata';
+import { GroupController, RoleController, UserController } from './controller';
+import { PrismaService, RoleService, UserService, GroupService } from './provider';
 
 @Module({
-   imports: [UserModule],
+   controllers: [UserController, RoleController, GroupController],
+   providers: [UserService, PrismaService, RoleService, GroupService],
+   exports: [UserService],
 })
 export class AppModule {
    static bootstrap(): Promise<void> {

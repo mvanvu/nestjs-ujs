@@ -1,5 +1,5 @@
 import { EventEmitter, Registry, Util } from '@mvanvu/ujs';
-import { Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import {
    HttpRequest,
@@ -11,13 +11,12 @@ import {
 } from '@lib/common';
 import { lastValueFrom, timeout } from 'rxjs';
 
+@Injectable()
 export class BaseClientProxy {
-   @Inject(EventEmitter)
-   private readonly eventEmitter: EventEmitter;
-
    constructor(
       private readonly client: ClientProxy,
       private readonly req: HttpRequest,
+      private readonly eventEmitter: EventEmitter,
    ) {}
 
    async send<TInput, TResult>(
@@ -43,6 +42,7 @@ export class BaseClientProxy {
 
          // Emit an event
          const eventPayload: OnServiceResponse = {
+            httpRequest: this.req,
             messagePattern,
             requestData: dataDelivery.data,
             responseData: response,

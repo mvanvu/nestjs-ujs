@@ -32,7 +32,7 @@ export class UserAuthGuard implements CanActivate {
          const user = await lastValueFrom(
             app
                .get<ClientProxy>(serviceConfig.get<string>('user.name').toUpperCase() + '_MICROSERVICE')
-               .send(serviceConfig.get('user.patterns.verifyToken'), token)
+               .send(serviceConfig.get('user.patterns.verifyToken'), { token })
                .pipe(timeout(5000)),
          );
 

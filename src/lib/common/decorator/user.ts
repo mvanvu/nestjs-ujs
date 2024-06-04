@@ -4,7 +4,7 @@ import { UserEntity } from '@lib/service/user/entity/user';
 import { Is, Registry } from '@mvanvu/ujs';
 import { isGateway } from '@metadata';
 
-export const GetUser = createParamDecorator(
+export const IUser = createParamDecorator(
    (
       property: string | string[] | undefined | { optional?: boolean; property?: string | string[] },
       ctx: ExecutionContext,

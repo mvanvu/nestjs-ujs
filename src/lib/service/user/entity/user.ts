@@ -150,7 +150,7 @@ export class UserEntity extends BaseEntity {
    }
 }
 
-export class AuthTokens {
+export class AuthTokenEntity {
    @IProperty()
    access: string;
 
@@ -162,6 +162,6 @@ export class AuthEntity extends BaseEntity {
    @IProperty()
    user: UserEntity;
 
-   @IProperty()
-   tokens: AuthTokens;
+   @IProperty({ swagger: { type: AuthTokenEntity } })
+   tokens: AuthTokenEntity;
 }

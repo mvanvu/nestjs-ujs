@@ -1,4 +1,4 @@
-import { RequestRegistryData } from './common';
+import { HttpRequest, RequestRegistryData } from './common';
 import { ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
 
@@ -59,6 +59,7 @@ export type MessageData<TData = any, TMeta = MessageMeta | Registry<MessageMeta>
 
 export type OnServiceResponse = {
    messagePattern: string;
+   httpRequest: HttpRequest;
    requestData?: any;
    responseData?: any;
 };

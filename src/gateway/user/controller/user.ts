@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { PaginationQueryDto, ParseMongoIdPipe, GetUser } from '@lib/common';
+import { PaginationQueryDto, ParseMongoIdPipe, IUser } from '@lib/common';
 import {
    CreateUserDto,
    UserSignInDto,
@@ -8,7 +8,8 @@ import {
    UserEntity,
    AuthEntity,
    UpdateUserDto,
-   RefreshTokenDto,
+   AuthTokenDto,
+   AuthTokenEntity,
 } from '@lib/service/user';
 import {
    BaseController,
@@ -33,9 +34,9 @@ export class UserController extends BaseController {
 
    @Public()
    @Post('refresh-token')
-   @ApiEntityResponse(UserEntity, { summary: 'Generate a new pair access/refresh token' })
-   refreshToken(@Body() dto: RefreshTokenDto): Promise<UserEntity> {
-      return this.userProxy.send(patterns.refreshToken, { data: dto.token });
+   @ApiEntityResponse(AuthTokenEntity, { summary: 'Generate a new pair access/refresh token' })
+   refreshToken(@Body() data: AuthTokenDto): Promise<AuthTokenEntity> {
+      return this.userProxy.send(patterns.refreshToken, { data });
    }
 
    @Public()
@@ -55,7 +56,7 @@ export class UserController extends BaseController {
    @Get('me')
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Get the detail of the logged user' })
-   me(@GetUser() user: UserEntity): UserEntity {
+   me(@IUser() user: UserEntity): UserEntity {
       return user;
    }
 
@@ -102,7 +103,7 @@ export class UserController extends BaseController {
    @Delete()
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'The user delete his/her self' })
-   deleteSelf(@GetUser('id') id: string): Promise<EntityResponse<UserEntity>> {
+   deleteSelf(@IUser('id') id: string): Promise<EntityResponse<UserEntity>> {
       return this.userProxy.send(patterns.userCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } });
    }
 }

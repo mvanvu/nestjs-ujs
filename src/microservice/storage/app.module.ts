@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { createMicroserviceApp } from '../lib';
-import { StorageModule } from './storage.module';
 import { serviceConfig } from '@metadata';
+import { FileController } from './controller';
+import { FileService, PrismaService } from './provider';
 @Module({
-   imports: [StorageModule],
+   controllers: [FileController],
+   providers: [PrismaService, FileService],
 })
 export class AppModule {
    static bootstrap(): Promise<void> {

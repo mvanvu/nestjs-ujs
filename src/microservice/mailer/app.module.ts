@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { createMicroserviceApp } from '../lib';
-import { MailerModule } from './mailer.module';
 import { serviceConfig } from '@metadata';
+import { MailerController } from './controller';
+import { MailerService } from './provider';
 @Module({
-   imports: [MailerModule],
+   controllers: [MailerController],
+   providers: [MailerService],
 })
 export class AppModule {
    static bootstrap(): Promise<void> {
