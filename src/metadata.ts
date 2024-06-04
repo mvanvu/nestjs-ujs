@@ -7,11 +7,16 @@ export { appConfig } from './config';
 // Service shared config
 import user from './lib/service/user/config';
 import storage from './lib/service/storage/config';
-const serviceConfigData = { user, storage };
+import mailer from './lib/service/mailer/config';
+const serviceConfigData = { mailer, storage, user };
 
 export const serviceConfig = Registry.from<typeof serviceConfigData>(serviceConfigData, { consistent: true });
 
-export const serviceListNames = [serviceConfig.get('user.name'), serviceConfig.get('storage.name')];
+export const serviceListNames = [
+   serviceConfig.get('mailer.name'),
+   serviceConfig.get('user.name'),
+   serviceConfig.get('storage.name'),
+];
 
 export const permissionKeys: string[] = [];
 

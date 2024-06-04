@@ -1,19 +1,11 @@
 import { appConfig } from './config';
 
 async function bootstrap() {
-   switch (appConfig.get('appEnv')) {
-      case 'gateway':
-         import('./gateway/app.module').then(({ AppModule }) => AppModule.bootstrap());
-         break;
+   const appEnv = appConfig.get('appEnv');
+   const appModule = `'./${appEnv === 'gateway' ? 'gateway' : `microservice/${appEnv}`}/app.module'`;
 
-      case 'user':
-         import('./microservice/user/app.module').then(({ AppModule }) => AppModule.bootstrap());
-         break;
-
-      case 'storage':
-         import('./microservice/storage/app.module').then(({ AppModule }) => AppModule.bootstrap());
-         break;
-   }
+   // Dynamic import application
+   import(appModule).then(({ AppModule }) => AppModule.bootstrap());
 }
 
 bootstrap().catch(console.debug);
