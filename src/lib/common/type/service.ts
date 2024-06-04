@@ -57,27 +57,8 @@ export type MessageData<TData = any, TMeta = MessageMeta | Registry<MessageMeta>
    meta?: TMeta;
 };
 
-export type BootServiceOptions<TPatterns, TPermissions> = {
-   proxy: string;
-   patterns: TPatterns;
-   permissions?: TPermissions;
+export type OnServiceResponse = {
+   messagePattern: string;
+   requestData?: any;
+   responseData?: any;
 };
-
-export class ConfigService<
-   TPatterns extends Record<string, string>,
-   TPermissions extends Record<string, Record<string, string>> | undefined = undefined,
-> {
-   constructor(private readonly options: BootServiceOptions<TPatterns, TPermissions>) {}
-
-   get proxy(): string {
-      return this.options.proxy;
-   }
-
-   get patterns(): TPatterns {
-      return this.options.patterns;
-   }
-
-   get permissions(): TPermissions | undefined {
-      return this.options.permissions;
-   }
-}

@@ -91,3 +91,5 @@ export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> |
 };
 
 export type PermissionOptions = { key?: string; or?: string[]; and?: string[] } | string;
+
+export type ICacheOptions = { disabled?: boolean; withUserIdPrefix?: boolean };

@@ -7,7 +7,7 @@ import * as path from 'path';
 import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpMiddleware } from './http.middleware';
-import { HttpCacheInterceptor, UserAuthGuard, UserRoleGuard } from './lib';
+import { EventEmitterModule, HttpCacheInterceptor, UserAuthGuard, UserRoleGuard } from './lib';
 import { bootstrap, appConfig } from '@metadata';
 import { GroupController, RoleController, UserController } from './user/controller';
 import { FileController } from './storage/controller';
@@ -18,6 +18,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 @Module({
    imports: [
       ...clientProxies,
+      EventEmitterModule,
       CacheModule.registerAsync({
          isGlobal: true,
          useFactory: async () => ({

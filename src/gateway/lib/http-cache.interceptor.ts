@@ -1,6 +1,6 @@
 import { CACHE_MANAGER, Cache, CacheInterceptor } from '@nestjs/cache-manager';
 import { ExecutionContext, Inject, Injectable } from '@nestjs/common';
-import { CACHE_WITH_PREFIX_USER_ID_KEY, HttpRequest, NO_CACHE_KEY } from '@lib/common';
+import { HTTP_CACHE_KEY, HttpRequest, ICacheOptions } from '@lib/common';
 
 @Injectable()
 export class HttpCacheInterceptor extends CacheInterceptor {
@@ -8,45 +8,24 @@ export class HttpCacheInterceptor extends CacheInterceptor {
 
    trackBy(context: ExecutionContext): string | undefined {
       const request = context.switchToHttp().getRequest<HttpRequest>();
-      const ignoreCaching = this.reflector.getAllAndOverride(NO_CACHE_KEY, [context.getClass(), context.getHandler()]);
-      const { httpAdapter } = this.httpAdapterHost;
-      const isGetRequest = httpAdapter.getRequestMethod(request) === 'GET';
-      const withPrefixUserId = this.reflector.getAllAndOverride(CACHE_WITH_PREFIX_USER_ID_KEY, [
+      const cacheMetadata = this.reflector.getAllAndOverride<ICacheOptions>(HTTP_CACHE_KEY, [
          context.getClass(),
          context.getHandler(),
       ]);
-      const requestUrl = httpAdapter.getRequestUrl(request);
-      let cacheKey = requestUrl;
+      const { httpAdapter } = this.httpAdapterHost;
+      const isGetRequest = httpAdapter.getRequestMethod(request) === 'GET';
+      const isHttpApp = httpAdapter && !!httpAdapter.getRequestMethod;
 
-      if (withPrefixUserId && request.registry.has('user.id')) {
-         cacheKey = `${request.registry.get('user.id')}:${cacheKey}`;
+      if (!isHttpApp || !isGetRequest || cacheMetadata?.disabled) {
+         return undefined;
       }
 
-      if (!isGetRequest || ignoreCaching) {
-         if (!isGetRequest) {
-            setTimeout(async () => {
-               const requestUrlWithoutParams = requestUrl.replace(/\/?\?.*$/g, '');
-               const promises = [];
-               const keys = await this.cacheManager.store.keys();
-               for (const key of keys) {
-                  const cacheKey = key.includes(':') ? key.split(':')[1] : key;
-                  const cacheKeyWithoutSuffix = cacheKey.replace(/\/?\?.*$/g, '');
+      const requestUrl = httpAdapter.getRequestUrl(request);
+      const reqUserId = request.registry.get('user.id');
+      let cacheKey = requestUrl;
 
-                  if (
-                     cacheKey.startsWith(requestUrlWithoutParams) ||
-                     requestUrlWithoutParams.startsWith(cacheKeyWithoutSuffix)
-                  ) {
-                     promises.push(this.cacheManager.del(key));
-                  }
-               }
-
-               if (promises.length) {
-                  await Promise.allSettled(promises);
-               }
-            }, 0);
-         }
-
-         return undefined;
+      if (cacheMetadata?.withUserIdPrefix && reqUserId) {
+         cacheKey = `${reqUserId}:${cacheKey}`;
       }
 
       return cacheKey;
