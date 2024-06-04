@@ -12,7 +12,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { Prisma, UserStatus } from '.prisma/user';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is, JWTError } from '@mvanvu/ujs';
-import { appConfig, serviceConfig } from '@metadata';
+import { serviceConfig } from '@metadata';
 import { BaseService } from '@service/lib';
 import { FieldsException, ThrowException, CRUDResult } from '@lib/common';
 
@@ -79,7 +79,7 @@ export class UserService extends BaseService {
    }
 
    async generateTokens(userId: string): Promise<AuthTokenEntity> {
-      const jwtConfig = appConfig.get('jwt');
+      const jwtConfig = serviceConfig.get('user.jwt');
       const secret = jwtConfig.secret;
       const jwt = Hash.jwt();
       const [access, refresh] = await Promise.all([
@@ -114,7 +114,9 @@ export class UserService extends BaseService {
 
    async verifyToken(token: string): Promise<UserEntity> {
       try {
-         const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.get('jwt.secret') });
+         const { id } = await Hash.jwt().verify<{ id: string }>(token, {
+            secret: serviceConfig.get('user.jwt.secret'),
+         });
          const user = await this.prisma.user.findUnique({ where: { id }, include: this.userInclude });
 
          if (user?.status !== UserStatus.Active) {

@@ -6,7 +6,7 @@ import * as path from 'path';
 import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { EventEmitterModule, HttpCacheInterceptor, HttpMiddleware, UserAuthGuard, UserRoleGuard } from './lib';
-import { bootstrap, appConfig, serviceListNames } from '@metadata';
+import { bootstrap, appConfig, serviceListNames, serviceConfig } from '@metadata';
 import { GroupController, RoleController, UserController } from './user/controller';
 import { FileController } from './storage/controller';
 import { FileProvider } from './storage/provider';
@@ -75,7 +75,7 @@ export class AppModule {
       app.enableShutdownHooks();
       app.use(helmet());
 
-      const staticPath = appConfig.get('storage.localPath');
+      const staticPath = serviceConfig.get('storage.upload.localPath');
 
       if (staticPath) {
          const rootPath = path.join(process.cwd(), staticPath, 'public');

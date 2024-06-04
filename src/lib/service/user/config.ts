@@ -29,4 +29,10 @@ export default {
          delete: 'user.delete',
       },
    },
+   jwt: {
+      secret: `5Y$Vn2PxU&)[).5M?52:$Y1Fsmha=P#[VrqME=yB,V4Q=:3EE(hxE#}/Hs|'NGr`,
+      accessExpiresInMinutes: 60,
+      refreshExpiresInMinutes: 75,
+   },
+   rootUID: '662c7a7a2fc319b3c782be7d',
 } as const;

@@ -16,17 +16,6 @@ const appConfigData = {
          methods: envConfig.get<string>('CORS_METHODS', '*').split(','),
       },
    },
-   storage: {
-      prefix: envConfig.get<string | undefined>('STORAGE_LOCAL_PREFIX'),
-      localPath: envConfig.get<string | undefined>('STORAGE_LOCAL_PATH'),
-      provider: envConfig.get<string | undefined>('STORAGE_PROVIDER'),
-      googleDriveCredentialsPath: envConfig.get<string | undefined>('GOOGLE_DRIVE_CREDENTIALS_PATH'),
-   },
-   jwt: {
-      secret: envConfig.get<string>('JWT_SECRET_KEY'),
-      accessExpiresInMinutes: envConfig.get<number>('JWT_ACCESS_EXPIRES_IN_MINUTES', 60, 'toUInt'),
-      refreshExpiresInMinutes: envConfig.get<number>('JWT_REFRESH_EXPIRES_IN_MINUTES', 70, 'toUInt'),
-   },
    redis: {
       url: envConfig.get<string>('REDIS_URL'),
    },
@@ -37,10 +26,6 @@ const appConfigData = {
    rabbitMQ: {
       url: envConfig.get<string>('RABBITMQ_URL'),
    },
-   mongodb: {
-      userLiveUrl: envConfig.get<string>('MONGODB_USER_URL'),
-      userTestUrl: envConfig.get<string>('MONGODB_USER_TEST_URL'),
-   },
    language: {
       default: envConfig.get<string>('DEFAULT_LANGUAGE', 'en-GB'),
       accept: envConfig.get<string>('ACCEPT_LANGUAGE', '*').split(','),
@@ -50,7 +35,6 @@ const appConfigData = {
       limit: envConfig.get<number>('LIST_ITEMS_PER_PAGE', 25, 'toUInt'),
       maxLimit: envConfig.get<number>('LIST_ITEMS_MAX_LIMIT', 1000, 'toUInt'),
    },
-   rootUid: envConfig.get<string>('ROOT_UID'),
 } as const;
 
 type AppConfigData = typeof appConfigData;

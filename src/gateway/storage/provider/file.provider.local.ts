@@ -3,23 +3,24 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { FileProviderInterface } from './file.provider.interface';
-import { appConfig } from '@metadata';
+import { serviceConfig } from '@metadata';
 import { Util } from '@mvanvu/ujs';
 import { FileEntity, FinalUploadDto, UploadDto } from '@lib/service';
+const storageConfig = serviceConfig.get('storage');
 
 export class FileProviderLocal implements FileProviderInterface {
    private readonly storePath: string;
    private readonly storeUrl: string;
 
    constructor() {
-      const basePath = appConfig.get('storage.localPath');
+      const basePath = storageConfig.upload.localPath;
 
       if (!basePath) {
          throw new Error('ENV not provided: MEDIA_STORAGE_LOCAL_PATH');
       }
 
       this.storePath = path.join(process.cwd(), basePath);
-      this.storeUrl = `/${appConfig.get('storage.prefix')}`;
+      this.storeUrl = `/${storageConfig.upload.prefix}`;
 
       if (!fs.existsSync(this.storePath)) {
          fs.mkdirSync(`${this.storePath}/public`, { recursive: true });

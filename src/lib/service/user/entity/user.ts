@@ -1,4 +1,4 @@
-import { appConfig } from '@metadata';
+import { serviceConfig } from '@metadata';
 import { Is } from '@mvanvu/ujs';
 import { UserStatus } from '.prisma/user';
 import { IProperty } from '@lib/common/decorator/property';
@@ -69,13 +69,13 @@ export class UserEntity extends BaseEntity {
 
    get isRoot(): boolean {
       let isUserRoot: boolean = false;
-      const rootUid = appConfig.get('rootUid');
+      const rootUID = serviceConfig.get('user.rootUID');
 
-      if (rootUid) {
-         if (Is.email(rootUid)) {
-            isUserRoot = this.email === rootUid;
+      if (rootUID) {
+         if (Is.email(rootUID)) {
+            isUserRoot = this.email === rootUID;
          } else {
-            isUserRoot = this.id === rootUid || (this.username && this.username === rootUid);
+            isUserRoot = this.id === rootUID || (this.username && this.username === rootUID);
          }
       }
 

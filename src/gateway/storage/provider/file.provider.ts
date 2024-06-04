@@ -5,13 +5,15 @@ import { FileProviderGoogleDrive } from './file.provider.google-drive';
 import { Provider } from '.prisma/storage';
 import { FileProviderInterface } from './file.provider.interface';
 import { Transform } from '@mvanvu/ujs';
-import { appConfig } from '@metadata';
+import { serviceConfig } from '@metadata';
 import { ThrowException } from '@lib/common';
 import { allAcceptedFileTypes, fileTypes } from './file.mime';
+const storageConfig = serviceConfig.get('storage');
+
 @Injectable()
 export class FileProvider {
    getStorageDriver(provider?: Provider): FileProviderInterface {
-      provider = provider ?? <Provider>appConfig.get('storage.provider');
+      provider = provider ?? storageConfig.upload.provider;
 
       switch (provider) {
          case Provider.GoogleDrive:

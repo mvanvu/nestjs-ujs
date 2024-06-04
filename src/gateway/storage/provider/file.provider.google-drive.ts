@@ -5,8 +5,10 @@ import { Readable } from 'stream';
 import { Provider } from '.prisma/storage';
 import { Util } from '@mvanvu/ujs';
 import { StreamableFile } from '@nestjs/common';
-import { appConfig } from '@metadata';
+import { serviceConfig } from '@metadata';
 import { FileEntity, FinalUploadDto, UploadDto } from '@lib/service/storage';
+
+const storageConfig = serviceConfig.get('storage');
 
 export class FileProviderGoogleDrive implements FileProviderInterface {
    private readonly storage: v3.Drive;
@@ -15,7 +17,7 @@ export class FileProviderGoogleDrive implements FileProviderInterface {
       this.storage = google.drive({
          version: 'v3',
          auth: new google.auth.GoogleAuth({
-            keyFile: `${process.cwd()}/${appConfig.get('storage.googleDriveCredentialsPath')}`,
+            keyFile: `${process.cwd()}/${storageConfig.upload.googleDriveCredentialsPath}`,
             scopes: ['https://www.googleapis.com/auth/drive'],
          }),
       });
@@ -62,7 +64,7 @@ export class FileProviderGoogleDrive implements FileProviderInterface {
          return `https://drive.google.com/uc?id=${file.providerId}&export=download`;
       }
 
-      return `/${appConfig.get('apiGateway.prefix')}/files/${file.id}/stream`;
+      return `/${storageConfig.upload.prefix}/files/${file.id}/stream`;
    }
 
    async stream(file: FileEntity): Promise<StreamableFile> {
