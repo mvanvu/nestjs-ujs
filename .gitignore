@@ -31,6 +31,6 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 node_modules
-dist
+/dist
 /storage
 credentials
