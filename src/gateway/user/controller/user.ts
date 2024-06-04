@@ -1,7 +1,15 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PaginationQueryDto, ParseMongoIdPipe, GetUser } from '@lib/common';
-import { CreateUserDto, UserSignInDto, UserSignUpDto, UserEntity, AuthEntity, UpdateUserDto } from '@lib/service/user';
+import {
+   CreateUserDto,
+   UserSignInDto,
+   UserSignUpDto,
+   UserEntity,
+   AuthEntity,
+   UpdateUserDto,
+   RefreshTokenDto,
+} from '@lib/service/user';
 import {
    BaseController,
    BaseClientProxy,
@@ -11,7 +19,7 @@ import {
    ApiPaginationResponse,
    Public,
    Permission,
-} from '../../lib';
+} from '@gateway/lib';
 import { serviceConfig } from '@metadata';
 
 const { name, permissions, patterns } = serviceConfig.get('user');
@@ -21,6 +29,13 @@ const { name, permissions, patterns } = serviceConfig.get('user');
 export class UserController extends BaseController {
    get userProxy(): BaseClientProxy {
       return this.createClientProxy(name);
+   }
+
+   @Public()
+   @Post('refresh-token')
+   @ApiEntityResponse(UserEntity, { summary: 'Generate a new pair access/refresh token' })
+   refreshToken(@Body() dto: RefreshTokenDto): Promise<UserEntity> {
+      return this.userProxy.send(patterns.refreshToken, { data: dto.token });
    }
 
    @Public()
@@ -84,10 +99,10 @@ export class UserController extends BaseController {
       return this.userProxy.send(patterns.userCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } });
    }
 
-   @Delete(':id')
+   @Delete()
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'The user delete his/her self' })
-   deleteSelf(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
-      return this.userProxy.send(patterns.deleteSelf, { meta: { params: { id } } });
+   deleteSelf(@GetUser('id') id: string): Promise<EntityResponse<UserEntity>> {
+      return this.userProxy.send(patterns.userCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } });
    }
 }

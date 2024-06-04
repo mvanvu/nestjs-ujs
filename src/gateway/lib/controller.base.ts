@@ -35,7 +35,7 @@ export class BaseController {
          const reqUserId = this.req.registry.get('user.id');
 
          for (const key of keys) {
-            const [userId, cacheKey] = /^[0-9a-fA-F]{24}:/.test(key) ? key.split(':')[1] : [null, key];
+            const [userId, cacheKey] = /^[0-9a-fA-F]{24}:/.test(key) ? key.split(':') : [null, key];
             const cacheKeyWithoutSuffix = cacheKey.replace(/\/?\?.*$/g, '');
 
             if (

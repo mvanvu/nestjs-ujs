@@ -25,13 +25,13 @@ export class UserController {
       return this.userService.signIn(data);
    }
 
-   @MessagePattern(patterns.verify)
-   verify(@Payload() token: string): Promise<UserEntity> {
-      return this.userService.verify(token);
+   @MessagePattern(patterns.verifyToken)
+   verifyToken(@Payload() token: string): Promise<UserEntity> {
+      return this.userService.verifyToken(token);
    }
 
-   @MessagePattern(patterns.deleteSelf)
-   deleteSelf(): Promise<UserEntity> {
-      return this.userService.deleteSelf(this.userService.meta.get<string>('headers.user.id'));
+   @MessagePattern(patterns.verifyToken)
+   refreshToken(@Payload() token: string): Promise<AuthEntity> {
+      return this.userService.refreshToken(token);
    }
 }

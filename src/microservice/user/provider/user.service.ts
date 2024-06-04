@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import { Prisma, UserStatus } from '.prisma/user';
 import * as argon2 from 'argon2';
-import { DateTime, Hash, Is } from '@mvanvu/ujs';
+import { DateTime, Hash, Is, JWTError } from '@mvanvu/ujs';
 import { appConfig, serviceConfig } from '@metadata';
 import { BaseService } from '@service/lib';
 import { FieldsException, ThrowException, CRUDResult } from '@lib/common';
@@ -71,17 +71,12 @@ export class UserService extends BaseService {
    }
 
    async generateTokens(userId: string): Promise<AuthEntity['tokens']> {
-      const secret = appConfig.get<string>('jwt.secret');
+      const jwtConfig = appConfig.get('jwt');
+      const secret = jwtConfig.secret;
       const jwt = Hash.jwt();
       const [access, refresh] = await Promise.all([
-         jwt.sign(
-            { id: userId },
-            { secret, exp: DateTime.now().addMinute(appConfig.get<number>('jwt.accessExpiresInMinutes')) },
-         ),
-         jwt.sign(
-            { id: userId },
-            { secret, exp: DateTime.now().addMinute(appConfig.get<number>('jwt.refreshExpiresInMinutes')) },
-         ),
+         jwt.sign({ id: userId }, { secret, exp: DateTime.now().addMinute(jwtConfig.accessExpiresInMinutes) }),
+         jwt.sign({ id: userId }, { secret, exp: DateTime.now().addMinute(jwtConfig.refreshExpiresInMinutes) }),
       ]);
 
       return { access, refresh };
@@ -109,24 +104,29 @@ export class UserService extends BaseService {
       return new AuthEntity({ user: new UserEntity(user), tokens: await this.generateTokens(user.id) });
    }
 
-   async verify(token: string): Promise<UserEntity> {
-      const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.get('jwt.secret') });
-      const user = await this.prisma.user.findUnique({ where: { id }, include: this.userInclude });
+   async verifyToken(token: string): Promise<UserEntity> {
+      try {
+         const { id } = await Hash.jwt().verify<{ id: string }>(token, { secret: appConfig.get('jwt') });
+         const user = await this.prisma.user.findUnique({ where: { id }, include: this.userInclude });
 
-      if (!user || user.status !== UserStatus.Active) {
-         ThrowException('Invalid credentials');
+         if (user?.status !== UserStatus.Active) {
+            ThrowException('Invalid credentials');
+         }
+
+         return new UserEntity(user);
+      } catch (e) {
+         if (e instanceof JWTError) {
+            ThrowException('The token is invalid or expired');
+         }
+
+         throw e;
       }
-
-      return new UserEntity(user);
    }
 
-   async deleteSelf(id: string) {
-      const user = await this.prisma.user.update({
-         where: { id },
-         data: { status: UserStatus.Trashed },
-      });
+   async refreshToken(token: string): Promise<AuthEntity> {
+      const user = await this.verifyToken(token);
 
-      return new UserEntity(user);
+      return new AuthEntity({ user, tokens: await this.generateTokens(user.id) });
    }
 
    executeCRUD(): Promise<CRUDResult<UserEntity>> {
@@ -184,7 +184,8 @@ export class UserService extends BaseService {
             const isSelf = author.id === user.id;
 
             if (isSelf) {
-               ThrowException(`You can't delete yourself`);
+               return;
+               // ThrowException(`You can't delete yourself`);
             }
 
             // Check the current user is the author or editor of the target user, then will can delete

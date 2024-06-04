@@ -3,8 +3,8 @@ export default {
    patterns: {
       signIn: 'user.signIn',
       signUp: 'user.signUp',
-      verify: 'user.verify',
-      deleteSelf: 'user.deleteSelf',
+      refreshToken: 'user.refreshToken',
+      verifyToken: 'user.verifyToken',
       userCRUD: 'user.CRUD',
       groupCRUD: 'group.CRUD',
       roleCRUD: 'role.CRUD',
