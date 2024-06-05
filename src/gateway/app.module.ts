@@ -36,15 +36,12 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
          ClientsModule.registerAsync({ isGlobal: true, clients: [createClientAsyncOptions(name)] }),
       ),
       EventEmitterModule,
-      CacheModule.registerAsync({
+      CacheModule.register({
          isGlobal: true,
-         useFactory: async () => ({
-            store: await redisStore({
-               url: appConfig.get('redis.url'),
-               ttl: appConfig.get('cache.ttl'),
-               commandsQueueMaxLength: appConfig.get('cache.maxItems'),
-            }),
-         }),
+         store: redisStore,
+         url: appConfig.get('redis.url'),
+         ttl: appConfig.get('cache.ttl'),
+         max: appConfig.get('cache.maxItems'),
       }),
    ],
    controllers: [GroupController, RoleController, UserController, FileController, MailController],
