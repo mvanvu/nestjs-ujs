@@ -9,7 +9,7 @@ import {
 } from '@lib/service';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-import { Prisma, UserStatus } from '.prisma/user';
+import { Prisma, UserStatus, VerifyCode } from '.prisma/user';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is, JWTError } from '@mvanvu/ujs';
 import { serviceConfig } from '@metadata';
@@ -72,7 +72,14 @@ export class UserService extends BaseService {
       await this.validateUserDto(data);
       const { name, username, email, password } = data;
       const newUser = await this.prisma.user.create({
-         data: { name, username, email, password: await argon2.hash(password) },
+         data: {
+            name,
+            username,
+            email,
+            password: await argon2.hash(password),
+            status: UserStatus.Pending,
+            verifyCode: { activateAccount: Hash.uuid() },
+         },
       });
 
       return new UserEntity(newUser);
@@ -137,6 +144,22 @@ export class UserService extends BaseService {
       const user = await this.verifyToken(token);
 
       return await this.generateTokens(user.id);
+   }
+
+   async updateResetPasswordCode(email: string): Promise<false | UserEntity> {
+      const user = await this.prisma.user.findUnique({
+         where: { email },
+         select: { id: true, status: true, verifyCode: true },
+      });
+
+      if (user && user.status === UserStatus.Active) {
+         const verifyCode: VerifyCode = user.verifyCode || <VerifyCode>{};
+         verifyCode.resetPassword = Hash.uuid();
+
+         return new UserEntity(await this.prisma.user.update({ where: { id: user.id }, data: { verifyCode } }));
+      }
+
+      return false;
    }
 
    executeCRUD(): Promise<CRUDResult<UserEntity>> {

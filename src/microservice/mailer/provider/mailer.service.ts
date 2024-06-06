@@ -1,13 +1,12 @@
 import { serviceConfig } from '@metadata';
 import { Injectable } from '@nestjs/common';
-import { BaseService } from '@service/lib';
 import { SMTPTransporter } from '../transporter';
 import { MessageInfoEntity, SendMailDto, SendTestMailDto } from '@lib/service/mailer';
 
 const mailerConfig = serviceConfig.get('mailer');
 
 @Injectable()
-export class MailerService extends BaseService {
+export class MailerService {
    private static transporter: SMTPTransporter;
 
    get transporter(): SMTPTransporter {

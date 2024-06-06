@@ -36,19 +36,25 @@ type ChildGroup {
     roles RoleRef[]
 }
 
+type VerifyCode {
+    activateAccount String?
+    resetPassword   String?
+}
+
 model User {
-    id        String     @id @default(auto()) @map("_id") @db.ObjectId
-    username  String?    @unique
-    email     String     @unique
-    name      String?
-    password  String?
-    status    UserStatus @default(Pending)
-    groupId   String?    @db.ObjectId
-    group     Group?     @relation(fields: [groupId], references: [id], onDelete: SetNull)
-    createdAt DateTime   @default(now())
-    createdBy String?    @db.ObjectId
-    updatedAt DateTime?  @updatedAt
-    updatedBy String?    @db.ObjectId
+    id         String      @id @default(auto()) @map("_id") @db.ObjectId
+    username   String?     @unique
+    email      String      @unique
+    name       String?
+    password   String?
+    status     UserStatus  @default(Pending)
+    verifyCode VerifyCode?
+    groupId    String?     @db.ObjectId
+    group      Group?      @relation(fields: [groupId], references: [id], onDelete: SetNull)
+    createdAt  DateTime    @default(now())
+    createdBy  String?     @db.ObjectId
+    updatedAt  DateTime?   @updatedAt
+    updatedBy  String?     @db.ObjectId
 }
 
 model Role {

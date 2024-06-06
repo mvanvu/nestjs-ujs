@@ -9,6 +9,6 @@
    "editor.formatOnPaste": true,
    "editor.formatOnSave": true,
    "typescript.enablePromptUseWorkspaceTsdk": true,
-   "editor.folding": false,
+   "editor.folding": true,
    "typescript.tsserver.log": "verbose"
 }

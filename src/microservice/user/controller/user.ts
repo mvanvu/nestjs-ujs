@@ -1,6 +1,14 @@
 import { Controller, Inject } from '@nestjs/common';
 import { UserService } from '../provider/user.service';
-import { UserSignInDto, UserSignUpDto, UserEntity, AuthEntity, AuthTokenDto, AuthTokenEntity } from '@lib/service';
+import {
+   UserSignInDto,
+   UserSignUpDto,
+   UserEntity,
+   AuthEntity,
+   AuthTokenDto,
+   AuthTokenEntity,
+   AuthUpdateResetPasswordCodeDto,
+} from '@lib/service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CRUDResult } from '@lib/common';
 import { serviceConfig } from '@metadata';
@@ -33,5 +41,10 @@ export class UserController {
    @MessagePattern(patterns.refreshToken)
    refreshToken(@Payload() dto: AuthTokenDto): Promise<AuthTokenEntity> {
       return this.userService.refreshToken(dto.token);
+   }
+
+   @MessagePattern(patterns.updateResetPasswordCode)
+   updateResetPasswordCode(@Payload() dto: AuthUpdateResetPasswordCodeDto): Promise<false | UserEntity> {
+      return this.userService.updateResetPasswordCode(dto.email);
    }
 }

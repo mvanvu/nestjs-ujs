@@ -34,5 +34,5 @@ export async function createMicroserviceApp(
    await app
       .listen()
       .then(() => console.log(`The ${serviceName} microservice is listening`))
-      .catch((e) => console.debug(`The ${serviceName} microservice listen ERR`, e));
+      .catch((e) => console.debug(`The ${serviceName} microservice listens ERR`, e));
 }

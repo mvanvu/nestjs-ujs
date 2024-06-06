@@ -10,6 +10,7 @@ import {
    UpdateUserDto,
    AuthTokenDto,
    AuthTokenEntity,
+   AuthUpdateResetPasswordCodeDto,
 } from '@lib/service/user';
 import {
    BaseController,
@@ -51,6 +52,16 @@ export class UserController extends BaseController {
    @ApiEntityResponse(AuthEntity, { summary: 'Sign-in with the user account' })
    signIn(@Body() data: UserSignInDto): Promise<AuthEntity> {
       return this.userProxy.send(patterns.signIn, { data });
+   }
+
+   @Public()
+   @Post('reset-password')
+   @ApiEntityResponse(Boolean, { summary: 'Send a verify reset password code to the user email' })
+   async resetPassword(@Body() data: AuthUpdateResetPasswordCodeDto): Promise<true> {
+      await this.userProxy.send(patterns.updateResetPasswordCode, { data });
+
+      // Always returns true for security perpose
+      return true;
    }
 
    @Get('me')

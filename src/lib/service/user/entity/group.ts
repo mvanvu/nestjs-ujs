@@ -1,61 +1,61 @@
 import { $Enums, Group } from '.prisma/user';
-import { IProperty } from '@lib/common/decorator/property';
+import { Property } from '@lib/common/decorator/property';
 import { BaseEntity } from '@lib/common/entity/base';
 
 export class RoleGroupEntity {
-   @IProperty()
+   @Property()
    id: string;
 
-   @IProperty()
+   @Property()
    name: string;
 
-   @IProperty()
+   @Property()
    permissions: string[];
 }
 
 export class ChildrenGroupEntity {
-   @IProperty()
+   @Property()
    id: string;
 
-   @IProperty()
+   @Property()
    name: string;
 
-   @IProperty({ swagger: { type: [RoleGroupEntity] } })
+   @Property({ swagger: { type: [RoleGroupEntity] } })
    roles: RoleGroupEntity[];
 }
 
 export class GroupEntity extends BaseEntity {
-   @IProperty()
+   @Property()
    id: string;
 
-   @IProperty({ swagger: { type: $Enums.AvailableStatus, enum: $Enums.AvailableStatus } })
+   @Property({ swagger: { type: $Enums.AvailableStatus, enum: $Enums.AvailableStatus } })
    status: $Enums.AvailableStatus;
 
-   @IProperty()
+   @Property()
    name: string;
 
-   @IProperty()
+   @Property()
    description: string;
 
-   @IProperty()
+   @Property()
    createdAt?: Date;
 
-   @IProperty()
+   @Property()
    createdBy?: string;
 
-   @IProperty()
+   @Property()
    updatedAt?: Date;
 
-   @IProperty()
+   @Property()
    updatedBy?: string;
 
-   @IProperty({ swagger: { type: [ChildrenGroupEntity] } })
+   @Property({ swagger: { type: [ChildrenGroupEntity] } })
    groups: ChildrenGroupEntity[];
 
-   @IProperty({ swagger: { type: [RoleGroupEntity] } })
+   @Property({ swagger: { type: [RoleGroupEntity] } })
    roles: RoleGroupEntity[];
 
-   @IProperty()
+   @Property()
    totalActiveUsers: number;
 
    constructor(record?: Group & { _count: { users: number } }) {

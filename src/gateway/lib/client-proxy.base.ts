@@ -42,10 +42,10 @@ export class BaseClientProxy {
 
          // Emit an event
          const eventPayload: OnServiceResponse = {
-            httpRequest: this.req,
             messagePattern,
-            requestData: dataDelivery.data,
+            requestData: dataDelivery,
             responseData: response,
+            httpRequest: this.req,
          };
          await this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
 

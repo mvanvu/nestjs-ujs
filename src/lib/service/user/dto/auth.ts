@@ -1,7 +1,7 @@
-import { IPickType, IProperty } from '@lib/common';
+import { IPickType, Property } from '@lib/common';
 
 export class UserSignUpDto {
-   @IProperty({
+   @Property({
       validate: { is: 'string' },
       transform: { fromType: 'string', toType: 'trim' },
       optional: true,
@@ -9,26 +9,26 @@ export class UserSignUpDto {
    })
    name?: string;
 
-   @IProperty({
+   @Property({
       validate: { is: 'string' },
       optional: true,
       swagger: { description: 'The username of user', type: 'string', example: 'rainy.mi' },
    })
    username?: string;
 
-   @IProperty({
+   @Property({
       validate: { is: 'email' },
       swagger: { description: 'The email of user', type: 'string', example: 'rainy.mi@email.com' },
    })
    email: string;
 
-   @IProperty({
+   @Property({
       validate: [{ is: 'strongPassword', meta: { minLength: 8, noSpaces: true } }],
       swagger: { description: 'The password of user', type: 'string', example: 'MyStr0ngPassWord!' },
    })
    password: string;
 
-   @IProperty({
+   @Property({
       validate: { is: 'equals', meta: { equalsTo: 'password' } },
       swagger: { description: 'The confirm password', type: 'string', example: 'MyStr0ngPassWord!' },
    })
@@ -38,9 +38,11 @@ export class UserSignUpDto {
 export class UserSignInDto extends IPickType(UserSignUpDto, ['username', 'password']) {}
 
 export class AuthTokenDto {
-   @IProperty({
+   @Property({
       validate: [{ is: 'string' }, { is: 'empty', not: true }],
       swagger: { description: 'The token to verify' },
    })
    token: string;
 }
+
+export class AuthUpdateResetPasswordCodeDto extends IPickType(UserSignUpDto, ['email']) {}

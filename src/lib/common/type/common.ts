@@ -4,6 +4,13 @@ import { Type, VersionValue } from '@nestjs/common/interfaces';
 import { type UserEntity } from '@lib/service/user/entity/user';
 import { Request } from 'express';
 
+export type HttpCacheOptions = {
+   disabled?: boolean;
+   withUserIdPrefix?: boolean;
+   cacheKey?: string;
+   cacheRefKeys?: string | RegExp | Array<string | RegExp>;
+};
+
 export type UserRole = { id: string; name: string; permissions: string[] }[];
 
 export type RequestRegistryData = {
@@ -15,6 +22,7 @@ export type RequestRegistryData = {
 };
 
 export interface HttpRequest extends Request {
+   cacheRefKeys?: HttpCacheOptions['cacheRefKeys'];
    registry: Registry<RequestRegistryData>;
 }
 
@@ -91,5 +99,3 @@ export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> |
 };
 
 export type PermissionOptions = { key?: string; or?: string[]; and?: string[] } | string;
-
-export type ICacheOptions = { disabled?: boolean; withUserIdPrefix?: boolean };

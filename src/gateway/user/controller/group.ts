@@ -6,6 +6,7 @@ import {
    BaseClientProxy,
    BaseController,
    EntityResponse,
+   HttpCache,
    PaginationResponse,
    Permission,
 } from '@gateway/lib';
@@ -17,6 +18,7 @@ const { name, permissions, patterns } = serviceConfig.get('user');
 @ApiBearerAuth()
 @ApiTags('Groups')
 @Controller('groups')
+@HttpCache({ cacheRefKeys: /\/(users|roles)\// }) // Purge users and roles caching when the method is not GET
 export class GroupController extends BaseController {
    get userProxy(): BaseClientProxy {
       return this.createClientProxy(name);

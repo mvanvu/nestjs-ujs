@@ -9,6 +9,7 @@ import {
    ClassConstructor,
    IPartialType,
    validateDTO,
+   availableStatuses,
 } from '@lib/common';
 import { DateTime, Is, IsEqual, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
@@ -45,9 +46,9 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
 
    private ctx: RequestContext;
 
-   private prismaSelect: ObjectRecord;
+   private prismaSelect?: ObjectRecord;
 
-   private prismaInclude: ObjectRecord;
+   private prismaInclude?: ObjectRecord;
 
    private createDTO?: ClassConstructor<any>;
 
@@ -364,7 +365,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       for (const prop of ['OR', 'AND']) {
          if (modelParams.where[prop].length) {
             if (!hasFilterByStatus) {
-               hasFilterByStatus = !!modelParams.where[prop].map((obj) => obj['status'] !== undefined);
+               hasFilterByStatus = !!modelParams.where[prop].map((obj: ObjectRecord) => obj['status'] !== undefined);
             }
          } else {
             delete modelParams.where[prop];
@@ -372,7 +373,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       }
 
       if (this.optionsCRUD?.softDelete === true && !hasFilterByStatus) {
-         modelParams.where['status'] = { not: 'Trashed' };
+         modelParams.where['status'] = { not: availableStatuses.Trashed };
       }
 
       // Take care pagination
@@ -390,6 +391,32 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       modelParams.take = limit;
       modelParams.skip = (page - 1) * limit;
       Object.assign(query, { page, limit, q });
+
+      // Query by fields scope
+      const scope = appConfig.get('list.scope');
+
+      if (scope && Is.string(query[scope]) && !Is.empty(query[scope])) {
+         const { fields } = this.prisma.models[this.model];
+         const selectedFields: string[] = query[scope]
+            .split(',')
+            .filter((field: string) => !!field && !!fields.find(({ name }) => name === field));
+
+         if (selectedFields.length) {
+            if (!Is.object(modelParams.select) || Is.emptyObject(modelParams.select)) {
+               modelParams.select = selectedFields.map((field) => ({ [field]: true }));
+            } else {
+               for (const field in <ObjectRecord>modelParams.select) {
+                  if (!selectedFields.includes(field)) {
+                     delete modelParams.select[field];
+                  }
+               }
+
+               for (const field of selectedFields) {
+                  Object.assign(modelParams.select, { [field]: true });
+               }
+            }
+         }
+      }
 
       // Prisma model
       const model = this.prisma[this.model];
@@ -416,7 +443,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       where = { ...(where ?? {}), id };
 
       if (this.optionsCRUD?.softDelete === true && where['status'] === undefined) {
-         where['status'] = { not: 'Trashed' };
+         where['status'] = { not: availableStatuses.Trashed };
       }
 
       const record = await this.prisma[this.model]['findFirst']({
