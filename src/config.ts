@@ -20,12 +20,11 @@ const appConfigData = {
       url: envConfig.get<string>('REDIS_URL'),
    },
    cache: {
-      ttl: envConfig.get<number>('CACHE_TTL_IN_SECONDS', 60, 'toUInt') * 1000,
+      ttl: envConfig.get<number>('CACHE_TTL_IN_SECONDS', 300, 'toUInt') * 1000,
       maxItems: envConfig.get<number>('CACHE_MAX_ITEMS', 1000, 'toUInt'),
    },
    rabbitMQ: {
       url: envConfig.get<string>('RABBITMQ_URL'),
-   },
    language: {
       default: envConfig.get<string>('DEFAULT_LANGUAGE', 'en-GB'),
       accept: envConfig.get<string>('ACCEPT_LANGUAGE', '*').split(','),
