@@ -5,14 +5,17 @@ import { loadPermissionKeys } from './lib/common';
 export { appConfig } from './config';
 
 // Service shared config
+
+import system from './lib/service/system/config';
 import user from './lib/service/user/config';
 import storage from './lib/service/storage/config';
 import mailer from './lib/service/mailer/config';
-const serviceConfigData = { mailer, storage, user };
+const serviceConfigData = { system, mailer, storage, user };
 
 export const serviceConfig = Registry.from<typeof serviceConfigData>(serviceConfigData, { consistent: true });
 
 export const serviceListNames = [
+   serviceConfig.get('system.name'),
    serviceConfig.get('mailer.name'),
    serviceConfig.get('user.name'),
    serviceConfig.get('storage.name'),

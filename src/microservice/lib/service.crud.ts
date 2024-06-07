@@ -10,35 +10,17 @@ import {
    IPartialType,
    validateDTO,
    availableStatuses,
+   OnBeforeSave,
+   OnBeforeDelete,
+   OnEntity,
+   OnTransaction,
+   CRUDTransactionContext,
+   CRUDContext,
 } from '@lib/common';
-import { DateTime, Is, IsEqual, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
+import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { BaseService } from './service.base';
 import { RequestContext } from '@nestjs/microservices';
-
-export type CRUDContext = 'read' | 'create' | 'update' | 'delete';
-
-export type CRUDWriteContext = 'create' | 'update';
-
-export type CRUDTransactionContext = 'create' | 'update' | 'delete';
-
-export type OnBeforeSave<TData extends ObjectRecord, TRecord extends ObjectRecord> = (
-   data: TData,
-   options?: { record?: TRecord; context: CRUDWriteContext },
-) => any | Promise<any>;
-export type OnBeforeCreate<TData extends ObjectRecord = any> = (data: TData) => any | Promise<any>;
-export type OnBeforeUpdate<TData extends ObjectRecord = any, TRecord extends ObjectRecord = any> = (
-   data: TData,
-   record: TRecord,
-) => any | Promise<any>;
-export type OnBeforeDelete<TRecord extends ObjectRecord> = (record: TRecord) => any | Promise<any>;
-export type OnEntity =
-   | ClassConstructor<any>
-   | (<TRecord extends ObjectRecord = any, TContext extends CRUDContext = any>(
-        record: TRecord,
-        options: { context: TContext; isList?: IsEqual<TContext, 'read' extends true ? boolean : never> },
-     ) => any | Promise<any>);
-export type OnTransaction<TX, TData extends ObjectRecord> = (tx: TX, data: TData) => Promise<any>;
 
 @Injectable()
 export class CRUDService<TPrismaService extends { models: ObjectRecord }> {

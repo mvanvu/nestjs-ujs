@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import * as fs from 'fs';
 
-type MailerTemplate = { index: string; resetPasswordBody: string; verifyAccountBody: string };
+export type MailerTemplate = { index: string; resetPasswordBody: string; verifyAccountBody: string };
 const mailerTmplPath = process.cwd() + '/src/gateway/mailer/template';
 
 @Injectable()
