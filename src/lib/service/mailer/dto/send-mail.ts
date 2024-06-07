@@ -1,26 +1,26 @@
 import { IPickType } from '@lib/common/entity/mapped-type';
-import { IProperty } from '@lib/common/decorator/property';
+import { Property } from '@lib/common/decorator/property';
 export class SendMailDto {
-   @IProperty({
+   @Property({
       transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
       validate: [{ is: 'string' }, { is: 'empty', not: true }],
       optional: true,
    })
    from?: string;
 
-   @IProperty({
+   @Property({
       transform: { fromType: 'array', toType: ['toArrayUnique'] },
       validate: [{ is: 'array' }, { is: 'empty', not: true }],
    })
    to: string[];
 
-   @IProperty({
+   @Property({
       transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
       validate: [{ is: 'string' }, { is: 'empty', not: true }],
    })
    subject: string;
 
-   @IProperty({
+   @Property({
       transform: { fromType: 'string', toType: ['toSafeHtml', 'trim'] },
       validate: [{ is: 'string' }, { is: 'empty', not: true }],
    })

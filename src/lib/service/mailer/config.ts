@@ -1,4 +1,7 @@
+import { Registry } from '@mvanvu/ujs';
 import { TransporterList } from './type/transporter';
+const envConfig = Registry.from(process.env);
+const smtpPort = envConfig.get('MAILER_SMTP_PORT', '465', 'toUInt');
 
 export default {
    name: 'mailer',
@@ -10,12 +13,12 @@ export default {
       default: 'smtp' as TransporterList,
       smtp: {
          pool: true,
-         host: 'smtp.gmail.com',
-         port: 465, // 587
-         secure: true, // Use true for port 465, false for all other ports
+         host: envConfig.get('MAILER_SMTP_HOST'),
+         port: smtpPort, // 587
+         secure: smtpPort === 465, // Use true for port 465, false for all other ports
          auth: {
-            user: 'GMAIL_ACCOUNT',
-            pass: 'GMAIL_PASSWORD',
+            user: envConfig.get('MAILER_SMTP_USER'),
+            pass: envConfig.get('MAILER_SMTP_PASS'),
          },
       },
    },

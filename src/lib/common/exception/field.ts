@@ -25,7 +25,7 @@ export class FieldsException {
 
    validate(): void {
       if (!Is.emptyObject(this.fieldsError)) {
-         new ThrowException(this.fieldsError);
+         ThrowException(this.fieldsError);
       }
    }
 }

@@ -1,5 +1,5 @@
-import { HttpRequest, RequestRegistryData } from './common';
-import { ObjectRecord, Registry } from '@mvanvu/ujs';
+import { ClassConstructor, HttpRequest, RequestRegistryData } from './common';
+import { IsEqual, ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
 
 export type PrismaModels = Record<string, DMMF.Model>;
@@ -38,10 +38,9 @@ export type PaginationResult<T> = {
    };
 };
 
-export type UpdateResult<T> = {
-   data: T;
-   meta: { diff: Record<string, { from: any; to: any }> };
-};
+export type UpdateResult<T> = { data: T; meta: { diff: Record<string, { from: any; to: any }> } };
+
+export type MetaResult<T> = { data: T; meta: ObjectRecord };
 
 export type CRUDResult<T> = T | PaginationResult<T> | UpdateResult<T>;
 
@@ -63,3 +62,27 @@ export type OnServiceResponse = {
    requestData?: any;
    responseData?: any;
 };
+
+export type CRUDContext = 'read' | 'create' | 'update' | 'delete';
+
+export type CRUDWriteContext = 'create' | 'update';
+
+export type CRUDTransactionContext = 'create' | 'update' | 'delete';
+
+export type OnBeforeSave<TData extends ObjectRecord, TRecord extends ObjectRecord> = (
+   data: TData,
+   options?: { record?: TRecord; context: CRUDWriteContext },
+) => any | Promise<any>;
+export type OnBeforeCreate<TData extends ObjectRecord = any> = (data: TData) => any | Promise<any>;
+export type OnBeforeUpdate<TData extends ObjectRecord = any, TRecord extends ObjectRecord = any> = (
+   data: TData,
+   record: TRecord,
+) => any | Promise<any>;
+export type OnBeforeDelete<TRecord extends ObjectRecord> = (record: TRecord) => any | Promise<any>;
+export type OnEntity =
+   | ClassConstructor<any>
+   | (<TRecord extends ObjectRecord = any, TContext extends CRUDContext = any>(
+        record: TRecord,
+        options: { context: TContext; isList?: IsEqual<TContext, 'read' extends true ? boolean : never> },
+     ) => any | Promise<any>);
+export type OnTransaction<TX, TData extends ObjectRecord> = (tx: TX, data: TData) => Promise<any>;

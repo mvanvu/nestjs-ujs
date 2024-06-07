@@ -1,4 +1,4 @@
-import { EventEmitter, Registry, Util } from '@mvanvu/ujs';
+import { EventEmitter, Is, Registry, Util } from '@mvanvu/ujs';
 import { Injectable } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import {
@@ -42,12 +42,23 @@ export class BaseClientProxy {
 
          // Emit an event
          const eventPayload: OnServiceResponse = {
-            httpRequest: this.req,
             messagePattern,
-            requestData: dataDelivery.data,
+            requestData: dataDelivery,
             responseData: response,
+            httpRequest: this.req,
          };
          await this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
+
+         // Check to remove unneeded metadata
+         if (Is.object(response) && Is.object(response.meta)) {
+            const allowedMeta: string[] = ['totalCount', 'page', 'limit'];
+
+            for (const key in response.meta) {
+               if (!allowedMeta.includes(key)) {
+                  delete response.meta[key];
+               }
+            }
+         }
 
          return response;
       } catch (e: any) {

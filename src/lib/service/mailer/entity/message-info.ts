@@ -1,20 +1,20 @@
-import { IProperty } from '@lib/common/decorator/property';
+import { Property } from '@lib/common/decorator/property';
 import { BaseEntity } from '@lib/common/entity/base';
 import Mail from 'nodemailer/lib/mailer';
 
 export class MessageInfoEntity extends BaseEntity {
-   @IProperty()
+   @Property()
    messageId: string;
 
-   @IProperty({ swagger: { type: [String] } })
+   @Property({ swagger: { type: [String] } })
    accepted: Array<string | Mail.Address>;
 
-   @IProperty({ swagger: { type: [String] } })
+   @Property({ swagger: { type: [String] } })
    rejected: Array<string | Mail.Address>;
 
-   @IProperty({ swagger: { type: [String] } })
+   @Property({ swagger: { type: [String] } })
    pending: Array<string | Mail.Address>;
 
-   @IProperty()
+   @Property()
    response: string;
 }

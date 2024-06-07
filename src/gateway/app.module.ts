@@ -14,6 +14,7 @@ import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/microservices';
 import { MailController } from './mailer/controller';
+import { MailerService } from './mailer/provider';
 
 const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => {
    return {
@@ -36,15 +37,12 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
          ClientsModule.registerAsync({ isGlobal: true, clients: [createClientAsyncOptions(name)] }),
       ),
       EventEmitterModule,
-      CacheModule.registerAsync({
+      CacheModule.register({
          isGlobal: true,
-         useFactory: async () => ({
-            store: await redisStore({
-               url: appConfig.get('redis.url'),
-               ttl: appConfig.get('cache.ttl'),
-               commandsQueueMaxLength: appConfig.get('cache.maxItems'),
-            }),
-         }),
+         store: redisStore,
+         url: appConfig.get('redis.url'),
+         ttl: appConfig.get('cache.ttl'),
+         max: appConfig.get('cache.maxItems'),
       }),
    ],
    controllers: [GroupController, RoleController, UserController, FileController, MailController],
@@ -62,6 +60,7 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
          useClass: UserRoleGuard,
       },
       FileProvider,
+      MailerService,
    ],
 })
 export class AppModule {

@@ -1,26 +1,26 @@
 import { $Enums } from '.prisma/user';
-import { IProperty } from '@lib/common/decorator';
+import { Property } from '@lib/common/decorator';
 import { BaseEntity } from '@lib/common/entity';
 
 export class RoleEntity extends BaseEntity {
-   @IProperty()
+   @Property()
    id: string;
 
-   @IProperty({ swagger: { type: $Enums.AvailableStatus, enum: $Enums.AvailableStatus } })
+   @Property({ swagger: { type: $Enums.AvailableStatus, enum: $Enums.AvailableStatus } })
    status: $Enums.AvailableStatus;
 
-   @IProperty()
+   @Property()
    name: string;
 
-   @IProperty()
+   @Property()
    description: string;
 
-   @IProperty()
+   @Property()
    createdAt?: Date;
 
-   @IProperty()
+   @Property()
    updatedAt?: Date;
 
-   @IProperty()
+   @Property()
    permissions: string[];
 }

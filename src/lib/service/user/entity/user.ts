@@ -1,7 +1,7 @@
 import { serviceConfig } from '@metadata';
 import { Is } from '@mvanvu/ujs';
 import { UserStatus } from '.prisma/user';
-import { IProperty } from '@lib/common/decorator/property';
+import { Property } from '@lib/common/decorator/property';
 import { BaseEntity } from '@lib/common/entity/base';
 import { PermissionOptions } from '@lib/common/type/common';
 import { IPickType } from '@lib/common/entity/mapped-type';
@@ -10,34 +10,34 @@ import { GroupEntity } from './group';
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
 
 export class UserEntity extends BaseEntity {
-   @IProperty()
+   @Property()
    id: string;
 
-   @IProperty({ swagger: { enum: UserStatus } })
+   @Property({ swagger: { enum: UserStatus } })
    status: UserStatus;
 
-   @IProperty()
+   @Property()
    name?: string;
 
-   @IProperty()
+   @Property()
    username?: string;
 
-   @IProperty()
+   @Property()
    email: string;
 
-   @IProperty({ swagger: { type: UserGroupEntity } })
-   group: UserGroupEntity;
+   @Property({ swagger: { type: UserGroupEntity } })
+   group?: UserGroupEntity;
 
-   @IProperty()
+   @Property()
    createdAt: Date;
 
-   @IProperty()
+   @Property()
    createdBy: string;
 
-   @IProperty()
+   @Property()
    updatedAt: Date;
 
-   @IProperty()
+   @Property()
    updatedBy: string;
 
    private _permissions: string[];
@@ -151,17 +151,17 @@ export class UserEntity extends BaseEntity {
 }
 
 export class AuthTokenEntity {
-   @IProperty()
+   @Property()
    access: string;
 
-   @IProperty()
+   @Property()
    refresh: string;
 }
 
 export class AuthEntity extends BaseEntity {
-   @IProperty()
+   @Property()
    user: UserEntity;
 
-   @IProperty({ swagger: { type: AuthTokenEntity } })
+   @Property({ swagger: { type: AuthTokenEntity } })
    tokens: AuthTokenEntity;
 }

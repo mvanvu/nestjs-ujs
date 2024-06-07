@@ -5,6 +5,9 @@ export default {
       signUp: 'user.signUp',
       refreshToken: 'user.refreshToken',
       verifyToken: 'user.verifyToken',
+      sendResetPasswordCode: 'user.updateResetPasswordCode',
+      resetPassword: 'user.resetPassword',
+      verifyAccount: 'user.verifyAccount',
       userCRUD: 'user.CRUD',
       groupCRUD: 'group.CRUD',
       roleCRUD: 'role.CRUD',
@@ -35,4 +38,6 @@ export default {
       refreshExpiresInMinutes: 75,
    },
    rootUID: '662c7a7a2fc319b3c782be7d',
+   httpWebVerifyAccountUrl: process.env.HTTP_WEB_VERIFY_ACCOUNT_URL || '#',
+   httpWebVerifyResetPwdUrl: process.env.HTTP_WEB_VERIFY_RESET_PWD_URL || '#',
 } as const;

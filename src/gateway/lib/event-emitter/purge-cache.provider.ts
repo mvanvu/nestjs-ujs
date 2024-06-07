@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from './event-emitter.decorator';
 import { OnServiceResponse, eventConstant } from '@lib/common';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { Is } from '@mvanvu/ujs';
 
 @Injectable()
 export class PurgeCacheProvider {
@@ -19,15 +20,28 @@ export class PurgeCacheProvider {
          const requestUrlWithoutParams = httpRequest.url.replace(/\/?\?.*$/g, '');
          const keys = await this.cacheManager.store.keys();
          const reqUserId = httpRequest.registry.get('user.id');
+         const { cacheRefKeys } = httpRequest;
+         const isRelatedCacheKey = (cacheKey: string): boolean => {
+            if (cacheRefKeys) {
+               for (const refKey of Is.array(cacheRefKeys) ? cacheRefKeys : [cacheRefKeys]) {
+                  if ((Is.string(refKey) && refKey === cacheKey) || (Is.regex(refKey) && refKey.test(cacheKey))) {
+                     return true;
+                  }
+               }
+            }
+
+            return false;
+         };
 
          for (const key of keys) {
             const [userId, cacheKey] = /^[0-9a-fA-F]{24}:/.test(key) ? key.split(':') : [null, key];
             const cacheKeyWithoutSuffix = cacheKey.replace(/\/?\?.*$/g, '');
 
             if (
-               (reqUserId && reqUserId === userId) ||
+               (userId && reqUserId === userId) ||
                cacheKey.startsWith(requestUrlWithoutParams) ||
-               requestUrlWithoutParams.startsWith(cacheKeyWithoutSuffix)
+               requestUrlWithoutParams.startsWith(cacheKeyWithoutSuffix) ||
+               isRelatedCacheKey(cacheKey)
             ) {
                promises.push(
                   this.cacheManager.del(key).then(() => console.log(`Purge HTTP caching success, key: ${key}`)),

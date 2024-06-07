@@ -1,14 +1,14 @@
-import { IProperty } from '@lib/common/decorator';
+import { Property } from '@lib/common/decorator';
 
 export class PaginationQueryDto {
-   @IProperty({
+   @Property({
       transform: { fromType: 'string', toType: 'trim' },
       optional: true,
       swagger: { description: 'The search query' },
    })
    q?: string;
 
-   @IProperty({
+   @Property({
       transform: { fromType: 'string', toType: 'toNumber' },
       validate: { is: 'uInt' },
       optional: true,
@@ -16,7 +16,7 @@ export class PaginationQueryDto {
    })
    page?: number;
 
-   @IProperty({
+   @Property({
       transform: { fromType: 'string', toType: 'toNumber' },
       validate: { is: 'uInt' },
       optional: true,
@@ -24,14 +24,14 @@ export class PaginationQueryDto {
    })
    limit?: number;
 
-   @IProperty({
+   @Property({
       transform: { fromType: 'string', toType: 'trim' },
       optional: true,
       swagger: { description: 'Order by' },
    })
    order?: string;
 
-   @IProperty({
+   @Property({
       transform: { fromType: 'string', toType: 'trim' },
       optional: true,
       swagger: { description: 'Language code' },

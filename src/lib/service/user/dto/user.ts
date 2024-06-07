@@ -1,16 +1,16 @@
-import { IPartialType, IProperty } from '@lib/common';
+import { IPartialType, Property } from '@lib/common';
 import { UserSignUpDto } from './auth';
 import { UserStatus } from '.prisma/user';
 
 export class CreateUserDto extends UserSignUpDto {
-   @IProperty({
+   @Property({
       optional: true,
       validate: { is: 'inArray', meta: Object.keys(UserStatus) },
       swagger: { description: 'The user status', enum: UserStatus },
    })
    status?: UserStatus;
 
-   @IProperty({
+   @Property({
       optional: true,
       validate: { is: 'mongoId' },
       swagger: { description: 'The group ID which assigned to the user' },

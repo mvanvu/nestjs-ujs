@@ -6,15 +6,16 @@ import {
    UserEntity,
    UpdateUserDto,
    AuthTokenEntity,
+   ResetPasswordDto,
 } from '@lib/service';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-import { Prisma, UserStatus } from '.prisma/user';
+import { Prisma, UserStatus, VerifyCode } from '.prisma/user';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is, JWTError } from '@mvanvu/ujs';
 import { serviceConfig } from '@metadata';
 import { BaseService } from '@service/lib';
-import { FieldsException, ThrowException, CRUDResult } from '@lib/common';
+import { FieldsException, ThrowException, CRUDResult, MetaResult } from '@lib/common';
 
 @Injectable()
 export class UserService extends BaseService {
@@ -68,14 +69,29 @@ export class UserService extends BaseService {
       fieldsError.validate();
    }
 
-   async signUp(data: UserSignUpDto): Promise<UserEntity> {
+   async signUp(data: UserSignUpDto): Promise<MetaResult<UserEntity>> {
       await this.validateUserDto(data);
       const { name, username, email, password } = data;
-      const newUser = await this.prisma.user.create({
-         data: { name, username, email, password: await argon2.hash(password) },
-      });
+      const newUser = await this.prisma.user
+         .create({
+            data: {
+               name,
+               username,
+               email,
+               password: await argon2.hash(password),
+               status: UserStatus.Pending,
+               verifyCode: {},
+            },
+            select: { id: true },
+         })
+         .then(({ id }) =>
+            this.prisma.user.update({
+               data: { verifyCode: { activateAccount: `${id}:${Hash.uuid()}` } },
+               where: { id },
+            }),
+         );
 
-      return new UserEntity(newUser);
+      return { data: new UserEntity(newUser), meta: { verifyCode: newUser.verifyCode } };
    }
 
    async generateTokens(userId: string): Promise<AuthTokenEntity> {
@@ -133,10 +149,74 @@ export class UserService extends BaseService {
       }
    }
 
+   async verifyAccount(code: string): Promise<UserEntity> {
+      const [id] = code.split(':');
+      const user = await this.prisma.user.findUnique({ where: { id }, select: { verifyCode: true, status: true } });
+
+      if (!user || user.verifyCode.activateAccount !== code) {
+         ThrowException('Invalid verify account code');
+      }
+
+      if (user.status !== UserStatus.Pending) {
+         ThrowException('The account has verified');
+      }
+
+      return new UserEntity(
+         await this.prisma.user.update({
+            where: { id },
+            data: { status: UserStatus.Active, verifyCode: { ...user.verifyCode, activateAccount: null } },
+            include: this.userInclude,
+         }),
+      );
+   }
+
+   async resetPassword(dto: ResetPasswordDto): Promise<UserEntity> {
+      const [id] = dto.code.split(':');
+      const user = await this.prisma.user.findUnique({ where: { id }, select: { verifyCode: true, status: true } });
+
+      if (!user || user.verifyCode.resetPassword !== dto.code) {
+         ThrowException('Invalid verify reset password code');
+      }
+
+      if (user.status !== UserStatus.Active) {
+         ThrowException(`The account isn't available`);
+      }
+
+      return new UserEntity(
+         await this.prisma.user.update({
+            where: { id },
+            data: {
+               password: await argon2.hash(dto.password),
+               verifyCode: { ...user.verifyCode, resetPassword: null },
+            },
+            include: this.userInclude,
+         }),
+      );
+   }
+
    async refreshToken(token: string): Promise<AuthTokenEntity> {
       const user = await this.verifyToken(token);
 
       return await this.generateTokens(user.id);
+   }
+
+   async updateResetPasswordCode(email: string): Promise<false | MetaResult<UserEntity>> {
+      const user = await this.prisma.user.findUnique({
+         where: { email },
+         select: { id: true, status: true, verifyCode: true },
+      });
+
+      if (user && user.status === UserStatus.Active) {
+         const verifyCode: VerifyCode = user.verifyCode || <VerifyCode>{};
+         verifyCode.resetPassword = `${user.id}:${Hash.uuid()}`;
+
+         return {
+            data: new UserEntity(await this.prisma.user.update({ where: { id: user.id }, data: { verifyCode } })),
+            meta: { verifyCode },
+         };
+      }
+
+      return false;
    }
 
    executeCRUD(): Promise<CRUDResult<UserEntity>> {

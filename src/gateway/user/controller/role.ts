@@ -6,9 +6,10 @@ import {
    BaseClientProxy,
    BaseController,
    EntityResponse,
+   HttpCache,
    PaginationResponse,
    Permission,
-} from '../../lib';
+} from '@gateway/lib';
 import { PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
 import { serviceConfig } from '@metadata';
 import { CreateRoleDto, RoleEntity, UpdateRoleDto } from '@lib/service/user';
@@ -17,6 +18,7 @@ const { name, permissions, patterns } = serviceConfig.get('user');
 @ApiBearerAuth()
 @ApiTags('Roles')
 @Controller('roles')
+@HttpCache({ cacheRefKeys: /\/(users|groups)\// }) // Purge users and groups caching when the method is not GET
 export class RoleController extends BaseController {
    get userProxy(): BaseClientProxy {
       return this.createClientProxy(name);
