@@ -1,6 +1,6 @@
 import { serviceConfig } from '@metadata';
 import { Is } from '@mvanvu/ujs';
-import { UserStatus, VerifyCode } from '.prisma/user';
+import { UserStatus } from '.prisma/user';
 import { Property } from '@lib/common/decorator/property';
 import { BaseEntity } from '@lib/common/entity/base';
 import { PermissionOptions } from '@lib/common/type/common';
@@ -39,9 +39,6 @@ export class UserEntity extends BaseEntity {
 
    @Property()
    updatedBy: string;
-
-   @Property({ swagger: { disable: true } })
-   verifyCode?: VerifyCode;
 
    private _permissions: string[];
 

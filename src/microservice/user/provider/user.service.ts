@@ -14,7 +14,7 @@ import * as argon2 from 'argon2';
 import { DateTime, Hash, Is, JWTError } from '@mvanvu/ujs';
 import { serviceConfig } from '@metadata';
 import { BaseService } from '@service/lib';
-import { FieldsException, ThrowException, CRUDResult } from '@lib/common';
+import { FieldsException, ThrowException, CRUDResult, MetaResult } from '@lib/common';
 
 @Injectable()
 export class UserService extends BaseService {
@@ -68,21 +68,29 @@ export class UserService extends BaseService {
       fieldsError.validate();
    }
 
-   async signUp(data: UserSignUpDto): Promise<UserEntity> {
+   async signUp(data: UserSignUpDto): Promise<MetaResult<UserEntity>> {
       await this.validateUserDto(data);
       const { name, username, email, password } = data;
-      const newUser = await this.prisma.user.create({
-         data: {
-            name,
-            username,
-            email,
-            password: await argon2.hash(password),
-            status: UserStatus.Pending,
-            verifyCode: { activateAccount: Hash.uuid() },
-         },
-      });
+      const newUser = await this.prisma.user
+         .create({
+            data: {
+               name,
+               username,
+               email,
+               password: await argon2.hash(password),
+               status: UserStatus.Pending,
+               verifyCode: {},
+            },
+            select: { id: true },
+         })
+         .then(({ id }) =>
+            this.prisma.user.update({
+               data: { verifyCode: { activateAccount: `${id}:${Hash.uuid()}` } },
+               where: { id },
+            }),
+         );
 
-      return new UserEntity(newUser);
+      return { data: new UserEntity(newUser), meta: { verifyCode: newUser.verifyCode } };
    }
 
    async generateTokens(userId: string): Promise<AuthTokenEntity> {
@@ -146,7 +154,7 @@ export class UserService extends BaseService {
       return await this.generateTokens(user.id);
    }
 
-   async updateResetPasswordCode(email: string): Promise<false | UserEntity> {
+   async updateResetPasswordCode(email: string): Promise<false | MetaResult<UserEntity>> {
       const user = await this.prisma.user.findUnique({
          where: { email },
          select: { id: true, status: true, verifyCode: true },
@@ -154,9 +162,12 @@ export class UserService extends BaseService {
 
       if (user && user.status === UserStatus.Active) {
          const verifyCode: VerifyCode = user.verifyCode || <VerifyCode>{};
-         verifyCode.resetPassword = Hash.uuid();
+         verifyCode.resetPassword = `${user.id}:${Hash.uuid()}`;
 
-         return new UserEntity(await this.prisma.user.update({ where: { id: user.id }, data: { verifyCode } }));
+         return {
+            data: new UserEntity(await this.prisma.user.update({ where: { id: user.id }, data: { verifyCode } })),
+            meta: { verifyCode },
+         };
       }
 
       return false;

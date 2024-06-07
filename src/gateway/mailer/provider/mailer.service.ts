@@ -1,5 +1,5 @@
 import { OnEvent } from '@gateway/lib';
-import { OnServiceResponse, eventConstant } from '@lib/common';
+import { MetaResult, OnServiceResponse, eventConstant } from '@lib/common';
 import { UserEntity } from '@lib/service';
 import { SendMailDto } from '@lib/service/mailer';
 import { serviceConfig } from '@metadata';
@@ -8,26 +8,18 @@ import { ClientProxy } from '@nestjs/microservices';
 import * as fs from 'fs';
 
 type MailerTemplate = { index: string; resetPasswordBody: string; verifyAccountBody: string };
+const mailerTmplPath = process.cwd() + '/src/gateway/mailer/template';
 
 @Injectable()
 export class MailerService {
-   private static TEMPLATES: MailerTemplate;
+   private readonly templates: MailerTemplate = {
+      index: fs.readFileSync(`${mailerTmplPath}/index.html`).toString('utf8'),
+      resetPasswordBody: fs.readFileSync(`${mailerTmplPath}/body/reset-password.html`).toString('utf8'),
+      verifyAccountBody: fs.readFileSync(`${mailerTmplPath}/body/verify-account.html`).toString('utf8'),
+   };
 
    @Inject(serviceConfig.get('mailer.name').toUpperCase() + '_MICROSERVICE')
    private readonly clientProxy: ClientProxy;
-
-   get templates(): MailerTemplate {
-      if (!MailerService.TEMPLATES) {
-         const mailerTmplPath = process.cwd() + '/src/gateway/mailer/template';
-         MailerService.TEMPLATES = {
-            index: fs.readFileSync(`${mailerTmplPath}/index.html`).toString('utf8'),
-            resetPasswordBody: fs.readFileSync(`${mailerTmplPath}/body/reset-password.html`).toString('utf8'),
-            verifyAccountBody: fs.readFileSync(`${mailerTmplPath}/body/verify-account.html`).toString('utf8'),
-         };
-      }
-
-      return MailerService.TEMPLATES;
-   }
 
    @OnEvent(eventConstant.onServiceResponse)
    onServiceResponse(payload: OnServiceResponse): void {
@@ -51,10 +43,10 @@ export class MailerService {
    }
 
    sendVerifyAccountCode(payload: OnServiceResponse): void {
-      const user = payload.responseData as UserEntity;
+      const { data: user, meta } = payload.responseData as MetaResult<UserEntity>;
 
-      if (user.email && user.verifyCode?.activateAccount) {
-         const code = user.verifyCode.activateAccount;
+      if (user.email && meta.verifyCode) {
+         const code = meta.verifyCode;
          const data: SendMailDto = {
             to: [user.email],
             subject: 'Verify your account',
@@ -67,18 +59,14 @@ export class MailerService {
 
          this.clientProxy.emit(serviceConfig.get('mailer.patterns.send'), data);
       }
-
-      // Remove verify code
-      if (user.verifyCode) {
-         delete user.verifyCode;
-      }
    }
 
    sendVerifyResetPasswordCode(payload: OnServiceResponse): void {
-      const user = payload.responseData as false | UserEntity;
+      const response = payload.responseData as false | MetaResult<UserEntity>;
 
-      if (user) {
-         const code = user.verifyCode.resetPassword;
+      if (response) {
+         const { data: user, meta } = response;
+         const code = meta.verifyCode;
          const data: SendMailDto = {
             to: [user.email],
             subject: 'Reset your password',
