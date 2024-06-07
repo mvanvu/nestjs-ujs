@@ -7,7 +7,9 @@ import {
    AuthEntity,
    AuthTokenDto,
    AuthTokenEntity,
-   AuthUpdateResetPasswordCodeDto,
+   SendResetPasswordCodeDto,
+   VerifyAccountDto,
+   ResetPasswordDto,
 } from '@lib/service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CRUDResult, MetaResult } from '@lib/common';
@@ -38,13 +40,23 @@ export class UserController {
       return this.userService.verifyToken(dto.token);
    }
 
+   @MessagePattern(patterns.verifyAccount)
+   verifyAccount(@Payload() dto: VerifyAccountDto): Promise<false | UserEntity> {
+      return this.userService.verifyAccount(dto.code);
+   }
+
+   @MessagePattern(patterns.resetPassword)
+   resetPassword(@Payload() dto: ResetPasswordDto): Promise<false | UserEntity> {
+      return this.userService.resetPassword(dto);
+   }
+
    @MessagePattern(patterns.refreshToken)
    refreshToken(@Payload() dto: AuthTokenDto): Promise<AuthTokenEntity> {
       return this.userService.refreshToken(dto.token);
    }
 
-   @MessagePattern(patterns.updateResetPasswordCode)
-   updateResetPasswordCode(@Payload() dto: AuthUpdateResetPasswordCodeDto): Promise<false | MetaResult<UserEntity>> {
+   @MessagePattern(patterns.sendResetPasswordCode)
+   updateResetPasswordCode(@Payload() dto: SendResetPasswordCodeDto): Promise<false | MetaResult<UserEntity>> {
       return this.userService.updateResetPasswordCode(dto.email);
    }
 }

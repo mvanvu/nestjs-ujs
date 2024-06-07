@@ -10,7 +10,8 @@ import {
    UpdateUserDto,
    AuthTokenDto,
    AuthTokenEntity,
-   AuthUpdateResetPasswordCodeDto,
+   SendResetPasswordCodeDto,
+   ResetPasswordDto,
 } from '@lib/service/user';
 import {
    BaseController,
@@ -35,33 +36,56 @@ export class UserController extends BaseController {
 
    @Public()
    @Post('refresh-token')
-   @ApiEntityResponse(AuthTokenEntity, { summary: 'Generate a new pair access/refresh token' })
+   @ApiEntityResponse(AuthTokenEntity, {
+      summary: 'Generate a new pair access/refresh token',
+      statusCode: HttpStatus.OK,
+   })
    refreshToken(@Body() data: AuthTokenDto): Promise<AuthTokenEntity> {
       return this.userProxy.send(patterns.refreshToken, { data });
    }
 
    @Public()
    @Post('signup')
-   @ApiEntityResponse(UserEntity, { summary: 'Register a new user account' })
+   @ApiEntityResponse(UserEntity, { summary: 'Register a new user account', statusCode: HttpStatus.CREATED })
    signUp(@Body() data: UserSignUpDto): Promise<UserEntity> {
       return this.userProxy.send(patterns.signUp, { data });
    }
 
    @Public()
+   @Post('account/activate')
+   @ApiEntityResponse(UserEntity, {
+      summary: 'Activate the account by pass a verification code',
+      statusCode: HttpStatus.OK,
+   })
+   activateAccount(@Body() data: UserSignUpDto): Promise<UserEntity> {
+      return this.userProxy.send(patterns.verifyAccount, { data });
+   }
+
+   @Public()
    @Post('signin')
-   @ApiEntityResponse(AuthEntity, { summary: 'Sign-in with the user account' })
+   @ApiEntityResponse(AuthEntity, { summary: 'Sign-in with the user account', statusCode: HttpStatus.OK })
    signIn(@Body() data: UserSignInDto): Promise<AuthEntity> {
       return this.userProxy.send(patterns.signIn, { data });
    }
 
    @Public()
-   @Post('reset-password')
-   @ApiEntityResponse(Boolean, { summary: 'Send a verify reset password code to the user email' })
-   async resetPassword(@Body() data: AuthUpdateResetPasswordCodeDto): Promise<true> {
-      await this.userProxy.send(patterns.updateResetPasswordCode, { data });
+   @Post('account/send-reset-password')
+   @ApiEntityResponse(Boolean, {
+      summary: 'Send a verify reset password code to the user email',
+      statusCode: HttpStatus.OK,
+   })
+   async sendResetPassword(@Body() data: SendResetPasswordCodeDto): Promise<true> {
+      await this.userProxy.send(patterns.sendResetPasswordCode, { data });
 
       // Always returns true for security perpose
       return true;
+   }
+
+   @Public()
+   @Post('account/reset-password')
+   @ApiEntityResponse(UserEntity, { summary: 'Activate the account by pass a verification code' })
+   resetPassword(@Body() data: ResetPasswordDto): Promise<UserEntity> {
+      return this.userProxy.send(patterns.resetPassword, { data });
    }
 
    @Get('me')

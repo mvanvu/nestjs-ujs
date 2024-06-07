@@ -27,7 +27,7 @@ export class MailerService {
          case serviceConfig.get('user.patterns.signUp'):
             return this.sendVerifyAccountCode(payload);
 
-         case serviceConfig.get('user.patterns.updateResetPasswordCode'):
+         case serviceConfig.get('user.patterns.sendResetPasswordCode'):
             return this.sendVerifyResetPasswordCode(payload);
       }
    }

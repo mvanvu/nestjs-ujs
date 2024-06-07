@@ -45,4 +45,20 @@ export class AuthTokenDto {
    token: string;
 }
 
-export class AuthUpdateResetPasswordCodeDto extends IPickType(UserSignUpDto, ['email']) {}
+export class SendResetPasswordCodeDto extends IPickType(UserSignUpDto, ['email']) {}
+
+export class VerifyAccountDto {
+   @Property({
+      validate: { is: 'matched', meta: /^[0-9a-fA-F]{24}:[a-zA-Z0-9-]+$/, code: 'VERIFY_CODE' },
+      swagger: { description: 'The verification code to active the user account' },
+   })
+   code: string;
+}
+
+export class ResetPasswordDto extends IPickType(UserSignUpDto, ['password', 'password2']) {
+   @Property({
+      validate: { is: 'matched', meta: /^[0-9a-fA-F]{24}:[a-zA-Z0-9-]+$/, code: 'VERIFY_CODE' },
+      swagger: { description: 'The verification code to verify to reset the new password' },
+   })
+   code: string;
+}

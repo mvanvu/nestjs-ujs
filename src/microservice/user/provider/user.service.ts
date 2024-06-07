@@ -6,6 +6,7 @@ import {
    UserEntity,
    UpdateUserDto,
    AuthTokenEntity,
+   ResetPasswordDto,
 } from '@lib/service';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
@@ -146,6 +147,51 @@ export class UserService extends BaseService {
 
          throw e;
       }
+   }
+
+   async verifyAccount(code: string): Promise<UserEntity> {
+      const [id] = code.split(':');
+      const user = await this.prisma.user.findUnique({ where: { id }, select: { verifyCode: true, status: true } });
+
+      if (!user || user.verifyCode.activateAccount !== code) {
+         ThrowException('Invalid verify account code');
+      }
+
+      if (user.status !== UserStatus.Pending) {
+         ThrowException('The account has verified');
+      }
+
+      return new UserEntity(
+         await this.prisma.user.update({
+            where: { id },
+            data: { status: UserStatus.Active, verifyCode: { ...user.verifyCode, activateAccount: null } },
+            include: this.userInclude,
+         }),
+      );
+   }
+
+   async resetPassword(dto: ResetPasswordDto): Promise<UserEntity> {
+      const [id] = dto.code.split(':');
+      const user = await this.prisma.user.findUnique({ where: { id }, select: { verifyCode: true, status: true } });
+
+      if (!user || user.verifyCode.resetPassword !== dto.code) {
+         ThrowException('Invalid verify reset password code');
+      }
+
+      if (user.status !== UserStatus.Active) {
+         ThrowException(`The account isn't available`);
+      }
+
+      return new UserEntity(
+         await this.prisma.user.update({
+            where: { id },
+            data: {
+               password: await argon2.hash(dto.password),
+               verifyCode: { ...user.verifyCode, resetPassword: null },
+            },
+            include: this.userInclude,
+         }),
+      );
    }
 
    async refreshToken(token: string): Promise<AuthTokenEntity> {
