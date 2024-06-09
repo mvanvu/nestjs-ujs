@@ -25,6 +25,7 @@ const appConfigData = {
    },
    rabbitMQ: {
       url: envConfig.get<string>('RABBITMQ_URL'),
+   },
    language: {
       default: envConfig.get<string>('DEFAULT_LANGUAGE', 'en-GB'),
       accept: envConfig.get<string>('ACCEPT_LANGUAGE', '*').split(','),
