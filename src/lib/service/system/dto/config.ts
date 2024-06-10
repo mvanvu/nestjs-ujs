@@ -37,29 +37,50 @@ export class MailerConfigDto {
 }
 
 export class LanguageConfigDto {
-   @Property({ validate: { is: 'boolean' }, swagger: { description: 'Enable multilingual mode, defaults to false' } })
-   multilingual?: boolean;
+   @Property({
+      validate: { is: 'boolean' },
+      defaultValue: false,
+      swagger: { description: 'Enable multilingual mode, defaults to false' },
+   })
+   multilingual: boolean;
 
    @Property({
       validate: { is: 'string' },
+      defaultValue: 'en-GB',
       swagger: { description: 'The default of language, defaults to en-GB', example: 'en-GB' },
    })
-   defaultLanguage?: string;
+   defaultLanguage: string;
 
    @Property({
       validate: { is: 'string', each: true },
+      defaultValue: ['en-GB', 'vi-VN'],
       swagger: {
          description: 'List of allowed language ISO codes, defaults to * (* = all)',
-         example: ['en-GB', 'en-US', 'vi-VN'],
+         example: ['en-GB', 'vi-VN'],
       },
    })
-   acceptLanguage?: string[];
+   acceptLanguage: string[];
 }
 
 export class SystemConfigDto extends BaseEntity {
-   @Property({ optional: true, validate: { is: LanguageConfigDto }, swagger: { type: LanguageConfigDto } })
+   @Property({
+      optional: true,
+      validate: { is: LanguageConfigDto },
+      swagger: { type: LanguageConfigDto, description: 'Language config' },
+   })
    language?: LanguageConfigDto;
 
-   @Property({ optional: true, validate: { is: MailerConfigDto }, swagger: { type: MailerConfigDto } })
+   @Property({
+      optional: true,
+      validate: { is: MailerConfigDto },
+      swagger: { type: MailerConfigDto, description: 'Mailer config' },
+   })
    mailer?: MailerConfigDto;
+
+   @Property({
+      validate: [{ is: 'sInt' }, { is: 'min', meta: 1 }],
+      optional: true,
+      swagger: { description: 'Pagination config, the number of items per page, defaults to 25' },
+   })
+   itemsPerPage?: number;
 }

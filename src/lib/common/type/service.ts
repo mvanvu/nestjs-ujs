@@ -86,3 +86,7 @@ export type OnEntity =
         options: { context: TContext; isList?: IsEqual<TContext, 'read' extends true ? boolean : never> },
      ) => any | Promise<any>);
 export type OnTransaction<TX, TData extends ObjectRecord> = (tx: TX, data: TData) => Promise<any>;
+
+export type PaginationListOptions = {
+   itemsPerPage: number;
+};

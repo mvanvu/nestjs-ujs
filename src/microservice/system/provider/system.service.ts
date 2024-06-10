@@ -1,23 +1,35 @@
 import { SystemConfigDto } from '@lib/service/system';
 import { Registry } from '@mvanvu/ujs';
-import { Injectable } from '@nestjs/common';
-import * as fs from 'fs';
+import { Inject, Injectable } from '@nestjs/common';
+import { PrismaService } from './prisma/prisma.service';
 
 @Injectable()
 export class SystemService {
-   private readonly pathFile = `${process.cwd()}/src/system.config.json`;
+   @Inject(PrismaService) private readonly prisma: PrismaService;
 
-   saveConfig(dto: SystemConfigDto): SystemConfigDto {
-      const data: SystemConfigDto = fs.existsSync(this.pathFile)
-         ? Registry.from(fs.readFileSync(this.pathFile).toString()).extends(dto).valueOf()
-         : dto;
+   private readonly systemKey: string = 'system';
 
-      fs.writeFileSync(this.pathFile, JSON.stringify(data, null, 2));
+   async saveConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
+      const registry = Registry.from<SystemConfigDto>({});
+      const prevData = await this.prisma.config.findUnique({ where: { key: this.systemKey }, select: { value: true } });
 
-      return data;
+      if (prevData) {
+         registry.extends(prevData.value);
+      }
+
+      const value = registry.extends(dto).toString();
+      await this.prisma.config.upsert({
+         where: { key: this.systemKey },
+         create: { key: this.systemKey, value },
+         update: { value },
+      });
+
+      return registry.valueOf();
    }
 
-   getConfig(): SystemConfigDto {
-      return fs.existsSync(this.pathFile) ? JSON.parse(fs.readFileSync(this.pathFile).toString()) : {};
+   async getConfig(): Promise<SystemConfigDto> {
+      const config = await this.prisma.config.findUnique({ where: { key: this.systemKey }, select: { value: true } });
+
+      return (config ? JSON.parse(config.value) : {}) as SystemConfigDto;
    }
 }

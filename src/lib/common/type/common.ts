@@ -91,6 +91,7 @@ export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> |
       | Array<ValidationOptions<IsType>>;
    transform?: TransformOptions;
    optional?: boolean;
+   defaultValue?: any;
    swagger?: {
       disable?: boolean;
       description?: string;

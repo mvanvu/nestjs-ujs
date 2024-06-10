@@ -26,3 +26,9 @@ model ActivityLog {
     createdAt      DateTime @default(now())
     author         User?
 }
+
+model Config {
+    id    String @id @default(auto()) @map("_id") @db.ObjectId
+    key   String @unique
+    value String
+}

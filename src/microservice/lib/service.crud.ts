@@ -16,6 +16,7 @@ import {
    OnTransaction,
    CRUDTransactionContext,
    CRUDContext,
+   PaginationListOptions,
 } from '@lib/common';
 import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
@@ -123,7 +124,11 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       return this;
    }
 
-   async paginate<T>(query?: ObjectRecord, where?: Record<string, any>): Promise<PaginationResult<T>> {
+   async paginate<T>(
+      query?: ObjectRecord,
+      where?: Record<string, any>,
+      options?: PaginationListOptions,
+   ): Promise<PaginationResult<T>> {
       const modelParams = {
          select: this.prismaSelect,
          include: this.prismaInclude,
@@ -359,8 +364,8 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       }
 
       // Take care pagination
-      const defaultLimit = appConfig.get('list.limit');
-      const maxLimit = this.optionsCRUD?.list?.maxLimit ?? appConfig.get('list.maxLimit');
+      const defaultLimit = options?.itemsPerPage ?? 25;
+      const maxLimit = this.optionsCRUD?.list?.maxLimit ?? 1000;
       let limit: number =
          query.limit === undefined || !query.limit.toString().match(/^[0-9]+$/)
             ? defaultLimit
@@ -375,7 +380,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       Object.assign(query, { page, limit, q });
 
       // Query by fields scope
-      const scope = appConfig.get('list.scope');
+      const scope = appConfig.get('queryScope');
 
       if (scope && Is.string(query[scope]) && !Is.empty(query[scope])) {
          const { fields } = this.prisma.models[this.model];
@@ -650,7 +655,9 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          case 'read':
             return recordId
                ? this.read<TResult>(recordId, meta.get('CRUD.where'))
-               : this.paginate<TResult>(meta.get('query'), meta.get('CRUD.where'));
+               : this.paginate<TResult>(meta.get('query'), meta.get('CRUD.where'), {
+                    itemsPerPage: meta.get('headers.systemConfig.itemsPerPage'),
+                 });
 
          case 'write':
             // Check to validate data

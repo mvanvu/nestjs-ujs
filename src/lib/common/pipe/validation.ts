@@ -36,15 +36,20 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
 
    // Handle validator
    for (const prop of props) {
-      const val: any = data[prop];
+      let val: any = data[prop];
       const propOptions = propertyOptions[prop];
 
+      // Check has default value
       if (!propOptions || (propOptions.optional === true && Is.nullOrUndefined(val))) {
-         if (Is.undefined(val)) {
-            delete data[prop];
-         }
+         if (Is.undefined(propOptions.defaultValue)) {
+            if (Is.undefined(val)) {
+               delete data[prop];
+            }
 
-         continue;
+            continue;
+         } else {
+            val = propOptions.defaultValue;
+         }
       }
 
       if (propOptions.validate) {

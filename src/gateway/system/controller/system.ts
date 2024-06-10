@@ -19,7 +19,7 @@ export class SystemController extends BaseController {
    @ApiEntityResponse(SystemConfigDto, { statusCode: HttpStatus.OK })
    async saveConfig(@Body() data: SystemConfigDto): Promise<SystemConfigDto> {
       const configData = await this.systemProxy.send<SystemConfigDto, SystemConfigDto>(patterns.saveConfig, { data });
-      await this.cacheManager.set(patterns.getConfig, configData);
+      await this.cacheManager.set(patterns.getConfig, configData, -1);
 
       return configData;
    }
@@ -33,7 +33,7 @@ export class SystemController extends BaseController {
 
       if (!configData) {
          configData = await this.systemProxy.send<undefined, SystemConfigDto>(patterns.getConfig);
-         await this.cacheManager.set(patterns.getConfig, configData);
+         await this.cacheManager.set(patterns.getConfig, configData, -1);
       }
 
       return configData;

@@ -30,11 +30,7 @@ const appConfigData = {
       default: envConfig.get<string>('DEFAULT_LANGUAGE', 'en-GB'),
       accept: envConfig.get<string>('ACCEPT_LANGUAGE', '*').split(','),
    },
-   list: {
-      scope: envConfig.get<string>('QUERY_PARAM_SCOPE', ''),
-      limit: envConfig.get<number>('LIST_ITEMS_PER_PAGE', 25, 'toUInt'),
-      maxLimit: envConfig.get<number>('LIST_ITEMS_MAX_LIMIT', 1000, 'toUInt'),
-   },
+   queryScope: envConfig.get<string>('QUERY_PARAM_SCOPE', ''),
 } as const;
 
 type AppConfigData = typeof appConfigData;
