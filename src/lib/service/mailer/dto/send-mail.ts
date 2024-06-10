@@ -1,4 +1,3 @@
-import { IPickType } from '@lib/common/entity/mapped-type';
 import { Property } from '@lib/common/decorator/property';
 export class SendMailDto {
    @Property({
@@ -26,5 +25,3 @@ export class SendMailDto {
    })
    body: string;
 }
-
-export class SendTestMailDto extends IPickType(SendMailDto, ['to', 'subject', 'body']) {}

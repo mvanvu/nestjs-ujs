@@ -19,6 +19,9 @@ export class MailerSMTPTransporterDto {
 }
 
 export class MailerConfigDto {
+   @Property({ validate: { is: 'email' } })
+   appMail: string;
+
    @Property({
       validate: { is: 'inArray', meta: transporters },
       swagger: { description: 'The mailer transporter', enum: transporters },

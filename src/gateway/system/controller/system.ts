@@ -1,22 +1,41 @@
-import { ApiEntityResponse, BaseController, Permission } from '@gateway/lib';
+import { ApiEntityResponse, BaseClientProxy, BaseController, HttpCache, Permission } from '@gateway/lib';
 import { SystemConfigDto } from '@lib/service/system';
 import { serviceConfig } from '@metadata';
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import * as fs from 'fs';
 
-const { permissions } = serviceConfig.get('system');
+const { name, permissions, patterns } = serviceConfig.get('system');
 
 @ApiBearerAuth()
 @ApiTags('systems')
 @Controller('systems')
 export class SystemController extends BaseController {
+   get systemProxy(): BaseClientProxy {
+      return this.createClientProxy(name);
+   }
+
    @Post('config')
    @Permission({ key: permissions.config.save })
    @ApiEntityResponse(SystemConfigDto, { statusCode: HttpStatus.OK })
-   config(@Body() dto: SystemConfigDto): SystemConfigDto {
-      fs.writeFileSync(`${process.cwd()}/src/system.config.json`, JSON.stringify(dto, null, 2));
+   async saveConfig(@Body() data: SystemConfigDto): Promise<SystemConfigDto> {
+      const configData = await this.systemProxy.send<SystemConfigDto, SystemConfigDto>(patterns.saveConfig, { data });
+      await this.cacheManager.set(patterns.getConfig, configData);
 
-      return new SystemConfigDto(dto);
+      return configData;
+   }
+
+   @Get('config')
+   @HttpCache({ disabled: true })
+   @Permission({ key: permissions.config.get })
+   @ApiEntityResponse(SystemConfigDto, { statusCode: HttpStatus.OK })
+   async getConfig(): Promise<SystemConfigDto> {
+      let configData: SystemConfigDto = await this.cacheManager.get(patterns.getConfig);
+
+      if (!configData) {
+         configData = await this.systemProxy.send<undefined, SystemConfigDto>(patterns.getConfig);
+         await this.cacheManager.set(patterns.getConfig, configData);
+      }
+
+      return configData;
    }
 }

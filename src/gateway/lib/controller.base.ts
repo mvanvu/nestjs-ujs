@@ -5,13 +5,16 @@ import { HttpRequest } from '@lib/common';
 import { app } from '@metadata';
 import { BaseClientProxy } from './client-proxy.base';
 import { EventEmitter } from '@mvanvu/ujs';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class BaseController {
-   @Inject(REQUEST) private readonly req: HttpRequest;
+   @Inject(REQUEST) protected readonly req: HttpRequest;
 
    @Inject(EventEmitter)
-   private readonly eventEmitter: EventEmitter;
+   protected readonly eventEmitter: EventEmitter;
+
+   @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache;
 
    createClientProxy(serviceName: string): BaseClientProxy {
       const proxyName = serviceName.toUpperCase() + '_MICROSERVICE';

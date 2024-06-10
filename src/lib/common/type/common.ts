@@ -2,6 +2,7 @@ import { CommonType, IsValidOptions, IsValidType, ObjectRecord, Registry, Transf
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { Type, VersionValue } from '@nestjs/common/interfaces';
 import { type UserEntity } from '@lib/service/user/entity/user';
+import { SystemConfigDto } from '@lib/service/system/dto';
 import { Request } from 'express';
 
 export type HttpCacheOptions = {
@@ -19,6 +20,7 @@ export type RequestRegistryData = {
    device: 'web' | 'mobile' | 'desktop';
    userAgent: string;
    ipAddress: string;
+   systemConfig: SystemConfigDto;
 };
 
 export interface HttpRequest extends Request {

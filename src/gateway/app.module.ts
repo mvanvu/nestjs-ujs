@@ -13,7 +13,6 @@ import { FileProvider } from './storage/provider';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/microservices';
-import { MailController } from './mailer/controller';
 import { MailerService } from './mailer/provider';
 import { SystemController } from './system/controller';
 
@@ -46,7 +45,7 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
          max: appConfig.get('cache.maxItems'),
       }),
    ],
-   controllers: [SystemController, GroupController, RoleController, UserController, StorageController, MailController],
+   controllers: [SystemController, GroupController, RoleController, UserController, StorageController],
    providers: [
       {
          provide: APP_INTERCEPTOR,

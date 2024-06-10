@@ -5,7 +5,6 @@ import { loadPermissionKeys } from './lib/common';
 export { appConfig } from './config';
 
 // Service shared config
-
 import system from './lib/service/system/config';
 import user from './lib/service/user/config';
 import storage from './lib/service/storage/config';

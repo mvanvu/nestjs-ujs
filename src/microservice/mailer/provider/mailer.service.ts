@@ -1,19 +1,19 @@
-import { serviceConfig } from '@metadata';
 import { Injectable } from '@nestjs/common';
 import { SMTPTransporter } from '../transporter';
-import { MessageInfoEntity, SendMailDto, SendTestMailDto } from '@lib/service/mailer';
-
-const mailerConfig = serviceConfig.get('mailer');
+import { MessageInfoEntity, SendMailDto } from '@lib/service/mailer';
+import { BaseService } from '@service/lib';
 
 @Injectable()
-export class MailerService {
+export class MailerService extends BaseService {
    private static transporter: SMTPTransporter;
 
    get transporter(): SMTPTransporter {
+      const mailerConfig = this.meta.get('headers.systemConfig.mailer');
+
       if (!MailerService.transporter) {
-         switch (mailerConfig.transporter.default) {
-            case 'smtp':
-               MailerService.transporter = new SMTPTransporter();
+         switch (mailerConfig.transporter) {
+            case 'SMTP':
+               MailerService.transporter = new SMTPTransporter(mailerConfig);
                break;
          }
       }
@@ -21,11 +21,9 @@ export class MailerService {
       return MailerService.transporter;
    }
 
-   async send(dto: SendMailDto): Promise<MessageInfoEntity> {
-      return new MessageInfoEntity(await this.transporter.send(dto));
-   }
+   async send(dto: SendMailDto): Promise<MessageInfoEntity | false> {
+      const result = await this.transporter.send(dto);
 
-   async sendTest(dto: SendTestMailDto): Promise<MessageInfoEntity> {
-      return new MessageInfoEntity(await this.transporter.send(dto, true));
+      return result ? new MessageInfoEntity(result) : false;
    }
 }

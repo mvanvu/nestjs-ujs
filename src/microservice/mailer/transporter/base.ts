@@ -1,15 +1,16 @@
 import * as nodemailer from 'nodemailer';
 import { Transform } from '@mvanvu/ujs';
 import { MessageInfoEntity, SendMailDto, TransporterMessageInfo } from '@lib/service/mailer';
+import { SystemConfigDto } from '@lib/service/system';
 
 export abstract class BaseTransporter {
    protected abstract readonly transporter: nodemailer.Transporter<TransporterMessageInfo>;
 
-   protected abstract readonly testTransporter: nodemailer.Transporter<TransporterMessageInfo>;
+   constructor(protected readonly config: SystemConfigDto['mailer']) {}
 
-   async send(dto: SendMailDto, test?: boolean): Promise<MessageInfoEntity> {
+   async send(dto: SendMailDto): Promise<MessageInfoEntity | false> {
       try {
-         const info = await (test === true ? this.testTransporter : this.transporter).sendMail({
+         const info = await this.transporter.sendMail({
             from: dto.from, // Sender address
             to: dto.to, // List of receivers: bar@example.com, baz@example.com
             subject: dto.subject, // Subject line
@@ -22,6 +23,8 @@ export abstract class BaseTransporter {
          return new MessageInfoEntity(info);
       } catch (e) {
          console.error('Send message failure:', e);
+
+         return false;
       }
    }
 }

@@ -21,15 +21,15 @@ export class BaseClientProxy {
 
    async send<TInput, TResult>(
       messagePattern: string,
-      dataDelivery: MessageData<TInput>,
+      dataDelivery?: MessageData<TInput>,
       options?: ServiceOptions,
    ): Promise<TResult> {
       try {
-         const record = new RmqRecordBuilder<any>(dataDelivery.data || {})
+         const record = new RmqRecordBuilder<any>(dataDelivery?.data || {})
             .setOptions({
                headers: {
                   'x-meta': Registry.from({})
-                     .extends(dataDelivery.meta || {})
+                     .extends(dataDelivery?.meta || {})
                      .extends({ headers: this.req.registry.valueOf() })
                      .toString(),
                },
