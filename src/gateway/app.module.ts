@@ -13,9 +13,9 @@ import { FileProvider } from './storage/provider';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/microservices';
-import { MailerService } from './mailer/provider';
+import { MailerProvider } from './mailer/provider';
 import { SystemController } from './system/controller';
-import { SystemService } from './system/provider';
+import { PurgeCacheProvider, ActivityLogProvider } from './system/provider';
 
 const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => {
    return {
@@ -61,8 +61,9 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
          useClass: UserRoleGuard,
       },
       FileProvider,
-      MailerService,
-      SystemService,
+      MailerProvider,
+      ActivityLogProvider,
+      PurgeCacheProvider,
    ],
 })
 export class AppModule {

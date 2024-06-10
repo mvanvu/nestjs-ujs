@@ -8,7 +8,7 @@ export class MailerSMTPTransporterDto {
    @Property({ validate: [{ is: 'string' }, { is: 'empty', not: true }] })
    host: string;
 
-   @Property({ validate: [{ is: 'sInt' }] })
+   @Property({ validate: [{ is: 'uInt' }] })
    port: number;
 
    @Property({ validate: [{ is: 'string' }, { is: 'empty', not: true }] })
@@ -55,7 +55,7 @@ export class LanguageConfigDto {
       validate: { is: 'string', each: true },
       defaultValue: ['en-GB', 'vi-VN'],
       swagger: {
-         description: 'List of allowed language ISO codes, defaults to * (* = all)',
+         description: 'List of allowed language ISO codes',
          example: ['en-GB', 'vi-VN'],
       },
    })
@@ -78,14 +78,14 @@ export class SystemConfigDto extends BaseEntity {
    mailer?: MailerConfigDto;
 
    @Property({
-      validate: [{ is: 'sInt' }, { is: 'min', meta: 1 }],
+      validate: [{ is: 'uInt' }, { is: 'min', meta: 1 }],
       optional: true,
       swagger: { description: 'Pagination config, the number of items per page, defaults to 25' },
    })
    itemsPerPage?: number;
 
    @Property({
-      validate: [{ is: 'sInt' }, { is: 'min', meta: 1 }],
+      validate: [{ is: 'uInt' }, { is: 'min', meta: 1 }],
       optional: true,
       swagger: { description: 'The activity logs will be removed after this days number since the created date' },
    })

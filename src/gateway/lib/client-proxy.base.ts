@@ -26,7 +26,7 @@ export class BaseClientProxy {
    ): Promise<TResult> {
       const eventPayload: OnServiceResponse = {
          messagePattern,
-         requestData: dataDelivery,
+         requestData: dataDelivery?.data,
          httpRequest: this.req,
          success: true,
       };

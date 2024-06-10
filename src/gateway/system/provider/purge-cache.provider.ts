@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { OnEvent } from './event-emitter.decorator';
+import { OnEvent } from '../../lib/event-emitter/event-emitter.decorator';
 import { OnServiceResponse, eventConstant } from '@lib/common';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Is } from '@mvanvu/ujs';
@@ -9,9 +9,9 @@ export class PurgeCacheProvider {
    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache;
 
    @OnEvent(eventConstant.onServiceResponse)
-   async purgeHttpCaching({ httpRequest }: OnServiceResponse): Promise<void> {
+   async purgeHttpCaching({ httpRequest, success }: OnServiceResponse): Promise<void> {
       // Check to purge HTTP caching
-      if (httpRequest.method === 'GET') {
+      if (httpRequest.method === 'GET' || !success) {
          return;
       }
 

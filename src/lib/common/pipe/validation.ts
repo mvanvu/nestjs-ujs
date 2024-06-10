@@ -131,7 +131,7 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
                   error[prop] = [];
                }
 
-               error[prop].push([errorCode, meta]);
+               error[prop].push({ code: errorCode, meta });
             }
          }
       }
@@ -141,37 +141,36 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
       return data;
    }
 
-   // Cleanup error code
    const cleanedError: ObjectRecord = {};
-   const cleanErrorCode = (err: ObjectRecord, parentProp?: string): ObjectRecord => {
-      for (const key in err) {
-         if (Is.array(err[key])) {
-            for (const deepError of err[key]) {
-               cleanErrorCode(deepError, key);
+   const cleanErrorCode = (err: any, prop?: string): void => {
+      if (Is.array(err)) {
+         for (const deepError of err) {
+            cleanErrorCode(deepError, prop);
+         }
+      } else if (Is.object(err)) {
+         const { code, meta } = err;
+         if (Is.nothing(code)) {
+            for (const k in err) {
+               cleanErrorCode(err[k], prop ? `${prop}.${k}` : k);
             }
-         } else {
-            const [code, meta] = err[key];
-
-            if (Is.array(code) && Is.object(code[0])) {
-               cleanErrorCode(code[0], key);
-            } else if (Is.string(code)) {
-               const prop = parentProp ? `${parentProp}.${key}` : key;
-
-               if (!cleanedError[prop]) {
-                  cleanedError[prop] = [];
-               }
-
-               cleanedError[prop].push({ code, meta });
+         } else if (Is.object(code)) {
+            for (const k in code) {
+               cleanErrorCode(code[k], prop ? `${prop}.${k}` : k);
             }
+         } else if (Is.string(code) && prop) {
+            if (!cleanedError[prop]) {
+               cleanedError[prop] = [];
+            }
+
+            cleanedError[prop].push({ code, meta: meta ?? null });
          }
       }
-
-      return cleanedError;
    };
 
-   console.log(cleanErrorCode(error));
+   // Cleanup error code
+   cleanErrorCode(error);
 
-   new ThrowException(error);
+   new ThrowException(cleanedError);
 }
 
 @Injectable()
