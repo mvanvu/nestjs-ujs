@@ -4,7 +4,6 @@ import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { FileProviderInterface } from './file.provider.interface';
 import { serviceConfig } from '@metadata';
-import { Util } from '@mvanvu/ujs';
 import { FileEntity, FinalUploadDto, UploadDto } from '@lib/service';
 const storageConfig = serviceConfig.get('storage');
 
@@ -46,7 +45,7 @@ export class FileProviderLocal implements FileProviderInterface {
             type: dto.fileType,
          };
       } catch (error) {
-         Util.debug('Error uploading file to local storage:', error);
+         console.debug('Error uploading file to local storage:', error);
          return null;
       }
    }
@@ -72,7 +71,7 @@ export class FileProviderLocal implements FileProviderInterface {
             disposition: `attachment; filename="${file.name.replace(/"/g, '')}"`,
          });
       } catch (error) {
-         Util.debug('Error fetching file from local storage:', error);
+         console.debug('Error fetching file from local storage:', error);
       }
    }
 }

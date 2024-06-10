@@ -61,6 +61,7 @@ export type OnServiceResponse = {
    httpRequest: HttpRequest;
    requestData?: any;
    responseData?: any;
+   success: boolean;
 };
 
 export type CRUDContext = 'read' | 'create' | 'update' | 'delete';

@@ -1,7 +1,16 @@
-import { ApiEntityResponse, BaseClientProxy, BaseController, HttpCache, Permission } from '@gateway/lib';
-import { SystemConfigDto } from '@lib/service/system';
+import {
+   ApiEntityResponse,
+   ApiPaginationResponse,
+   BaseClientProxy,
+   BaseController,
+   HttpCache,
+   PaginationResponse,
+   Permission,
+} from '@gateway/lib';
+import { PaginationQueryDto } from '@lib/common';
+import { ActivityLogDto, SystemConfigDto } from '@lib/service/system';
 import { serviceConfig } from '@metadata';
-import { Body, Controller, Get, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 const { name, permissions, patterns } = serviceConfig.get('system');
@@ -37,5 +46,13 @@ export class SystemController extends BaseController {
       }
 
       return configData;
+   }
+
+   @Get('activity-logs')
+   @HttpCache({ disabled: true })
+   @Permission({ key: permissions.activityLog.get })
+   @ApiPaginationResponse(ActivityLogDto, { summary: 'Admin get list pagination of the activity logs' })
+   activityLogsPaginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<ActivityLogDto>> {
+      return this.systemProxy.send(patterns.getActivityLog, { meta: { query, CRUD: { method: 'read' } } });
    }
 }

@@ -104,7 +104,7 @@ export class UserController extends BaseController {
    }
 
    @Get(':id')
-   @Permission({ key: permissions.user.read })
+   @Permission({ key: permissions.user.read, adminScope: true })
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin get the detail of user account' })
    read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
@@ -112,7 +112,7 @@ export class UserController extends BaseController {
    }
 
    @Post()
-   @Permission({ key: permissions.user.create })
+   @Permission({ key: permissions.user.create, adminScope: true })
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin create a new user account', statusCode: HttpStatus.CREATED })
    create(@Body() data: CreateUserDto): Promise<EntityResponse<UserEntity>> {
@@ -120,7 +120,7 @@ export class UserController extends BaseController {
    }
 
    @Patch(':id')
-   @Permission({ key: permissions.user.update })
+   @Permission({ key: permissions.user.update, adminScope: true })
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin update the user account' })
    update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateUserDto): Promise<EntityResponse<UserEntity>> {
@@ -128,7 +128,7 @@ export class UserController extends BaseController {
    }
 
    @Delete(':id')
-   @Permission({ key: permissions.user.delete })
+   @Permission({ key: permissions.user.delete, adminScope: true })
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin delete an user account' })
    delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {

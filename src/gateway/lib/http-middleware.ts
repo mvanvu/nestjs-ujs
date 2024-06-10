@@ -22,12 +22,12 @@ export class HttpMiddleware implements NestMiddleware {
       const detector = new DeviceDetector();
       const userAgent = req.headers['user-agent'] || '';
       const result = detector.detect(userAgent);
-      let device: RequestRegistryData['device'] = 'web';
+      let deviceType: RequestRegistryData['deviceType'] = 'web';
 
       if (DeviceHelper.isMobileApp(result)) {
-         device = 'mobile';
+         deviceType = 'mobile';
       } else if (DeviceHelper.isDesktopApp(result)) {
-         device = 'desktop';
+         deviceType = 'desktop';
       }
 
       // Load system config
@@ -41,7 +41,15 @@ export class HttpMiddleware implements NestMiddleware {
 
       // Registry for local storage
       req.registry = Registry.from<RequestRegistryData>({
-         device,
+         deviceOS: result.os
+            ? {
+                 name: result.os.name,
+                 shortName: result.os.short_name,
+                 platform: result.os.platform,
+                 version: result.os.version,
+              }
+            : null,
+         deviceType,
          userAgent,
          ipAddress: req.ips.length ? req.ips[0] : req.ip,
          systemConfig,

@@ -1,9 +1,10 @@
-import { CommonType, IsValidOptions, IsValidType, ObjectRecord, Registry, Transform } from '@mvanvu/ujs';
+import { IsValidOptions, IsValidType, ObjectRecord, Registry, Transform } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { Type, VersionValue } from '@nestjs/common/interfaces';
 import { type UserEntity } from '@lib/service/user/entity/user';
 import { SystemConfigDto } from '@lib/service/system/dto';
 import { Request } from 'express';
+import { ResultOs } from 'node-device-detector';
 
 export type HttpCacheOptions = {
    disabled?: boolean;
@@ -14,13 +15,21 @@ export type HttpCacheOptions = {
 
 export type UserRole = { id: string; name: string; permissions: string[] }[];
 
+export type DeviceOS = {
+   name: ResultOs['name'];
+   shortName: ResultOs['short_name'];
+   platform: ResultOs['platform'];
+   version: ResultOs['version'];
+};
+
 export type RequestRegistryData = {
    user?: UserEntity;
    tz?: string;
-   device: 'web' | 'mobile' | 'desktop';
+   deviceType: 'web' | 'mobile' | 'desktop';
    userAgent: string;
    ipAddress: string;
    systemConfig: SystemConfigDto;
+   deviceOS?: DeviceOS;
 };
 
 export interface HttpRequest extends Request {
@@ -80,7 +89,7 @@ export type TransformType<T = keyof typeof Transform> = T extends 'clean' | 'cle
 
 export type TransformOptions = {
    toType: TransformType | TransformType[];
-   fromType?: CommonType | CommonType[];
+   fromType?: IsValidType | IsValidType[];
 };
 
 export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> | [ClassConstructor<any>]> = {
@@ -101,4 +110,4 @@ export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> |
    };
 };
 
-export type PermissionOptions = { key?: string; or?: string[]; and?: string[] } | string;
+export type PermissionOptions = { key?: string; or?: string[]; and?: string[]; adminScope?: boolean } | string;

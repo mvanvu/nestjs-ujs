@@ -1,4 +1,4 @@
-import { ObjectRecord, Util } from '@mvanvu/ujs';
+import { ObjectRecord } from '@mvanvu/ujs';
 import { ClassConstructor } from '@lib/common';
 import { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { CRUDService } from './service.crud';
@@ -18,7 +18,7 @@ export function CreatePrismaService<TClientRef extends ClassConstructor<PrismaCl
 
       async onModuleInit() {
          process.on('beforeExit', this.onApplicationShutdown);
-         await this.$connect().catch(Util.debugDev);
+         await this.$connect().catch(console.debug);
       }
 
       async onApplicationShutdown() {

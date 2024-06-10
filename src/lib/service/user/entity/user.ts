@@ -104,6 +104,8 @@ export class UserEntity extends BaseEntity {
 
       if (
          !userPermissions.length ||
+         (permission.adminScope === true &&
+            !userPermissions.includes(serviceConfig.get('system.permissions.admin.scope'))) ||
          (permission.key && !userPermissions.includes(permission.key)) ||
          (permission.or?.length && !userPermissions.find((permit) => permission.or.includes(permit))) ||
          (permission.and?.length &&

@@ -24,28 +24,28 @@ export class GroupController extends BaseController {
       return this.createClientProxy(name);
    }
 
-   @Permission({ key: permissions.group.read })
+   @Permission({ key: permissions.group.read, adminScope: true })
    @ApiPaginationResponse(GroupEntity, { summary: 'Get list pagination of user groups' })
    @Get()
    paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<GroupEntity>> {
       return this.userProxy.send(patterns.groupCRUD, { meta: { query, CRUD: { method: 'read' } } });
    }
 
-   @Permission({ key: permissions.group.read })
+   @Permission({ key: permissions.group.read, adminScope: true })
    @ApiEntityResponse(GroupEntity, { summary: 'Get detail of the user group' })
    @Get(':id')
    read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<GroupEntity>> {
       return this.userProxy.send(patterns.groupCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } });
    }
 
-   @Permission({ key: permissions.group.create })
+   @Permission({ key: permissions.group.create, adminScope: true })
    @ApiEntityResponse(GroupEntity, { summary: 'Create a new user group', statusCode: HttpStatus.CREATED })
    @Post()
    create(@Body() data: CreateGroupDto): Promise<EntityResponse<GroupEntity>> {
       return this.userProxy.send(patterns.groupCRUD, { data, meta: { CRUD: { method: 'write' } } });
    }
 
-   @Permission({ key: permissions.group.update })
+   @Permission({ key: permissions.group.update, adminScope: true })
    @Patch(':id')
    @ApiEntityResponse(GroupEntity, { summary: 'Update an user group' })
    update(
@@ -55,7 +55,7 @@ export class GroupController extends BaseController {
       return this.userProxy.send(patterns.groupCRUD, { data, meta: { params: { id }, CRUD: { method: 'write' } } });
    }
 
-   @Permission({ key: permissions.group.delete })
+   @Permission({ key: permissions.group.delete, adminScope: true })
    @ApiEntityResponse(GroupEntity, { summary: 'Delete an user group' })
    @Delete(':id')
    delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<GroupEntity>> {

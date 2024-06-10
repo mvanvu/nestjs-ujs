@@ -83,4 +83,11 @@ export class SystemConfigDto extends BaseEntity {
       swagger: { description: 'Pagination config, the number of items per page, defaults to 25' },
    })
    itemsPerPage?: number;
+
+   @Property({
+      validate: [{ is: 'sInt' }, { is: 'min', meta: 1 }],
+      optional: true,
+      swagger: { description: 'The activity logs will be removed after this days number since the created date' },
+   })
+   removeActivityLogsAfterDays?: number;
 }

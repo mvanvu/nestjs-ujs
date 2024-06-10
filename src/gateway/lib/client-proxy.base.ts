@@ -1,4 +1,4 @@
-import { EventEmitter, Is, Registry, Util } from '@mvanvu/ujs';
+import { EventEmitter, Is, Registry } from '@mvanvu/ujs';
 import { Injectable } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import {
@@ -24,6 +24,13 @@ export class BaseClientProxy {
       dataDelivery?: MessageData<TInput>,
       options?: ServiceOptions,
    ): Promise<TResult> {
+      const eventPayload: OnServiceResponse = {
+         messagePattern,
+         requestData: dataDelivery,
+         httpRequest: this.req,
+         success: true,
+      };
+
       try {
          const record = new RmqRecordBuilder<any>(dataDelivery?.data || {})
             .setOptions({
@@ -40,13 +47,8 @@ export class BaseClientProxy {
             this.client.send(messagePattern, record).pipe(timeout(options?.timeOut ?? 5000)),
          );
 
-         // Emit an event
-         const eventPayload: OnServiceResponse = {
-            messagePattern,
-            requestData: dataDelivery,
-            responseData: response,
-            httpRequest: this.req,
-         };
+         // Emit the response success event
+         eventPayload.responseData = response;
          await this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
 
          // Check to remove unneeded metadata
@@ -62,7 +64,16 @@ export class BaseClientProxy {
 
          return response;
       } catch (e: any) {
-         Util.debug(e);
+         console.debug(e);
+
+         // Emit the response failure
+         eventPayload.success = false;
+         eventPayload.responseData = e;
+
+         try {
+            await this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
+         } catch {}
+
          new ThrowException(e?.error || e);
       }
    }

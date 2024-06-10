@@ -1,8 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SystemService } from '../provider';
 import { serviceConfig } from '@metadata';
-import { MessagePattern, Payload } from '@nestjs/microservices';
-import { SystemConfigDto } from '@lib/service/system';
+import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
+import { ActivityLogDto, SystemConfigDto } from '@lib/service/system';
+import { CRUDResult } from '@lib/common';
+import { ActivityLogEntity } from '@lib/service/system/entity';
 const patterns = serviceConfig.get('system.patterns');
 
 @Injectable()
@@ -10,12 +12,22 @@ export class SystemController {
    @Inject(SystemService) readonly systemService: SystemService;
 
    @MessagePattern(patterns.saveConfig)
-   saveConfig(@Payload() dto: SystemConfigDto): SystemConfigDto {
+   saveConfig(@Payload() dto: SystemConfigDto): Promise<SystemConfigDto> {
       return this.systemService.saveConfig(dto);
    }
 
    @MessagePattern(patterns.getConfig)
-   getConfig(): SystemConfigDto {
+   getConfig(): Promise<SystemConfigDto> {
       return this.systemService.getConfig();
+   }
+
+   @EventPattern(patterns.writeActivityLog)
+   writeActivityLog(@Payload() dto: ActivityLogDto): void {
+      return this.systemService.writeActivityLog(dto);
+   }
+
+   @MessagePattern(patterns.getActivityLog)
+   executeCRUD(): Promise<CRUDResult<ActivityLogEntity>> {
+      return this.systemService.executeCRUD();
    }
 }

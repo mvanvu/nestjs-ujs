@@ -3,7 +3,6 @@ import { FileProviderInterface } from './file.provider.interface';
 import { google, drive_v3 as v3 } from 'googleapis';
 import { Readable } from 'stream';
 import { Provider } from '.prisma/storage';
-import { Util } from '@mvanvu/ujs';
 import { StreamableFile } from '@nestjs/common';
 import { serviceConfig } from '@metadata';
 import { FileEntity, FinalUploadDto, UploadDto } from '@lib/service/storage';
@@ -53,7 +52,7 @@ export class FileProviderGoogleDrive implements FileProviderInterface {
             isPublic: dto.isPublic,
          };
       } catch (error) {
-         Util.debug('Error uploading file to Google Drive:', error);
+         console.debug('Error uploading file to Google Drive:', error);
 
          return null;
       }

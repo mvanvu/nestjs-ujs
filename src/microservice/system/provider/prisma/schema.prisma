@@ -18,17 +18,22 @@ type User {
     email    String?
 }
 
-model ActivityLog {
-    id             String   @id @default(auto()) @map("_id") @db.ObjectId
-    messagePattern String
-    dataInput      Json?
-    dataResult     Json?
-    createdAt      DateTime @default(now())
-    author         User?
-}
-
 model Config {
     id    String @id @default(auto()) @map("_id") @db.ObjectId
     key   String @unique
     value String
+}
+
+model ActivityLog {
+    id             String   @id @default(auto()) @map("_id") @db.ObjectId
+    messagePattern String
+    success        Boolean
+    dataInput      Json?
+    dataResult     Json?
+    ipAddress      String?
+    userAgent      String?
+    deviceType     String?
+    deviceOS       Json?
+    createdAt      DateTime @default(now())
+    author         User?
 }

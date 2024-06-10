@@ -15,6 +15,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/microservices';
 import { MailerService } from './mailer/provider';
 import { SystemController } from './system/controller';
+import { SystemService } from './system/provider';
 
 const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => {
    return {
@@ -61,6 +62,7 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
       },
       FileProvider,
       MailerService,
+      SystemService,
    ],
 })
 export class AppModule {

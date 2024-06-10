@@ -24,35 +24,35 @@ export class RoleController extends BaseController {
       return this.createClientProxy(name);
    }
 
-   @Permission({ key: permissions.role.read })
+   @Permission({ key: permissions.role.read, adminScope: true })
    @ApiPaginationResponse(RoleEntity, { summary: 'Get list pagination of roles' })
    @Get()
    paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<RoleEntity>> {
       return this.userProxy.send(patterns.roleCRUD, { meta: { query, CRUD: { method: 'read' } } });
    }
 
-   @Permission({ key: permissions.role.read })
+   @Permission({ key: permissions.role.read, adminScope: true })
    @ApiEntityResponse(RoleEntity, { summary: 'Get detail of roles' })
    @Get(':id')
    read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<RoleEntity>> {
       return this.userProxy.send(patterns.roleCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } });
    }
 
-   @Permission({ key: permissions.role.create })
+   @Permission({ key: permissions.role.create, adminScope: true })
    @ApiEntityResponse(RoleEntity, { summary: 'Create a new role', statusCode: HttpStatus.CREATED })
    @Post()
    create(@Body() data: CreateRoleDto): Promise<EntityResponse<RoleEntity>> {
       return this.userProxy.send(patterns.roleCRUD, { data, meta: { CRUD: { method: 'write' } } });
    }
 
-   @Permission({ key: permissions.role.update })
+   @Permission({ key: permissions.role.update, adminScope: true })
    @Patch(':id')
    @ApiEntityResponse(RoleEntity, { summary: 'Update new role' })
    update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateRoleDto): Promise<EntityResponse<RoleEntity>> {
       return this.userProxy.send(patterns.roleCRUD, { data, meta: { params: { id }, CRUD: { method: 'write' } } });
    }
 
-   @Permission({ key: permissions.role.delete })
+   @Permission({ key: permissions.role.delete, adminScope: true })
    @ApiEntityResponse(RoleEntity, { summary: 'Delete a role' })
    @Delete(':id')
    delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<RoleEntity>> {
