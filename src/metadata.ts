@@ -29,6 +29,7 @@ export const bootstrap = (app: NestExpressApplication | INestMicroservice): void
    _app = app;
    loadPermissionKeys(user.permissions, permissionKeys);
    loadPermissionKeys(storage.permissions, permissionKeys);
+   loadPermissionKeys(system.permissions, permissionKeys);
 };
 
 export const app = <

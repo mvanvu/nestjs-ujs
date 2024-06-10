@@ -34,3 +34,4 @@ node_modules
 /dist
 /storage
 credentials
+src/system.config.json

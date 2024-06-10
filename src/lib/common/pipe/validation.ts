@@ -115,7 +115,7 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
                if (code) {
                   errorCode = code;
                } else if (Is.string(validateIsType)) {
-                  errorCode = `${not ? 'NOT_' : ''}IS_${Util.camelToSnackCase(validateIsType).toUpperCase()}`;
+                  errorCode = `IS_${not ? 'NOT_' : ''}${Util.camelToSnackCase(validateIsType).toUpperCase()}`;
                } else {
                   errorCode = 'UNKNOWN';
                }
@@ -126,7 +126,7 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
                   error[prop] = [];
                }
 
-               error[prop].push({ code: errorCode, meta });
+               error[prop].push([errorCode, meta]);
             }
          }
       }
@@ -135,6 +135,36 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
    if (Is.emptyObject(error)) {
       return data;
    }
+
+   // Cleanup error code
+   const cleanedError: ObjectRecord = {};
+   const cleanErrorCode = (err: ObjectRecord, parentProp?: string): ObjectRecord => {
+      for (const key in err) {
+         if (Is.array(err[key])) {
+            for (const deepError of err[key]) {
+               cleanErrorCode(deepError, key);
+            }
+         } else {
+            const [code, meta] = err[key];
+
+            if (Is.array(code) && Is.object(code[0])) {
+               cleanErrorCode(code[0], key);
+            } else if (Is.string(code)) {
+               const prop = parentProp ? `${parentProp}.${key}` : key;
+
+               if (!cleanedError[prop]) {
+                  cleanedError[prop] = [];
+               }
+
+               cleanedError[prop].push({ code, meta });
+            }
+         }
+      }
+
+      return cleanedError;
+   };
+
+   console.log(cleanErrorCode(error));
 
    new ThrowException(error);
 }

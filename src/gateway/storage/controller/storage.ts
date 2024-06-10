@@ -9,9 +9,9 @@ import { serviceConfig } from '@metadata';
 const { name, permissions, patterns } = serviceConfig.get('storage');
 
 @ApiBearerAuth()
-@ApiTags('Files')
-@Controller('files')
-export class FileController extends BaseController {
+@ApiTags('Storages')
+@Controller('storages')
+export class StorageController extends BaseController {
    @Inject(FileProvider) readonly fileProvider: FileProvider;
 
    get storageProxy(): BaseClientProxy {
@@ -19,7 +19,7 @@ export class FileController extends BaseController {
    }
 
    @Post('upload')
-   @Permission({ key: permissions.file.upload })
+   @Permission({ key: permissions.upload })
    @UseInterceptors(FileInterceptor('file'))
    @ApiConsumes('multipart/form-data')
    @ApiEntityResponse(FileEntity, { summary: 'Upload a file' })

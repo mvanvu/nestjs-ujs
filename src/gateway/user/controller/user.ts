@@ -52,7 +52,7 @@ export class UserController extends BaseController {
    }
 
    @Public()
-   @Post('account/activate')
+   @Post('activate')
    @ApiEntityResponse(UserEntity, {
       summary: 'Activate the account by pass a verification code',
       statusCode: HttpStatus.OK,
@@ -69,7 +69,7 @@ export class UserController extends BaseController {
    }
 
    @Public()
-   @Post('account/send-reset-password')
+   @Post('send-reset-password')
    @ApiEntityResponse(Boolean, {
       summary: 'Send a verify reset password code to the user email',
       statusCode: HttpStatus.OK,
@@ -82,7 +82,7 @@ export class UserController extends BaseController {
    }
 
    @Public()
-   @Post('account/reset-password')
+   @Post('reset-password')
    @ApiEntityResponse(UserEntity, { summary: 'Activate the account by pass a verification code' })
    resetPassword(@Body() data: ResetPasswordDto): Promise<UserEntity> {
       return this.userProxy.send(patterns.resetPassword, { data });

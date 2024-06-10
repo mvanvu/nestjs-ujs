@@ -8,13 +8,14 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { EventEmitterModule, HttpCacheInterceptor, HttpMiddleware, UserAuthGuard, UserRoleGuard } from './lib';
 import { bootstrap, appConfig, serviceListNames, serviceConfig } from '@metadata';
 import { GroupController, RoleController, UserController } from './user/controller';
-import { FileController } from './storage/controller';
+import { StorageController } from './storage/controller';
 import { FileProvider } from './storage/provider';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/microservices';
 import { MailController } from './mailer/controller';
 import { MailerService } from './mailer/provider';
+import { SystemController } from './system/controller';
 
 const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => {
    return {
@@ -45,7 +46,7 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
          max: appConfig.get('cache.maxItems'),
       }),
    ],
-   controllers: [GroupController, RoleController, UserController, FileController, MailController],
+   controllers: [SystemController, GroupController, RoleController, UserController, StorageController, MailController],
    providers: [
       {
          provide: APP_INTERCEPTOR,

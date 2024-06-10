@@ -4,9 +4,7 @@ export default {
       upload: 'storage.upload',
    },
    permissions: {
-      file: {
-         upload: 'file.upload',
-      },
+      upload: 'storage.upload',
    },
    upload: {
       prefix: 'assets',
