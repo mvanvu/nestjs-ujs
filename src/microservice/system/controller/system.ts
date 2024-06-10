@@ -22,7 +22,7 @@ export class SystemController {
    }
 
    @EventPattern(patterns.writeActivityLog)
-   writeActivityLog(@Payload() dto: ActivityLogDto): void {
+   writeActivityLog(@Payload() dto: ActivityLogDto): Promise<void> {
       return this.systemService.writeActivityLog(dto);
    }
 

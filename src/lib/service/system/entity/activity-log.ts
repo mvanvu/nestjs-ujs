@@ -39,8 +39,10 @@ export class ActivityLogEntity extends BaseEntity<ActivityLog> {
 
    constructor(entity?: ActivityLog) {
       super(entity);
-      this.message = entity.messagePattern.replace(/[^a-zA-Z0-9]+/g, '_').toUpperCase();
-      this.dataInput = entity.dataInput?.['origin'] ?? null;
-      this.dataResult = entity.dataResult?.['origin'] ?? null;
+
+      if (entity) {
+         this.dataInput = entity.dataInput?.['origin'] ?? null;
+         this.dataResult = entity.dataResult?.['origin'] ?? null;
+      }
    }
 }

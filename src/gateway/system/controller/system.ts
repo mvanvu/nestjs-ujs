@@ -16,7 +16,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 const { name, permissions, patterns } = serviceConfig.get('system');
 
 @ApiBearerAuth()
-@ApiTags('systems')
+@ApiTags('Systems')
 @Controller('systems')
 export class SystemController extends BaseController {
    get systemProxy(): BaseClientProxy {
@@ -28,7 +28,7 @@ export class SystemController extends BaseController {
    @ApiEntityResponse(SystemConfigDto, { statusCode: HttpStatus.OK })
    async saveConfig(@Body() data: SystemConfigDto): Promise<SystemConfigDto> {
       const configData = await this.systemProxy.send<SystemConfigDto, SystemConfigDto>(patterns.saveConfig, { data });
-      await this.cacheManager.set(patterns.getConfig, configData, -1);
+      await this.cacheManager.set(patterns.getConfig, configData);
 
       return configData;
    }
@@ -42,7 +42,7 @@ export class SystemController extends BaseController {
 
       if (!configData) {
          configData = await this.systemProxy.send<undefined, SystemConfigDto>(patterns.getConfig);
-         await this.cacheManager.set(patterns.getConfig, configData, -1);
+         await this.cacheManager.set(patterns.getConfig, configData);
       }
 
       return configData;

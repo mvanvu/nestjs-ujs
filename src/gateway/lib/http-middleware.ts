@@ -36,7 +36,7 @@ export class HttpMiddleware implements NestMiddleware {
 
       if (!systemConfig) {
          systemConfig = await lastValueFrom<SystemConfigDto>(this.systemProxy.send(systemConfigPattern, {}).pipe());
-         await this.cacheManager.set(systemConfigPattern, systemConfig, -1);
+         await this.cacheManager.set(systemConfigPattern, systemConfig);
       }
 
       // Registry for local storage

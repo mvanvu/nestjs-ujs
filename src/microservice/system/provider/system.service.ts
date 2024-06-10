@@ -35,8 +35,8 @@ export class SystemService {
       return (config ? JSON.parse(config.value) : {}) as SystemConfigDto;
    }
 
-   writeActivityLog(data: ActivityLogDto): void {
-      this.prisma.activityLog.create({ data });
+   async writeActivityLog(data: ActivityLogDto): Promise<void> {
+      await this.prisma.activityLog.create({ data });
    }
 
    executeCRUD(): Promise<CRUDResult<ActivityLogEntity>> {

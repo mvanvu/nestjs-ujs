@@ -17,7 +17,6 @@ export class SystemService {
       }
 
       const { registry } = payload.httpRequest;
-
       const user = registry.get('user');
       const data: ActivityLogDto = {
          success: payload.success,
