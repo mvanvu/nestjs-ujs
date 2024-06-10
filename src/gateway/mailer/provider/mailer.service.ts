@@ -11,7 +11,7 @@ export type MailerTemplate = { index: string; resetPasswordBody: string; verifyA
 const mailerTmplPath = process.cwd() + '/src/gateway/mailer/template';
 
 @Injectable()
-export class MailerUserService {
+export class MailerService {
    private readonly templates: MailerTemplate = {
       index: fs.readFileSync(`${mailerTmplPath}/index.html`).toString('utf8'),
       resetPasswordBody: fs.readFileSync(`${mailerTmplPath}/body/reset-password.html`).toString('utf8'),
