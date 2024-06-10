@@ -207,6 +207,15 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          }
       }
 
+      // Check to set default ordering
+      if (!modelParams.orderBy.length) {
+         const model = this.prisma.models[this.model];
+
+         if (model.fields.find(({ name }) => name === 'createdAt')) {
+            modelParams.orderBy.push({ createdAt: 'desc' });
+         }
+      }
+
       // Take care search
       const q = (query.q || '').toString().trim();
 
