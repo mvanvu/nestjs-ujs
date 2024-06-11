@@ -1,5 +1,4 @@
 export * from './client-proxy.base';
-export * from './controller.base';
 export * from './http-cache.decorator';
 export * from './http-cache.interceptor';
 export * from './user.guard';

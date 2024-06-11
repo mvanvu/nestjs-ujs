@@ -10,15 +10,8 @@ export class MailerService extends BaseService {
    get transporter(): SMTPTransporter {
       const mailerConfig = this.meta.get('headers.systemConfig.mailer');
 
-      if (!MailerService.transporter) {
-         switch (mailerConfig.transporter) {
-            case 'SMTP':
-               MailerService.transporter = new SMTPTransporter(mailerConfig);
-               break;
-         }
-      }
-
-      return MailerService.transporter;
+      // Todo, add some tranporter
+      return new SMTPTransporter(mailerConfig);
    }
 
    async send(dto: SendMailDto): Promise<MessageInfoEntity | false> {

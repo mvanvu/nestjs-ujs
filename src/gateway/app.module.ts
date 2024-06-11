@@ -5,7 +5,14 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
 import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { EventEmitterModule, HttpCacheInterceptor, HttpMiddleware, UserAuthGuard, UserRoleGuard } from './lib';
+import {
+   BaseClientProxy,
+   EventEmitterModule,
+   HttpCacheInterceptor,
+   HttpMiddleware,
+   UserAuthGuard,
+   UserRoleGuard,
+} from './lib';
 import { bootstrap, appConfig, serviceListNames, serviceConfig } from '@metadata';
 import { GroupController, RoleController, UserController } from './user/controller';
 import { StorageController } from './storage/controller';
@@ -60,6 +67,7 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
          provide: APP_GUARD,
          useClass: UserRoleGuard,
       },
+      BaseClientProxy,
       FileProvider,
       MailerProvider,
       ActivityLogProvider,

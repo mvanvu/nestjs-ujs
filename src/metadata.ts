@@ -9,6 +9,7 @@ import system from './lib/service/system/config';
 import user from './lib/service/user/config';
 import storage from './lib/service/storage/config';
 import mailer from './lib/service/mailer/config';
+import { ClientProxy } from '@nestjs/microservices';
 const serviceConfigData = { system, mailer, storage, user };
 
 export const serviceConfig = Registry.from<typeof serviceConfigData>(serviceConfigData, { consistent: true });
@@ -18,7 +19,9 @@ export const serviceListNames = [
    serviceConfig.get('mailer.name'),
    serviceConfig.get('user.name'),
    serviceConfig.get('storage.name'),
-];
+] as const;
+
+export type ServiceName = (typeof serviceListNames)[number];
 
 export const permissionKeys: string[] = [];
 
@@ -42,3 +45,6 @@ export const app = <
 
 export const isGateway = (): boolean => process.env.APP_ENV === 'gateway';
 export const isMicroservice = (): boolean => !isGateway();
+export const clientProxy = (serviceName: ServiceName): ClientProxy =>
+   app<'Gateway'>().get<ClientProxy>(`${serviceName.toUpperCase()}_MICROSERVICE`);
+export const injectProxy = (serviceName: ServiceName): string => `${serviceName.toUpperCase()}_MICROSERVICE`;

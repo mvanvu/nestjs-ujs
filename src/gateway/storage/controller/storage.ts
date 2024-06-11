@@ -1,6 +1,6 @@
 import { Body, Controller, Inject, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { ApiConsumes, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { ApiEntityResponse, BaseClientProxy, BaseController, Permission } from '../../lib';
+import { ApiEntityResponse, BaseClientProxy, Permission } from '../../lib';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileProvider } from '../provider/file.provider';
 import { FileEntity, UploadDto } from '@lib/service/storage';
@@ -11,11 +11,13 @@ const { name, permissions, patterns } = serviceConfig.get('storage');
 @ApiBearerAuth()
 @ApiTags('Storages')
 @Controller('storages')
-export class StorageController extends BaseController {
-   @Inject(FileProvider) readonly fileProvider: FileProvider;
+export class StorageController {
+   @Inject(FileProvider) private readonly fileProvider: FileProvider;
+
+   @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 
    get storageProxy(): BaseClientProxy {
-      return this.createClientProxy(name);
+      return this.proxy.create(name);
    }
 
    @Post('upload')

@@ -1,29 +1,37 @@
 import { EventEmitter, Is, Registry } from '@mvanvu/ujs';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
-import {
-   HttpRequest,
-   MessageData,
-   OnServiceResponse,
-   ServiceOptions,
-   ThrowException,
-   eventConstant,
-} from '@lib/common';
+import { HttpRequest, MessageData, OnServiceResponse, ServiceOptions, eventConstant } from '@lib/common';
 import { lastValueFrom, timeout } from 'rxjs';
+import { REQUEST } from '@nestjs/core';
+import { ServiceName, appConfig, clientProxy } from '@metadata';
 
 @Injectable()
 export class BaseClientProxy {
-   constructor(
-      private readonly client: ClientProxy,
-      private readonly req: HttpRequest,
-      private readonly eventEmitter: EventEmitter,
-   ) {}
+   @Inject(REQUEST) private req: HttpRequest;
 
-   async send<TInput, TResult>(
+   @Inject(EventEmitter) private eventEmitter: EventEmitter;
+
+   private clientProxy: ClientProxy;
+
+   create(serviceName: ServiceName): BaseClientProxy {
+      const instance = new BaseClientProxy();
+      instance.req = this.req;
+      instance.eventEmitter = this.eventEmitter;
+      instance.clientProxy = clientProxy(serviceName);
+
+      return instance;
+   }
+
+   async send<TResult, TInput>(
       messagePattern: string,
       dataDelivery?: MessageData<TInput>,
       options?: ServiceOptions,
    ): Promise<TResult> {
+      if (!this.clientProxy) {
+         throw new NotImplementedException('The client proxy is not initialized');
+      }
+
       const eventPayload: OnServiceResponse = {
          messagePattern,
          requestData: dataDelivery?.data,
@@ -44,7 +52,7 @@ export class BaseClientProxy {
             .build();
 
          const response = await lastValueFrom(
-            this.client.send(messagePattern, record).pipe(timeout(options?.timeOut ?? 5000)),
+            this.clientProxy.send(messagePattern, record).pipe(timeout(options?.timeOut ?? 5000)),
          );
 
          // Emit the response success event
@@ -64,7 +72,9 @@ export class BaseClientProxy {
 
          return response;
       } catch (e: any) {
-         console.debug(e);
+         if (appConfig.is('nodeEnv', 'development')) {
+            console.debug(e);
+         }
 
          // Emit the response failure
          eventPayload.success = false;
@@ -74,7 +84,7 @@ export class BaseClientProxy {
             await this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
          } catch {}
 
-         new ThrowException(e?.error || e);
+         throw e;
       }
    }
 }

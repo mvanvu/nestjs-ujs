@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PaginationQueryDto, ParseMongoIdPipe, IUser } from '@lib/common';
 import {
@@ -14,7 +14,6 @@ import {
    ResetPasswordDto,
 } from '@lib/service/user';
 import {
-   BaseController,
    BaseClientProxy,
    PaginationResponse,
    EntityResponse,
@@ -29,9 +28,11 @@ const { name, permissions, patterns } = serviceConfig.get('user');
 
 @ApiTags('Users')
 @Controller('users')
-export class UserController extends BaseController {
+export class UserController {
+   @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
+
    get userProxy(): BaseClientProxy {
-      return this.createClientProxy(name);
+      return this.proxy.create(name);
    }
 
    @Public()

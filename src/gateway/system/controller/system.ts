@@ -2,7 +2,6 @@ import {
    ApiEntityResponse,
    ApiPaginationResponse,
    BaseClientProxy,
-   BaseController,
    HttpCache,
    PaginationResponse,
    Permission,
@@ -10,7 +9,8 @@ import {
 import { PaginationQueryDto } from '@lib/common';
 import { ActivityLogDto, SystemConfigDto } from '@lib/service/system';
 import { serviceConfig } from '@metadata';
-import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { Body, Controller, Get, HttpStatus, Inject, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 const { name, permissions, patterns } = serviceConfig.get('system');
@@ -18,9 +18,13 @@ const { name, permissions, patterns } = serviceConfig.get('system');
 @ApiBearerAuth()
 @ApiTags('Systems')
 @Controller('systems')
-export class SystemController extends BaseController {
+export class SystemController {
+   @Inject(CACHE_MANAGER) private readonly cacheManager: Cache;
+
+   @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
+
    get systemProxy(): BaseClientProxy {
-      return this.createClientProxy(name);
+      return this.proxy.create(name);
    }
 
    @Post('config')

@@ -1,10 +1,9 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
    ApiEntityResponse,
    ApiPaginationResponse,
    BaseClientProxy,
-   BaseController,
    EntityResponse,
    HttpCache,
    PaginationResponse,
@@ -19,9 +18,11 @@ const { name, permissions, patterns } = serviceConfig.get('user');
 @ApiTags('Groups')
 @Controller('groups')
 @HttpCache({ cacheRefKeys: /\/(users|roles)\// }) // Purge users and roles caching when the method is not GET
-export class GroupController extends BaseController {
+export class GroupController {
+   @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
+
    get userProxy(): BaseClientProxy {
-      return this.createClientProxy(name);
+      return this.proxy.create(name);
    }
 
    @Permission({ key: permissions.group.read, adminScope: true })
