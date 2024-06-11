@@ -33,5 +33,4 @@ const appConfigData = {
    queryScope: envConfig.get<string>('QUERY_PARAM_SCOPE', ''),
 } as const;
 
-type AppConfigData = typeof appConfigData;
-export const appConfig = Registry.from<AppConfigData>(appConfigData, { consistent: true });
+export const appConfig = Registry.from<typeof appConfigData>(appConfigData, { consistent: true });

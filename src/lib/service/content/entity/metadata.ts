@@ -1,0 +1,22 @@
+import { Property } from '@lib/common/decorator/property';
+import { BaseEntity } from '@lib/common/entity/base';
+
+export class MetadataEntity extends BaseEntity {
+   @Property()
+   title?: string;
+
+   @Property()
+   description?: string;
+
+   @Property()
+   image?: string;
+
+   @Property()
+   author?: string;
+
+   @Property()
+   robot?: string;
+
+   @Property()
+   index?: string;
+}

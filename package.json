@@ -17,6 +17,7 @@
     "user:prisma:generate": "prisma generate --schema=src/microservice/user/provider/prisma/schema.prisma",
     "storage:prisma:generate": "prisma generate --schema=src/microservice/storage/provider/prisma/schema.prisma",
     "system:prisma:generate": "prisma generate --schema=src/microservice/system/provider/prisma/schema.prisma",
+    "content:prisma:generate": "prisma generate --schema=src/microservice/content/provider/prisma/schema.prisma",
     "prisma:generate:service": "ts-node scripts/generate-prisma-services.ts"
   },
   "dependencies": {

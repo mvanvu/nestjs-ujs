@@ -23,6 +23,9 @@ export class UserEntity extends BaseEntity {
    username?: string;
 
    @Property()
+   avatarUrl?: string;
+
+   @Property()
    email: string;
 
    @Property({ swagger: { type: UserGroupEntity } })

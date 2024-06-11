@@ -16,6 +16,13 @@ export class CreateUserDto extends UserSignUpDto {
       swagger: { description: 'The group ID which assigned to the user' },
    })
    groupId?: string;
+
+   @Property({
+      optional: true,
+      validate: { is: 'string' },
+      swagger: { description: 'The avatar image URL of the user' },
+   })
+   avatarUrl?: string;
 }
 
 export class UpdateUserDto extends IPartialType(CreateUserDto) {}

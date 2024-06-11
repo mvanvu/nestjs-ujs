@@ -9,8 +9,9 @@ import system from './lib/service/system/config';
 import user from './lib/service/user/config';
 import storage from './lib/service/storage/config';
 import mailer from './lib/service/mailer/config';
+import content from './lib/service/content/config';
 import { ClientProxy } from '@nestjs/microservices';
-const serviceConfigData = { system, mailer, storage, user };
+const serviceConfigData = { system, mailer, storage, user, content };
 
 export const serviceConfig = Registry.from<typeof serviceConfigData>(serviceConfigData, { consistent: true });
 
@@ -19,6 +20,7 @@ export const serviceListNames = [
    serviceConfig.get('mailer.name'),
    serviceConfig.get('user.name'),
    serviceConfig.get('storage.name'),
+   serviceConfig.get('content.name'),
 ] as const;
 
 export type ServiceName = (typeof serviceListNames)[number];

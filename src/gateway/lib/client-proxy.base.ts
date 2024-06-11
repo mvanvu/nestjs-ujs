@@ -40,12 +40,20 @@ export class BaseClientProxy {
       };
 
       try {
+         const regReq = this.req.registry.clone();
+         const user = regReq.get('user');
+
+         if (user) {
+            // Just send some important user data
+            regReq.set('user', { id: user.id, username: user.name, email: user.email, group: user.group });
+         }
+
          const record = new RmqRecordBuilder<any>(dataDelivery?.data || {})
             .setOptions({
                headers: {
                   'x-meta': Registry.from({})
                      .extends(dataDelivery?.meta || {})
-                     .extends({ headers: this.req.registry.valueOf() })
+                     .extends({ headers: regReq.valueOf() })
                      .toString(),
                },
             })

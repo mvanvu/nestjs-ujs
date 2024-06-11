@@ -3,8 +3,8 @@ import { Transform } from '@mvanvu/ujs';
 import { MessageInfoEntity, SendMailDto, TransporterMessageInfo } from '@lib/service/mailer';
 import { SystemConfigDto } from '@lib/service/system';
 
-export abstract class BaseTransporter {
-   protected abstract readonly transporter: nodemailer.Transporter<TransporterMessageInfo>;
+export class BaseTransporter {
+   protected transporter: nodemailer.Transporter<TransporterMessageInfo>;
 
    constructor(protected readonly config: SystemConfigDto['mailer']) {}
 

@@ -1,15 +1,19 @@
 import * as nodemailer from 'nodemailer';
 import { BaseTransporter } from './base';
+import { SystemConfigDto } from '@lib/service/system';
 
 export class SMTPTransporter extends BaseTransporter {
-   protected readonly transporter = nodemailer.createTransport({
-      pool: true,
-      host: this.config.smtp.host,
-      port: this.config.smtp.port, // 587
-      secure: this.config.smtp.port === 465, // Use true for port 465, false for all other ports
-      auth: {
-         user: this.config.smtp.user,
-         pass: this.config.smtp.pass,
-      },
-   });
+   constructor(config: SystemConfigDto['mailer']) {
+      super(config);
+      this.transporter = nodemailer.createTransport({
+         // pool: true,
+         host: config.smtp.host,
+         port: config.smtp.port, // 587
+         secure: config.smtp.port === 465, // Use true for port 465, false for all other ports
+         auth: {
+            user: config.smtp.user,
+            pass: config.smtp.pass,
+         },
+      });
+   }
 }

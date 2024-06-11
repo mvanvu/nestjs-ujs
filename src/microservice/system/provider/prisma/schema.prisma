@@ -12,10 +12,11 @@ datasource db {
 }
 
 type User {
-    id       String  @db.ObjectId
-    name     String?
-    username String?
-    email    String?
+    id        String  @db.ObjectId
+    name      String?
+    username  String?
+    email     String?
+    avatarUrl String?
 }
 
 model Config {

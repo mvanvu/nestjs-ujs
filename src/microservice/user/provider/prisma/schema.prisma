@@ -47,6 +47,7 @@ model User {
     email      String      @unique
     name       String?
     password   String?
+    avatarUrl  String?
     status     UserStatus  @default(Pending)
     verifyCode VerifyCode?
     groupId    String?     @db.ObjectId

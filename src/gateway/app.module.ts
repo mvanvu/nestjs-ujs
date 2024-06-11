@@ -23,6 +23,7 @@ import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/m
 import { MailerProvider } from './mailer/provider';
 import { SystemController } from './system/controller';
 import { PurgeCacheProvider, ActivityLogProvider } from './system/provider';
+import { ContentCategoryController, ContentPostController, ContentTagController } from './content/controller';
 
 const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => {
    return {
@@ -53,7 +54,16 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
          max: appConfig.get('cache.maxItems'),
       }),
    ],
-   controllers: [SystemController, GroupController, RoleController, UserController, StorageController],
+   controllers: [
+      SystemController,
+      GroupController,
+      RoleController,
+      UserController,
+      StorageController,
+      ContentCategoryController,
+      ContentPostController,
+      ContentTagController,
+   ],
    providers: [
       {
          provide: APP_INTERCEPTOR,
