@@ -467,7 +467,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          }
       }
 
-      if (Registry.from(dto).omit(['createdBy', 'updatedBy', 'createdAt', 'updatedAt']).isEmpty()) {
+      if (Registry.from<any>(dto).omit(['createdBy', 'updatedBy', 'createdAt', 'updatedAt']).isEmpty()) {
          // Nothing to update, throw an exception
          ThrowException(`No data to ${id ? 'update' : 'create'}`);
       }

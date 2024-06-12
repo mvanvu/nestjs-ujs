@@ -50,6 +50,6 @@ export const app = <
 
 export const isGateway = (): boolean => process.env.APP_ENV === 'gateway';
 export const isMicroservice = (): boolean => !isGateway();
-export const clientProxy = (serviceName: ServiceName): ClientProxy =>
-   app<'Gateway'>().get<ClientProxy>(`${serviceName.toUpperCase()}_MICROSERVICE`);
 export const injectProxy = (serviceName: ServiceName): string => `${serviceName.toUpperCase()}_MICROSERVICE`;
+export const clientProxy = (serviceName: ServiceName): ClientProxy =>
+   app<'Gateway'>().get<ClientProxy>(injectProxy(serviceName));
