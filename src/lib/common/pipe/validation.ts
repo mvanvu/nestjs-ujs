@@ -108,7 +108,7 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
                   const { equalsTo } = (meta as EqualsRulesOptions) || {};
                   isValid = typeof equalsTo === 'string' && Is.equals(val, data[equalsTo]);
                } else {
-                  isValid = Is.valid(val, { type: <IsValidType>validateIsType, each, meta });
+                  isValid = Is.valid(val, { rule: validateIsType, each, meta });
                }
             }
 
