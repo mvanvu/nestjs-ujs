@@ -12,7 +12,7 @@ export class SystemService {
    private readonly systemKey: string = 'system';
 
    async saveConfig(dto: SystemConfigDto): Promise<SystemConfigDto> {
-      const registry = Registry.from<SystemConfigDto>({});
+      const registry = Registry.from<SystemConfigDto>();
       const prevData = await this.prisma.config.findUnique({ where: { key: this.systemKey }, select: { value: true } });
 
       if (prevData) {

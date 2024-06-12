@@ -2,11 +2,12 @@ import { Prisma as system } from '.prisma/system';
 import { Prisma as user } from '.prisma/user';
 import { Prisma as storage } from '.prisma/storage';
 import { Prisma as content } from '.prisma/content';
+import { Prisma as order } from '.prisma/order';
 import { DMMF } from '@prisma/client/runtime/library';
 import { exec } from 'child_process';
 import * as fs from 'fs';
 
-const models = { system, user, storage, content };
+const models = { system, user, storage, content, order };
 
 for (const name in models) {
    const contentJson = {};
