@@ -24,6 +24,13 @@ import { MailerProvider } from './mailer/provider';
 import { SystemController } from './system/controller';
 import { PurgeCacheProvider, ActivityLogProvider } from './system/provider';
 import { ContentCategoryController, ContentPostController, ContentTagController } from './content/controller';
+import {
+   OrderCategoryController,
+   OrderItemController,
+   OrderRestaurantController,
+   OrderStaffController,
+   OrderTableController,
+} from './order/controller';
 
 const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => {
    return {
@@ -55,14 +62,28 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
       }),
    ],
    controllers: [
+      // System
       SystemController,
+
+      // User
       GroupController,
       RoleController,
       UserController,
+
+      // Storage
       StorageController,
+
+      // Content
       ContentCategoryController,
       ContentPostController,
       ContentTagController,
+
+      // Order
+      OrderCategoryController,
+      OrderItemController,
+      OrderRestaurantController,
+      OrderStaffController,
+      OrderTableController,
    ],
    providers: [
       {
