@@ -650,7 +650,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       ctx = ctx ?? this.ctx;
       const meta = BaseService.parseMeta(ctx);
       const recordId = meta.get('params.id');
-      const userId = meta.get('headers.user.id');
+      const user = meta.get('headers.user');
       const method = meta.get('CRUD.method');
 
       if (!['read', 'write', 'delete'].includes(method)) {
@@ -675,8 +675,16 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
                : this.createDTO;
             const data = DTOClassRef ? await validateDTO(ctx.getData(), DTOClassRef) : ctx.getData();
 
-            if (userId) {
-               data[recordId ? 'updatedBy' : 'createdBy'] = userId;
+            if (user) {
+               // Append some dynamic user data
+               data[recordId ? 'updatedBy' : 'createdBy'] = user.id;
+               data[recordId ? 'editor' : 'author'] = {
+                  id: user.id,
+                  name: user.name,
+                  username: user.username,
+                  email: user.email,
+                  avatarUrl: user.avatarUrl,
+               };
             }
 
             return recordId ? this.update<TResult, any>(recordId, data) : this.create<TResult, any>(data);

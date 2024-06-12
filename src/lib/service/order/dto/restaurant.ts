@@ -1,10 +1,14 @@
 import { Property } from '@lib/common/decorator/property';
 import { AvailableStatus } from '.prisma/content';
 import { IPartialType } from '@lib/common/entity/mapped-type';
+import { UserRefEntity } from '@lib/service/user/entity/user';
 
 export class CreateRestaurantDto {
    @Property({ validate: { is: 'mongoId' } })
    ownerId: string;
+
+   @Property({ swagger: { readOnly: true } })
+   owner: UserRefEntity;
 
    @Property({
       optional: true,

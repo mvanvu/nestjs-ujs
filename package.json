@@ -10,6 +10,7 @@
     "start:storage:dev": "cross-env APP_ENV=storage nest start -w",
     "start:mailer:dev": "cross-env APP_ENV=mailer nest start -w",
     "start:system:dev": "cross-env APP_ENV=system nest start -w",
+    "start:order:dev": "cross-env APP_ENV=order nest start -w",
     "build": "nest build",
     "format": "prettier --write \"./**/src/**/*.ts\"",
     "docker:build": "(docker rmi mongodb:latest || true) && docker build -f ./docker/Dockerfile -t mongodb:latest .",

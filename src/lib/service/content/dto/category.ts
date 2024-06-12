@@ -9,7 +9,7 @@ export class CreateCategoryDto {
 
    @Property({
       optional: true,
-      validate: { is: 'inArray', meta: Object.keys(AvailableStatus) },
+      validate: { is: 'inArray', meta: Object.values(AvailableStatus) },
       swagger: { enum: AvailableStatus },
    })
    status?: AvailableStatus;

@@ -9,6 +9,23 @@ import { GroupEntity } from './group';
 
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
 
+export class UserRefEntity extends BaseEntity {
+   @Property()
+   id: string;
+
+   @Property()
+   name?: string;
+
+   @Property()
+   username?: string;
+
+   @Property()
+   email?: string;
+
+   @Property()
+   avatarUrl?: string;
+}
+
 export class UserEntity extends BaseEntity {
    @Property()
    id: string;
@@ -152,6 +169,14 @@ export class UserEntity extends BaseEntity {
       if (hasUserPermission) {
          return -1;
       }
+   }
+
+   toUserRefEntity(): UserRefEntity {
+      return new UserRefEntity(this);
+   }
+
+   static toUserRefEntity(entity: UserEntity) {
+      return new UserRefEntity(entity);
    }
 }
 

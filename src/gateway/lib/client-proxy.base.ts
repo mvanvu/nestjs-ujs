@@ -1,7 +1,15 @@
 import { EventEmitter, Is, Registry } from '@mvanvu/ujs';
 import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
-import { HttpRequest, MessageData, OnServiceResponse, ServiceOptions, eventConstant } from '@lib/common';
+import {
+   CRUDClient,
+   HttpRequest,
+   MessageData,
+   OnServiceResponse,
+   PaginationQueryDto,
+   ServiceOptions,
+   eventConstant,
+} from '@lib/common';
 import { lastValueFrom, timeout } from 'rxjs';
 import { REQUEST } from '@nestjs/core';
 import { ServiceName, appConfig, clientProxy } from '@metadata';
@@ -14,7 +22,7 @@ export class BaseClientProxy {
 
    private clientProxy: ClientProxy;
 
-   create(serviceName: ServiceName): BaseClientProxy {
+   createClient(serviceName: ServiceName): BaseClientProxy {
       const instance = new BaseClientProxy();
       instance.req = this.req;
       instance.eventEmitter = this.eventEmitter;
@@ -63,9 +71,11 @@ export class BaseClientProxy {
             this.clientProxy.send(messagePattern, record).pipe(timeout(options?.timeOut ?? 5000)),
          );
 
-         // Emit the response success event
-         eventPayload.responseData = response;
-         await this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
+         if (options?.noEmitEvent !== true) {
+            // Emit the response success event
+            eventPayload.responseData = response;
+            await this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
+         }
 
          // Check to remove unneeded metadata
          if (Is.object(response) && Is.object(response.meta)) {
@@ -84,15 +94,36 @@ export class BaseClientProxy {
             console.debug(e);
          }
 
-         // Emit the response failure
-         eventPayload.success = false;
-         eventPayload.responseData = e;
+         if (options?.noEmitEvent !== true) {
+            // Emit the response failure
+            eventPayload.success = false;
+            eventPayload.responseData = e;
 
-         try {
-            await this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
-         } catch {}
+            try {
+               await this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
+            } catch {}
+         }
 
          throw e;
       }
+   }
+
+   createCRUD(patternCRUD: string, options?: ServiceOptions): CRUDClient {
+      return {
+         read: <TResult>(id: string): Promise<TResult> =>
+            this.send(patternCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } }, options),
+
+         paginate: <TResult>(query?: PaginationQueryDto): Promise<TResult> =>
+            this.send(patternCRUD, { meta: { query, CRUD: { method: 'read' } } }, options),
+
+         create: <TResult, TData>(data: TData): Promise<TResult> =>
+            this.send(patternCRUD, { data, meta: { CRUD: { method: 'write' } } }, options),
+
+         update: <TResult, TData>(id: string, data: TData): Promise<TResult> =>
+            this.send(patternCRUD, { data, meta: { params: { id }, CRUD: { method: 'write' } } }, options),
+
+         delete: <TResult>(id: string): Promise<TResult> =>
+            this.send(patternCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } }, options),
+      };
    }
 }

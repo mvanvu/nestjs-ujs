@@ -34,8 +34,8 @@ export default {
    },
    jwt: {
       secret: `5Y$Vn2PxU&)[).5M?52:$Y1Fsmha=P#[VrqME=yB,V4Q=:3EE(hxE#}/Hs|'NGr`,
-      accessExpiresInMinutes: 60,
-      refreshExpiresInMinutes: 75,
+      accessExpiresInMinutes: Number(process.env.JWT_EXPIRES_IN_MINUTES || 60),
+      refreshExpiresInMinutes: Number(process.env.JWT_EXPIRES_IN_MINUTES || 60) + 15,
    },
    rootUID: '662c7a7a2fc319b3c782be7d',
    httpWebVerifyAccountUrl: process.env.HTTP_WEB_VERIFY_ACCOUNT_URL || '#',

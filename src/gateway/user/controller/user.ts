@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { PaginationQueryDto, ParseMongoIdPipe, IUser } from '@lib/common';
+import { PaginationQueryDto, ParseMongoIdPipe, IUser, CRUDClient } from '@lib/common';
 import {
    CreateUserDto,
    UserSignInDto,
@@ -32,7 +32,11 @@ export class UserController {
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 
    get userProxy(): BaseClientProxy {
-      return this.proxy.create(name);
+      return this.proxy.createClient(name);
+   }
+
+   get userCRUD(): CRUDClient {
+      return this.userProxy.createCRUD(patterns.userCRUD);
    }
 
    @Public()
@@ -101,7 +105,7 @@ export class UserController {
    @ApiBearerAuth()
    @ApiPaginationResponse(UserEntity, { summary: 'Admin get list pagination of the users' })
    paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<UserEntity>> {
-      return this.userProxy.send(patterns.userCRUD, { meta: { query, CRUD: { method: 'read' } } });
+      return this.userCRUD.paginate(query);
    }
 
    @Get(':id')
@@ -109,7 +113,7 @@ export class UserController {
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin get the detail of user account' })
    read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
-      return this.userProxy.send(patterns.userCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } });
+      return this.userCRUD.read(id);
    }
 
    @Post()
@@ -117,7 +121,7 @@ export class UserController {
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin create a new user account', statusCode: HttpStatus.CREATED })
    create(@Body() data: CreateUserDto): Promise<EntityResponse<UserEntity>> {
-      return this.userProxy.send(patterns.userCRUD, { data, meta: { CRUD: { method: 'write' } } });
+      return this.userCRUD.create(data);
    }
 
    @Patch(':id')
@@ -125,7 +129,7 @@ export class UserController {
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin update the user account' })
    update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateUserDto): Promise<EntityResponse<UserEntity>> {
-      return this.userProxy.send(patterns.userCRUD, { data, meta: { params: { id }, CRUD: { method: 'write' } } });
+      return this.userCRUD.update(id, data);
    }
 
    @Delete(':id')
@@ -133,13 +137,13 @@ export class UserController {
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin delete an user account' })
    delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
-      return this.userProxy.send(patterns.userCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } });
+      return this.userCRUD.delete(id);
    }
 
    @Delete()
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'The user delete his/her self' })
    deleteSelf(@IUser('id') id: string): Promise<EntityResponse<UserEntity>> {
-      return this.userProxy.send(patterns.userCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } });
+      return this.userCRUD.delete(id);
    }
 }

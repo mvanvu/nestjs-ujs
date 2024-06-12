@@ -23,15 +23,15 @@ export class SystemController {
 
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 
-   get systemProxy(): BaseClientProxy {
-      return this.proxy.create(name);
+   get systemClient(): BaseClientProxy {
+      return this.proxy.createClient(name);
    }
 
    @Post('config')
    @Permission({ key: permissions.config.save })
    @ApiEntityResponse(SystemConfigDto, { statusCode: HttpStatus.OK })
    async saveConfig(@Body() data: SystemConfigDto): Promise<SystemConfigDto> {
-      const configData = await this.systemProxy.send<SystemConfigDto, SystemConfigDto>(patterns.saveConfig, { data });
+      const configData = await this.systemClient.send<SystemConfigDto, SystemConfigDto>(patterns.saveConfig, { data });
       await this.cacheManager.set(patterns.getConfig, configData, 0);
 
       return configData;
@@ -45,7 +45,7 @@ export class SystemController {
       let configData: SystemConfigDto = await this.cacheManager.get(patterns.getConfig);
 
       if (!configData) {
-         configData = await this.systemProxy.send<undefined, SystemConfigDto>(patterns.getConfig);
+         configData = await this.systemClient.send<undefined, SystemConfigDto>(patterns.getConfig);
          await this.cacheManager.set(patterns.getConfig, configData, 0);
       }
 
@@ -57,6 +57,6 @@ export class SystemController {
    @Permission({ key: permissions.activityLog.get })
    @ApiPaginationResponse(ActivityLogDto, { summary: 'Admin get list pagination of the activity logs' })
    activityLogsPaginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<ActivityLogDto>> {
-      return this.systemProxy.send(patterns.getActivityLog, { meta: { query, CRUD: { method: 'read' } } });
+      return this.systemClient.createCRUD(patterns.getActivityLog).paginate(query);
    }
 }

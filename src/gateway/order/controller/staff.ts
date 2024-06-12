@@ -14,31 +14,31 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 const { name, patterns } = serviceConfig.get('order');
 
 @ApiBearerAuth()
-@ApiTags('Order staffs')
+@ApiTags('Orders')
 @Controller('order/staffs')
 export class OrderStaffController {
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 
-   get orderProxy(): BaseClientProxy {
-      return this.proxy.create(name);
+   get orderClient(): BaseClientProxy {
+      return this.proxy.createClient(name);
    }
 
    @ApiPaginationResponse(StaffEntity, { summary: 'Get list pagination of restaurant staffs' })
    @Get()
    paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<StaffEntity>> {
-      return this.orderProxy.send(patterns.staffCRUD, { meta: { query, CRUD: { method: 'read' } } });
+      return this.orderClient.send(patterns.staffCRUD, { meta: { query, CRUD: { method: 'read' } } });
    }
 
    @ApiEntityResponse(StaffEntity, { summary: 'Get detail of the staff' })
    @Get(':id')
    read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<StaffEntity>> {
-      return this.orderProxy.send(patterns.staffCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } });
+      return this.orderClient.send(patterns.staffCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } });
    }
 
    @ApiEntityResponse(StaffEntity, { summary: 'Create a new staff', statusCode: HttpStatus.CREATED })
    @Post()
    create(@Body() data: CreateStaffDto): Promise<EntityResponse<StaffEntity>> {
-      return this.orderProxy.send(patterns.staffCRUD, { data, meta: { CRUD: { method: 'write' } } });
+      return this.orderClient.send(patterns.staffCRUD, { data, meta: { CRUD: { method: 'write' } } });
    }
 
    @Patch(':id')
@@ -47,7 +47,7 @@ export class OrderStaffController {
       @Param('id', ParseMongoIdPipe) id: string,
       @Body() data: UpdateStaffDto,
    ): Promise<EntityResponse<StaffEntity>> {
-      return this.orderProxy.send(patterns.staffCRUD, {
+      return this.orderClient.send(patterns.staffCRUD, {
          data,
          meta: { params: { id }, CRUD: { method: 'write' } },
       });
@@ -56,6 +56,6 @@ export class OrderStaffController {
    @ApiEntityResponse(StaffEntity, { summary: 'Delete a table' })
    @Delete(':id')
    delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<StaffEntity>> {
-      return this.orderProxy.send(patterns.staffCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } });
+      return this.orderClient.send(patterns.staffCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } });
    }
 }

@@ -1,7 +1,7 @@
 import { StaffStatus } from '.prisma/order';
 import { Property } from '@lib/common/decorator/property';
 import { BaseEntity } from '@lib/common/entity/base';
-import { UserRefEntity } from '@lib/common/entity/user-ref';
+import { UserRefEntity } from '@lib/service/user/entity/user';
 
 export class StaffEntity extends BaseEntity {
    @Property()
@@ -19,10 +19,10 @@ export class StaffEntity extends BaseEntity {
    @Property()
    email?: string;
 
-   @Property()
+   @Property({ swagger: { type: UserRefEntity } })
    author?: UserRefEntity;
 
-   @Property()
+   @Property({ swagger: { type: UserRefEntity } })
    editor?: UserRefEntity;
 
    @Property()

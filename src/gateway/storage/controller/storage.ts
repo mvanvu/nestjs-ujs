@@ -16,8 +16,8 @@ export class StorageController {
 
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 
-   get storageProxy(): BaseClientProxy {
-      return this.proxy.create(name);
+   get storageClient(): BaseClientProxy {
+      return this.proxy.createClient(name);
    }
 
    @Post('upload')
@@ -28,6 +28,6 @@ export class StorageController {
    async upload(@Body() dto: UploadDto, @UploadedFile() file: Express.Multer.File): Promise<FileEntity> {
       const data = await this.fileProvider.upload({ ...dto, file });
 
-      return await this.storageProxy.send(patterns.upload, { data });
+      return await this.storageClient.send(patterns.upload, { data });
    }
 }

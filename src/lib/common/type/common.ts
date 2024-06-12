@@ -55,6 +55,7 @@ export type ServiceConfig = {
 export type ServiceOptions = {
    params?: Record<string, string | number | boolean>;
    timeOut?: number;
+   noEmitEvent?: boolean;
 };
 
 export type IRouteOptions = {
@@ -107,6 +108,7 @@ export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> |
       type?: Type<unknown> | Function | [Function] | string | Record<string, any>;
       enum?: any[] | Record<string, any>;
       example?: any;
+      readOnly?: boolean;
    };
 };
 

@@ -1,6 +1,7 @@
 import { ClassConstructor, HttpRequest, RequestRegistryData } from './common';
 import { IsEqual, ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
+import { type PaginationQueryDto } from './dto';
 
 export type PrismaModels = Record<string, DMMF.Model>;
 
@@ -90,4 +91,12 @@ export type OnTransaction<TX, TData extends ObjectRecord> = (tx: TX, data: TData
 
 export type PaginationListOptions = {
    itemsPerPage: number;
+};
+
+export type CRUDClient = {
+   read: <TResult>(id: string) => Promise<TResult>;
+   paginate: <TResult>(query?: PaginationQueryDto) => Promise<TResult>;
+   create: <TResult, TData>(data: TData) => Promise<TResult>;
+   update: <TResult, TData>(id: string, data: TData) => Promise<TResult>;
+   delete: <TResult>(id: string) => Promise<TResult>;
 };

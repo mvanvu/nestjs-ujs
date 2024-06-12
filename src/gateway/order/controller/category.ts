@@ -15,34 +15,34 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 const { name, permissions, patterns } = serviceConfig.get('order');
 
 @ApiBearerAuth()
-@ApiTags('Order categories')
+@ApiTags('Orders')
 @Controller('order/categories')
 export class OrderCategoryController {
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 
-   get orderProxy(): BaseClientProxy {
-      return this.proxy.create(name);
+   get orderClient(): BaseClientProxy {
+      return this.proxy.createClient(name);
    }
 
    @Permission({ key: permissions.category.read, adminScope: true })
    @ApiPaginationResponse(CategoryEntity, { summary: 'Get list pagination of order categories' })
    @Get()
    paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<CategoryEntity>> {
-      return this.orderProxy.send(patterns.categoryCRUD, { meta: { query, CRUD: { method: 'read' } } });
+      return this.orderClient.send(patterns.categoryCRUD, { meta: { query, CRUD: { method: 'read' } } });
    }
 
    @Permission({ key: permissions.category.read, adminScope: true })
    @ApiEntityResponse(CategoryEntity, { summary: 'Get detail of the category' })
    @Get(':id')
    read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<CategoryEntity>> {
-      return this.orderProxy.send(patterns.categoryCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } });
+      return this.orderClient.send(patterns.categoryCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } });
    }
 
    @Permission({ key: permissions.category.create, adminScope: true })
    @ApiEntityResponse(CategoryEntity, { summary: 'Create a new category', statusCode: HttpStatus.CREATED })
    @Post()
    create(@Body() data: CreateCategoryDto): Promise<EntityResponse<CategoryEntity>> {
-      return this.orderProxy.send(patterns.categoryCRUD, { data, meta: { CRUD: { method: 'write' } } });
+      return this.orderClient.send(patterns.categoryCRUD, { data, meta: { CRUD: { method: 'write' } } });
    }
 
    @Permission({ key: permissions.category.update, adminScope: true })
@@ -52,7 +52,7 @@ export class OrderCategoryController {
       @Param('id', ParseMongoIdPipe) id: string,
       @Body() data: UpdateCategoryDto,
    ): Promise<EntityResponse<CategoryEntity>> {
-      return this.orderProxy.send(patterns.categoryCRUD, {
+      return this.orderClient.send(patterns.categoryCRUD, {
          data,
          meta: { params: { id }, CRUD: { method: 'write' } },
       });
@@ -62,6 +62,6 @@ export class OrderCategoryController {
    @ApiEntityResponse(CategoryEntity, { summary: 'Delete a category' })
    @Delete(':id')
    delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<CategoryEntity>> {
-      return this.orderProxy.send(patterns.categoryCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } });
+      return this.orderClient.send(patterns.categoryCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } });
    }
 }

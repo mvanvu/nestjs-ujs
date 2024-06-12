@@ -6,7 +6,7 @@ import { IPartialType } from '@lib/common/entity/mapped-type';
 export class CreatePostDto {
    @Property({
       optional: true,
-      validate: { is: 'inArray', meta: Object.keys(AvailableStatus) },
+      validate: { is: 'inArray', meta: Object.values(AvailableStatus) },
       swagger: { enum: AvailableStatus },
    })
    status?: AvailableStatus;

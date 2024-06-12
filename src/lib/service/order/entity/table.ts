@@ -1,13 +1,13 @@
 import { AvailableStatus, TableStatus } from '.prisma/order';
 import { Property } from '@lib/common/decorator/property';
 import { BaseEntity } from '@lib/common/entity/base';
-import { UserRefEntity } from '@lib/common/entity/user-ref';
+import { UserRefEntity } from '@lib/service/user/entity/user';
 
 export class TableEntity extends BaseEntity {
    @Property()
    id: string;
 
-   @Property()
+   @Property({ swagger: { enum: Object.values(AvailableStatus) } })
    status: AvailableStatus;
 
    @Property({ swagger: { enum: Object.values(TableStatus) } })
@@ -19,10 +19,10 @@ export class TableEntity extends BaseEntity {
    @Property()
    area?: string;
 
-   @Property()
+   @Property({ swagger: { type: UserRefEntity } })
    author?: UserRefEntity;
 
-   @Property()
+   @Property({ swagger: { type: UserRefEntity } })
    editor?: UserRefEntity;
 
    @Property()

@@ -9,7 +9,7 @@ import {
    PaginationResponse,
    Permission,
 } from '@gateway/lib';
-import { PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
+import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
 import { serviceConfig } from '@metadata';
 import { CreateRoleDto, RoleEntity, UpdateRoleDto } from '@lib/service/user';
 const { name, permissions, patterns } = serviceConfig.get('user');
@@ -21,42 +21,42 @@ const { name, permissions, patterns } = serviceConfig.get('user');
 export class RoleController {
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 
-   get userProxy(): BaseClientProxy {
-      return this.proxy.create(name);
+   get roleCRUD(): CRUDClient {
+      return this.proxy.createClient(name).createCRUD(patterns.roleCRUD);
    }
 
    @Permission({ key: permissions.role.read, adminScope: true })
    @ApiPaginationResponse(RoleEntity, { summary: 'Get list pagination of roles' })
    @Get()
    paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<RoleEntity>> {
-      return this.userProxy.send(patterns.roleCRUD, { meta: { query, CRUD: { method: 'read' } } });
+      return this.roleCRUD.paginate(query);
    }
 
    @Permission({ key: permissions.role.read, adminScope: true })
    @ApiEntityResponse(RoleEntity, { summary: 'Get detail of roles' })
    @Get(':id')
    read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<RoleEntity>> {
-      return this.userProxy.send(patterns.roleCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } });
+      return this.roleCRUD.read(id);
    }
 
    @Permission({ key: permissions.role.create, adminScope: true })
    @ApiEntityResponse(RoleEntity, { summary: 'Create a new role', statusCode: HttpStatus.CREATED })
    @Post()
    create(@Body() data: CreateRoleDto): Promise<EntityResponse<RoleEntity>> {
-      return this.userProxy.send(patterns.roleCRUD, { data, meta: { CRUD: { method: 'write' } } });
+      return this.roleCRUD.create(data);
    }
 
    @Permission({ key: permissions.role.update, adminScope: true })
    @Patch(':id')
    @ApiEntityResponse(RoleEntity, { summary: 'Update new role' })
    update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateRoleDto): Promise<EntityResponse<RoleEntity>> {
-      return this.userProxy.send(patterns.roleCRUD, { data, meta: { params: { id }, CRUD: { method: 'write' } } });
+      return this.roleCRUD.update(id, data);
    }
 
    @Permission({ key: permissions.role.delete, adminScope: true })
    @ApiEntityResponse(RoleEntity, { summary: 'Delete a role' })
    @Delete(':id')
    delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<RoleEntity>> {
-      return this.userProxy.send(patterns.roleCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } });
+      return this.roleCRUD.delete(id);
    }
 }
