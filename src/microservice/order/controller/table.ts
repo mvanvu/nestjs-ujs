@@ -10,7 +10,7 @@ const patterns = serviceConfig.get('order.patterns');
 export class TableController {
    @Inject(TableService) readonly tableService: TableService;
 
-   @MessagePattern(patterns.staffCRUD)
+   @MessagePattern(patterns.tableCRUD)
    executeCRUD(): Promise<CRUDResult<TableEntity>> {
       return this.tableService.createCRUDService().execute();
    }

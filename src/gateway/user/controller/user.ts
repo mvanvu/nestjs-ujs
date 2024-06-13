@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { PaginationQueryDto, ParseMongoIdPipe, IUser, CRUDClient } from '@lib/common';
+import { PaginationQueryDto, ParseMongoIdPipe, User, CRUDClient } from '@lib/common';
 import {
    CreateUserDto,
    UserSignInDto,
@@ -96,7 +96,7 @@ export class UserController {
    @Get('me')
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Get the detail of the logged user' })
-   me(@IUser() user: UserEntity): UserEntity {
+   me(@User() user: UserEntity): UserEntity {
       return user;
    }
 
@@ -143,7 +143,7 @@ export class UserController {
    @Delete()
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'The user delete his/her self' })
-   deleteSelf(@IUser('id') id: string): Promise<EntityResponse<UserEntity>> {
+   deleteSelf(@User('id') id: string): Promise<EntityResponse<UserEntity>> {
       return this.userCRUD.delete(id);
    }
 }

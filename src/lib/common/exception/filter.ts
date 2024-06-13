@@ -14,9 +14,10 @@ export class ExceptionFilter implements NestExceptionFilter {
          const exceptionResponse = Is.func(exception?.getResponse) ? exception.getResponse() : exception;
          const error =
             exceptionResponse?.error ||
-            exceptionResponse?.stack ||
             exceptionResponse?.detail ||
-            exceptionResponse?.message;
+            exceptionResponse?.stack ||
+            exceptionResponse?.message ||
+            exceptionResponse;
          const jsonRes: {
             success: boolean;
             error: any;
@@ -39,7 +40,6 @@ export class ExceptionFilter implements NestExceptionFilter {
 
          response.status(status).json(jsonRes);
       } else {
-         console.log(exception);
          return throwError(() =>
             exception instanceof RpcException
                ? exception.getError()

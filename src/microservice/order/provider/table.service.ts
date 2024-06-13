@@ -10,6 +10,7 @@ export class TableService {
    createCRUDService(): CRUDService<PrismaService> {
       return this.prisma
          .createCRUDService('Table')
+         .options({ list: { filterFields: ['ownerId[restaurant.owner.id]', 'restaurantId'] } })
          .validateDTOPipe(CreateTableDto, UpdateTableDto)
          .entityResponse(TableEntity);
    }

@@ -37,7 +37,7 @@ export default {
       accessExpiresInMinutes: Number(process.env.JWT_EXPIRES_IN_MINUTES || 60),
       refreshExpiresInMinutes: Number(process.env.JWT_EXPIRES_IN_MINUTES || 60) + 15,
    },
-   rootUID: '662c7a7a2fc319b3c782be7d',
+   rootUID: process.env.ROOT_UID || '',
    httpWebVerifyAccountUrl: process.env.HTTP_WEB_VERIFY_ACCOUNT_URL || '#',
    httpWebVerifyResetPwdUrl: process.env.HTTP_WEB_VERIFY_RESET_PWD_URL || '#',
 } as const;

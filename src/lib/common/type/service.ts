@@ -118,7 +118,7 @@ export type PaginationListOptions = {
 
 export type CRUDClient = {
    read: <TResult>(id: string, optionsOveride?: ServiceOptions) => Promise<TResult>;
-   paginate: <TResult>(query?: PaginationQueryDto, optionsOveride?: ServiceOptions) => Promise<TResult>;
+   paginate: <TResult>(query?: PaginationQueryDto & ObjectRecord, optionsOveride?: ServiceOptions) => Promise<TResult>;
    create: <TResult, TData>(data: TData, optionsOveride?: ServiceOptions) => Promise<TResult>;
    update: <TResult, TData>(id: string, data: TData, optionsOveride?: ServiceOptions) => Promise<TResult>;
    delete: <TResult>(id: string, optionsOveride?: ServiceOptions) => Promise<TResult>;
