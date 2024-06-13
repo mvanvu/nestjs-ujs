@@ -5,7 +5,7 @@ import {
    EntityResponse,
    PaginationResponse,
 } from '@gateway/lib';
-import { PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
+import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
 import { ItemEntity, CreateItemDto, UpdateItemDto } from '@lib/service/order';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
@@ -19,40 +19,37 @@ const { name, patterns } = serviceConfig.get('order');
 export class OrderItemController {
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 
-   get orderClient(): BaseClientProxy {
-      return this.proxy.createClient(name);
+   get itemCRUD(): CRUDClient {
+      return this.proxy.createClient(name).createCRUD(patterns.itemCRUD);
    }
 
    @ApiPaginationResponse(ItemEntity, { summary: 'Get list pagination of order items' })
    @Get()
    paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<ItemEntity>> {
-      return this.orderClient.send(patterns.itemCRUD, { meta: { query, CRUD: { method: 'read' } } });
+      return this.itemCRUD.paginate(query);
    }
 
    @ApiEntityResponse(ItemEntity, { summary: 'Get detail of the item' })
    @Get(':id')
    read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<ItemEntity>> {
-      return this.orderClient.send(patterns.itemCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } });
+      return this.itemCRUD.read(id);
    }
 
    @ApiEntityResponse(ItemEntity, { summary: 'Create a new item', statusCode: HttpStatus.CREATED })
    @Post()
    create(@Body() data: CreateItemDto): Promise<EntityResponse<ItemEntity>> {
-      return this.orderClient.send(patterns.itemCRUD, { data, meta: { CRUD: { method: 'write' } } });
+      return this.itemCRUD.create(data);
    }
 
    @Patch(':id')
    @ApiEntityResponse(ItemEntity, { summary: 'Update a item' })
    update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateItemDto): Promise<EntityResponse<ItemEntity>> {
-      return this.orderClient.send(patterns.itemCRUD, {
-         data,
-         meta: { params: { id }, CRUD: { method: 'write' } },
-      });
+      return this.itemCRUD.update(id, data);
    }
 
    @ApiEntityResponse(ItemEntity, { summary: 'Delete a item' })
    @Delete(':id')
    delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<ItemEntity>> {
-      return this.orderClient.send(patterns.itemCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } });
+      return this.itemCRUD.delete(id);
    }
 }

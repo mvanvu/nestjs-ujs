@@ -9,23 +9,6 @@ import { GroupEntity } from './group';
 
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
 
-export class UserRefEntity extends BaseEntity {
-   @Property()
-   id: string;
-
-   @Property()
-   name?: string;
-
-   @Property()
-   username?: string;
-
-   @Property()
-   email?: string;
-
-   @Property()
-   avatarUrl?: string;
-}
-
 export class UserEntity extends BaseEntity {
    @Property()
    id: string;
@@ -174,10 +157,6 @@ export class UserEntity extends BaseEntity {
    toUserRefEntity(): UserRefEntity {
       return new UserRefEntity(this);
    }
-
-   static toUserRefEntity(entity: UserEntity) {
-      return new UserRefEntity(entity);
-   }
 }
 
 export class AuthTokenEntity {
@@ -195,3 +174,5 @@ export class AuthEntity extends BaseEntity {
    @Property({ swagger: { type: AuthTokenEntity } })
    tokens: AuthTokenEntity;
 }
+
+export class UserRefEntity extends IPickType(UserEntity, ['id', 'name', 'username', 'email', 'avatarUrl']) {}

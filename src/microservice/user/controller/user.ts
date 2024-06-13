@@ -22,7 +22,7 @@ export class UserController {
 
    @MessagePattern(patterns.userCRUD)
    executeCRUD(): Promise<CRUDResult<UserEntity>> {
-      return this.userService.executeCRUD();
+      return this.userService.createCRUDService().execute();
    }
 
    @MessagePattern(patterns.signUp)

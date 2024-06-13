@@ -1,4 +1,4 @@
-import { EventEmitter, Is, Registry } from '@mvanvu/ujs';
+import { EventEmitter, Is, Registry, Util } from '@mvanvu/ujs';
 import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import {
@@ -12,7 +12,8 @@ import {
 } from '@lib/common';
 import { lastValueFrom, timeout } from 'rxjs';
 import { REQUEST } from '@nestjs/core';
-import { ServiceName, appConfig, clientProxy } from '@metadata';
+import { ServiceName, appConfig, clientProxy, serviceConfig } from '@metadata';
+import { UserRefEntity } from '@lib/service';
 
 @Injectable()
 export class BaseClientProxy {
@@ -110,20 +111,43 @@ export class BaseClientProxy {
 
    createCRUD(patternCRUD: string, options?: ServiceOptions): CRUDClient {
       return {
-         read: <TResult>(id: string): Promise<TResult> =>
-            this.send(patternCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } }, options),
+         read: <TResult>(id: string, optionsOveride?: ServiceOptions): Promise<TResult> =>
+            this.send(patternCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } }, optionsOveride ?? options),
 
-         paginate: <TResult>(query?: PaginationQueryDto): Promise<TResult> =>
-            this.send(patternCRUD, { meta: { query, CRUD: { method: 'read' } } }, options),
+         paginate: <TResult>(query?: PaginationQueryDto, optionsOveride?: ServiceOptions): Promise<TResult> =>
+            this.send(patternCRUD, { meta: { query, CRUD: { method: 'read' } } }, optionsOveride ?? options),
 
-         create: <TResult, TData>(data: TData): Promise<TResult> =>
-            this.send(patternCRUD, { data, meta: { CRUD: { method: 'write' } } }, options),
+         create: <TResult, TData>(data: TData, optionsOveride?: ServiceOptions): Promise<TResult> =>
+            this.send(patternCRUD, { data, meta: { CRUD: { method: 'write' } } }, optionsOveride ?? options),
 
-         update: <TResult, TData>(id: string, data: TData): Promise<TResult> =>
-            this.send(patternCRUD, { data, meta: { params: { id }, CRUD: { method: 'write' } } }, options),
+         update: <TResult, TData>(id: string, data: TData, optionsOveride?: ServiceOptions): Promise<TResult> =>
+            this.send(
+               patternCRUD,
+               { data, meta: { params: { id }, CRUD: { method: 'write' } } },
+               optionsOveride ?? options,
+            ),
 
-         delete: <TResult>(id: string): Promise<TResult> =>
-            this.send(patternCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } }, options),
+         delete: <TResult>(id: string, optionsOveride?: ServiceOptions): Promise<TResult> =>
+            this.send(patternCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } }, optionsOveride ?? options),
       };
+   }
+
+   async validateUserRef<TResult>(
+      userId?: string | string[],
+      cb?: (...userRefs: UserRefEntity[]) => TResult | Promise<TResult>,
+   ): Promise<TResult> {
+      let usersRef: UserRefEntity[] = [];
+
+      if (userId) {
+         const { name, patterns } = serviceConfig.get('user');
+         const userCRUD = this.createClient(name).createCRUD(patterns.userCRUD, { noEmitEvent: true });
+         usersRef = await Promise.all(
+            (Is.array(userId) ? userId : [userId]).map((uid) =>
+               userCRUD.read(uid).then((user) => new UserRefEntity(user)),
+            ),
+         );
+      }
+
+      return Is.callable(cb) ? Util.callAsync(this, cb, ...usersRef) : <TResult>usersRef;
    }
 }

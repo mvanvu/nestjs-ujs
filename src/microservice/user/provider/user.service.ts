@@ -14,8 +14,8 @@ import { Prisma, UserStatus, VerifyCode } from '.prisma/user';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is, JWTError } from '@mvanvu/ujs';
 import { serviceConfig } from '@metadata';
-import { BaseService } from '@service/lib';
-import { FieldsException, ThrowException, CRUDResult, MetaResult } from '@lib/common';
+import { BaseService, CRUDService } from '@service/lib';
+import { FieldsException, ThrowException, MetaResult, CRUDExecuteContext } from '@lib/common';
 
 @Injectable()
 export class UserService extends BaseService {
@@ -219,80 +219,76 @@ export class UserService extends BaseService {
       return false;
    }
 
-   executeCRUD(): Promise<CRUDResult<UserEntity>> {
+   createCRUDService(): CRUDService<PrismaService> {
       return this.prisma
          .createCRUDService('User')
          .options({ softDelete: true, list: { searchFields: ['name', 'username', 'email'] } })
          .entityResponse(UserEntity)
          .include(this.userInclude)
          .validateDTOPipe(CreateUserDto, UpdateUserDto)
-         .beforeSave<Partial<CreateUserDto>, UserEntity>(
-            async (data: Partial<CreateUserDto>, { record: user, context }) => {
-               if (context === 'create') {
-                  await this.validateUserDto(data);
-               } else {
-                  if (data.email || data.username || data.groupId) {
-                     await this.validateUserDto(data, user.id);
-                  }
-
-                  // Verify permission
-                  const author = this.user;
-                  const isSelf = author.id === user.id;
-
-                  if (isSelf && data.status) {
-                     ThrowException(`You can't update yourself status`);
-                  }
-
-                  if (data.groupId && isSelf && !author.isRoot) {
-                     ThrowException(`You can't update your group because you aren't a root user`);
-                  }
-
-                  // Check the current user is the author or editor of the target user, then will can update
-                  const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
-
-                  if (!isGranter && !(isSelf && author.isRoot)) {
-                     const compare = author.compare(user, serviceConfig.get('user.permissions.user.update'));
-
-                     if (compare === 0) {
-                        ThrowException(`You can't update the user who has the same permission with you`);
-                     }
-
-                     if (compare === -1) {
-                        ThrowException(`You can't update the user who has the greater permissions than you`);
-                     }
-                  }
+         .beforeExecute<UserEntity, UpdateUserDto, CRUDExecuteContext>(async ({ data, record: user, context }) => {
+            if (context === 'create') {
+               await this.validateUserDto(data);
+            } else if (context === 'update') {
+               if (data.email || data.username || data.groupId) {
+                  await this.validateUserDto(data, user.id);
                }
 
-               if (data.password) {
-                  data.password = await argon2.hash(data.password);
-               }
-            },
-         )
-         .beforeDelete((user: UserEntity) => {
-            // Verify permission
-            const author = new UserEntity(this.meta.get('headers.user'));
-            const isSelf = author.id === user.id;
+               // Verify permission
+               const author = this.user;
+               const isSelf = author.id === user.id;
 
-            if (isSelf) {
-               return;
-               // ThrowException(`You can't delete yourself`);
-            }
-
-            // Check the current user is the author or editor of the target user, then will can delete
-            const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
-
-            if (!isGranter) {
-               const compare = author.compare(user, serviceConfig.get('user.permissions.user.delete'));
-
-               if (compare === 0) {
-                  ThrowException(`You can't delete the user who has the same permission with you`);
+               if (isSelf && data.status) {
+                  ThrowException(`You can't update yourself status`);
                }
 
-               if (compare === -1) {
-                  ThrowException(`You can't delete the user who has the greater permissions than you`);
+               if (data.groupId && isSelf && !author.isRoot) {
+                  ThrowException(`You can't update your group because you aren't a root user`);
+               }
+
+               // Check the current user is the author or editor of the target user, then will can update
+               const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
+
+               if (!isGranter && !(isSelf && author.isRoot)) {
+                  const compare = author.compare(user, serviceConfig.get('user.permissions.user.update'));
+
+                  if (compare === 0) {
+                     ThrowException(`You can't update the user who has the same permission with you`);
+                  }
+
+                  if (compare === -1) {
+                     ThrowException(`You can't update the user who has the greater permissions than you`);
+                  }
+               }
+            } else if (context === 'delete') {
+               // Verify permission
+               const author = new UserEntity(this.meta.get('headers.user'));
+               const isSelf = author.id === user.id;
+
+               if (isSelf) {
+                  return;
+                  // ThrowException(`You can't delete yourself`);
+               }
+
+               // Check the current user is the author or editor of the target user, then will can delete
+               const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
+
+               if (!isGranter) {
+                  const compare = author.compare(user, serviceConfig.get('user.permissions.user.delete'));
+
+                  if (compare === 0) {
+                     ThrowException(`You can't delete the user who has the same permission with you`);
+                  }
+
+                  if (compare === -1) {
+                     ThrowException(`You can't delete the user who has the greater permissions than you`);
+                  }
                }
             }
-         })
-         .execute();
+
+            if (data.password) {
+               data.password = await argon2.hash(data.password);
+            }
+         });
    }
 }

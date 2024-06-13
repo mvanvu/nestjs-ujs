@@ -10,6 +10,6 @@ export class RoleController {
 
    @MessagePattern(patterns.roleCRUD)
    executeCRUD(): Promise<CRUDResult<RoleEntity>> {
-      return this.roleService.executeCRUD();
+      return this.roleService.createCRUDService().execute();
    }
 }

@@ -1,4 +1,5 @@
 import { AvailableStatus } from '.prisma/content';
+import { IPickType } from '@lib/common';
 import { Property } from '@lib/common/decorator/property';
 import { BaseEntity } from '@lib/common/entity/base';
 import { UserRefEntity } from '@lib/service/user/entity/user';
@@ -40,3 +41,5 @@ export class RestaurantEntity extends BaseEntity {
    @Property()
    updatedAt?: Date;
 }
+
+export class RestaurantRefEntity extends IPickType(RestaurantEntity, ['id', 'name', 'owner']) {}

@@ -1,4 +1,4 @@
-import { ClassConstructor, HttpRequest, RequestRegistryData } from './common';
+import { ClassConstructor, HttpRequest, RequestRegistryData, ServiceOptions } from './common';
 import { IsEqual, ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
 import { type PaginationQueryDto } from './dto';
@@ -67,36 +67,59 @@ export type OnServiceResponse = {
 
 export type CRUDContext = 'read' | 'create' | 'update' | 'delete';
 
-export type CRUDWriteContext = 'create' | 'update';
+export type CRUDExecuteContext = 'create' | 'update' | 'delete';
 
-export type CRUDTransactionContext = 'create' | 'update' | 'delete';
+export type OnTransactionOptions<
+   TRecord extends ObjectRecord,
+   TData extends ObjectRecord,
+   TContext extends CRUDExecuteContext,
+> = {
+   context: TContext;
+   data: TContext extends 'create' | 'update' ? TData : never;
+   record: TRecord;
+   oldRecord: TContext extends 'update' ? TRecord : never;
+};
 
-export type OnBeforeSave<TData extends ObjectRecord, TRecord extends ObjectRecord> = (
-   data: TData,
-   options?: { record?: TRecord; context: CRUDWriteContext },
-) => any | Promise<any>;
-export type OnBeforeCreate<TData extends ObjectRecord = any> = (data: TData) => any | Promise<any>;
-export type OnBeforeUpdate<TData extends ObjectRecord = any, TRecord extends ObjectRecord = any> = (
-   data: TData,
-   record: TRecord,
-) => any | Promise<any>;
-export type OnBeforeDelete<TRecord extends ObjectRecord> = (record: TRecord) => any | Promise<any>;
-export type OnEntity =
-   | ClassConstructor<any>
-   | (<TRecord extends ObjectRecord = any, TContext extends CRUDContext = any>(
-        record: TRecord,
-        options: { context: TContext; isList?: IsEqual<TContext, 'read' extends true ? boolean : never> },
-     ) => any | Promise<any>);
-export type OnTransaction<TX, TData extends ObjectRecord> = (tx: TX, data: TData) => Promise<any>;
+export type OnBeforeExecuteOptions<
+   TRecord extends ObjectRecord,
+   TData extends ObjectRecord,
+   TContext extends CRUDExecuteContext,
+> = {
+   context: TContext;
+   data: TContext extends 'create' | 'update' ? TData : never;
+   record: TContext extends 'delete' | 'update' ? TRecord : never;
+};
+
+export type OnEntityOptions<TContext extends CRUDContext> = {
+   context: TContext;
+   isList: IsEqual<TContext, 'read' extends true ? boolean : never>;
+};
+
+export type OnBeforeExecute<
+   TRecord extends ObjectRecord,
+   TData extends ObjectRecord,
+   TContext extends CRUDExecuteContext,
+> = (options: OnBeforeExecuteOptions<TRecord, TData, TContext>) => any | Promise<any>;
+
+export type OnTransaction<
+   TX,
+   TRecord extends ObjectRecord,
+   TData extends ObjectRecord,
+   TContext extends CRUDExecuteContext,
+> = (tx: TX, options: OnTransactionOptions<TRecord, TData, TContext>) => any | Promise<any>;
+
+export type OnEntity<TEntity extends ObjectRecord, TContext extends CRUDContext> =
+   | ClassConstructor<TEntity>
+   | ((record: TEntity, options: OnEntityOptions<TContext>) => any | Promise<any>);
 
 export type PaginationListOptions = {
    itemsPerPage: number;
 };
 
 export type CRUDClient = {
-   read: <TResult>(id: string) => Promise<TResult>;
-   paginate: <TResult>(query?: PaginationQueryDto) => Promise<TResult>;
-   create: <TResult, TData>(data: TData) => Promise<TResult>;
-   update: <TResult, TData>(id: string, data: TData) => Promise<TResult>;
-   delete: <TResult>(id: string) => Promise<TResult>;
+   read: <TResult>(id: string, optionsOveride?: ServiceOptions) => Promise<TResult>;
+   paginate: <TResult>(query?: PaginationQueryDto, optionsOveride?: ServiceOptions) => Promise<TResult>;
+   create: <TResult, TData>(data: TData, optionsOveride?: ServiceOptions) => Promise<TResult>;
+   update: <TResult, TData>(id: string, data: TData, optionsOveride?: ServiceOptions) => Promise<TResult>;
+   delete: <TResult>(id: string, optionsOveride?: ServiceOptions) => Promise<TResult>;
 };

@@ -10,6 +10,6 @@ export class GroupController {
 
    @MessagePattern(patterns.groupCRUD)
    executeCRUD(): Promise<CRUDResult<GroupEntity>> {
-      return this.groupService.executeCRUD();
+      return this.groupService.createCRUDService().execute();
    }
 }
