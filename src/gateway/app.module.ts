@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, VersioningType } from '@nestjs/common';
+import { DynamicModule, MiddlewareConsumer, Module, VersioningType } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -14,23 +14,10 @@ import {
    UserRoleGuard,
 } from './lib';
 import { bootstrap, appConfig, serviceListNames, serviceConfig } from '@metadata';
-import { GroupController, RoleController, UserController } from './user/controller';
-import { StorageController } from './storage/controller';
-import { FileProvider } from './storage/provider';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/microservices';
-import { MailerProvider } from './mailer/provider';
-import { SystemController } from './system/controller';
-import { PurgeCacheProvider, ActivityLogProvider } from './system/provider';
-import { ContentCategoryController, ContentPostController, ContentTagController } from './content/controller';
-import {
-   OrderCategoryController,
-   OrderItemController,
-   OrderRestaurantController,
-   OrderStaffController,
-   OrderTableController,
-} from './order/controller';
+import { Util } from '@mvanvu/ujs';
 
 const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => {
    return {
@@ -47,6 +34,21 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
       },
    };
 };
+
+@Module({})
+export class MicroserviceModule {
+   static registerAsync(): DynamicModule {
+      return {
+         module: MicroserviceModule,
+         imports: serviceListNames.map((serviceName) =>
+            import(`./${serviceName}/${serviceName}.module`).then(
+               (moduleRef) => moduleRef[`${Util.uFirst(serviceName)}Module`],
+            ),
+         ),
+      };
+   }
+}
+
 @Module({
    imports: [
       ...serviceListNames.map((name) =>
@@ -60,30 +62,9 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
          ttl: appConfig.get('cache.ttl'),
          max: appConfig.get('cache.maxItems'),
       }),
-   ],
-   controllers: [
-      // System
-      SystemController,
 
-      // User
-      GroupController,
-      RoleController,
-      UserController,
-
-      // Storage
-      StorageController,
-
-      // Content
-      ContentCategoryController,
-      ContentPostController,
-      ContentTagController,
-
-      // Order
-      OrderCategoryController,
-      OrderItemController,
-      OrderRestaurantController,
-      OrderStaffController,
-      OrderTableController,
+      // Dynamic Microservice modules
+      MicroserviceModule.registerAsync(),
    ],
    providers: [
       {
@@ -99,10 +80,6 @@ const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => 
          useClass: UserRoleGuard,
       },
       BaseClientProxy,
-      FileProvider,
-      MailerProvider,
-      ActivityLogProvider,
-      PurgeCacheProvider,
    ],
 })
 export class AppModule {

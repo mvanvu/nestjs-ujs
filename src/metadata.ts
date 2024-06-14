@@ -1,6 +1,6 @@
 import { type INestMicroservice } from '@nestjs/common';
 import { type NestExpressApplication } from '@nestjs/platform-express';
-import { Registry } from '@mvanvu/ujs';
+import { EventEmitter, Registry } from '@mvanvu/ujs';
 import { loadPermissionKeys } from './lib/common';
 import { ClientProxy } from '@nestjs/microservices';
 
@@ -17,14 +17,7 @@ const serviceConfigData = { system, mailer, storage, user, content, order };
 
 export const serviceConfig = Registry.from<typeof serviceConfigData>(serviceConfigData, { consistent: true });
 
-export const serviceListNames = [
-   serviceConfig.get('system.name'),
-   serviceConfig.get('mailer.name'),
-   serviceConfig.get('user.name'),
-   serviceConfig.get('storage.name'),
-   serviceConfig.get('content.name'),
-   serviceConfig.get('order.name'),
-] as const;
+export const serviceListNames = Object.entries(serviceConfigData).map(([, serviceConfig]) => serviceConfig.name);
 
 export type ServiceName = (typeof serviceListNames)[number];
 
@@ -53,3 +46,5 @@ export const isMicroservice = (): boolean => !isGateway();
 export const injectProxy = (serviceName: ServiceName): string => `${serviceName.toUpperCase()}_MICROSERVICE`;
 export const clientProxy = (serviceName: ServiceName): ClientProxy =>
    app<'Gateway'>().get<ClientProxy>(injectProxy(serviceName));
+
+export const eventEmitter = new EventEmitter();
