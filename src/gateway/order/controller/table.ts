@@ -6,7 +6,7 @@ import {
    PaginationResponse,
 } from '@gateway/lib';
 import { CRUDClient, ParseMongoIdPipe, ThrowException, User } from '@lib';
-import { UserEntity } from '@service';
+import { UserEntity } from '@service/user';
 import { TableEntity, CreateTableDto, UpdateTableDto, OrderPaginationQueryDto, RestaurantEntity } from '@service/order';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
