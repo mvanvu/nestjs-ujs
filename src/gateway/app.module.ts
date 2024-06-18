@@ -3,7 +3,7 @@ import { APP_GUARD, APP_INTERCEPTOR, NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
-import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib/common';
+import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import {
    BaseClientProxy,
@@ -16,24 +16,8 @@ import {
 import { bootstrap, appConfig, serviceListNames, serviceConfig } from '@metadata';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
-import { ClientsModule, ClientsProviderAsyncOptions, Transport } from '@nestjs/microservices';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Util } from '@mvanvu/ujs';
-
-const createClientAsyncOptions = (name: string): ClientsProviderAsyncOptions => {
-   return {
-      name: name.toUpperCase() + '_MICROSERVICE',
-      useFactory: () => {
-         return {
-            transport: Transport.RMQ,
-            options: {
-               urls: [appConfig.get<string>('rabbitMQ.url')],
-               queue: `${name}MicroserviceQueue`,
-               queueOptions: { durable: true },
-            },
-         };
-      },
-   };
-};
 
 @Module({})
 export class MicroserviceModule {
@@ -52,7 +36,24 @@ export class MicroserviceModule {
 @Module({
    imports: [
       ...serviceListNames.map((name) =>
-         ClientsModule.registerAsync({ isGlobal: true, clients: [createClientAsyncOptions(name)] }),
+         ClientsModule.registerAsync({
+            isGlobal: true,
+            clients: [
+               {
+                  name: `${name.toUpperCase()}_MICROSERVICE`,
+                  useFactory: () => {
+                     return {
+                        transport: Transport.RMQ,
+                        options: {
+                           urls: [appConfig.get<string>('rabbitMQ.url')],
+                           queue: `${name}MicroserviceQueue`,
+                           queueOptions: { durable: true },
+                        },
+                     };
+                  },
+               },
+            ],
+         }),
       ),
       EventEmitterModule,
       CacheModule.register({
@@ -63,7 +64,7 @@ export class MicroserviceModule {
          max: appConfig.get('cache.maxItems'),
       }),
 
-      // Dynamic Microservice modules
+      // Dynamic microservice modules
       MicroserviceModule.registerAsync(),
    ],
    providers: [

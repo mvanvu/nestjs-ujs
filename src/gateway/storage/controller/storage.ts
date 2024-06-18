@@ -3,7 +3,7 @@ import { ApiConsumes, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { ApiEntityResponse, BaseClientProxy, Permission } from '../../lib';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileProvider } from '../provider/file.provider';
-import { FileEntity, UploadDto } from '@lib/service/storage';
+import { FileEntity, UploadDto } from '@service/storage';
 import { serviceConfig } from '@metadata';
 
 const { name, permissions, patterns } = serviceConfig.get('storage');

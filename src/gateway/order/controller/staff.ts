@@ -5,8 +5,8 @@ import {
    EntityResponse,
    PaginationResponse,
 } from '@gateway/lib';
-import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
-import { StaffEntity, CreateStaffDto, UpdateStaffDto } from '@lib/service/order';
+import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@lib';
+import { StaffEntity, CreateStaffDto, UpdateStaffDto } from '@service/order';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';

@@ -1,18 +1,18 @@
 import { ObjectRecord } from '@mvanvu/ujs';
-import { ClassConstructor } from '@lib/common';
+import { ClassConstructor } from '@lib';
 import { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { CRUDService } from './service.crud';
 import { PrismaClient } from '@prisma/client';
 
 export function CreatePrismaService<TClientRef extends ClassConstructor<PrismaClient>, TDataModel extends ObjectRecord>(
    PrismaClientRef: TClientRef,
-   dataModel: TDataModel,
+   dataModels: TDataModel,
 ) {
    type ModelName = keyof TDataModel;
 
    class BasePrismaService extends PrismaClientRef implements OnModuleInit, OnApplicationShutdown {
       get models(): TDataModel {
-         return dataModel;
+         return dataModels;
       }
 
       async onModuleInit() {

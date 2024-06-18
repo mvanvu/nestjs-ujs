@@ -1,7 +1,7 @@
 import * as nodemailer from 'nodemailer';
 import { Transform } from '@mvanvu/ujs';
-import { MessageInfoEntity, SendMailDto, TransporterMessageInfo } from '@lib/service/mailer';
-import { SystemConfigDto } from '@lib/service/system';
+import { MessageInfoEntity, SendMailDto, TransporterMessageInfo } from '@service/mailer';
+import { SystemConfigDto } from '@service/system';
 
 export class BaseTransporter {
    protected transporter: nodemailer.Transporter<TransporterMessageInfo>;

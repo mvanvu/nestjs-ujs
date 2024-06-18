@@ -9,11 +9,11 @@ import {
    PaginationQueryDto,
    ServiceOptions,
    eventConstant,
-} from '@lib/common';
+} from '@lib';
 import { lastValueFrom, timeout } from 'rxjs';
 import { REQUEST } from '@nestjs/core';
 import { ServiceName, appConfig, clientProxy, serviceConfig } from '@metadata';
-import { UserRefEntity } from '@lib/service';
+import { UserRefEntity } from '@service';
 
 @Injectable()
 export class BaseClientProxy {

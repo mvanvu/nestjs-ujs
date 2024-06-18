@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-import { CreateRoleDto, RoleEntity, UpdateRoleDto } from '@lib/service/user';
+import { CreateRoleDto, RoleEntity, UpdateRoleDto } from '@service/user';
 import { BaseService, CRUDService } from '@service/lib';
-import { CRUDExecuteContext, ThrowException } from '@lib/common';
+import { CRUDExecuteContext, ThrowException } from '@lib';
 
 @Injectable()
 export class RoleService extends BaseService {

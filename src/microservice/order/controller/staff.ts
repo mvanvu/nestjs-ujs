@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { StaffService } from '../provider';
 import { serviceConfig } from '@metadata';
 import { MessagePattern } from '@nestjs/microservices';
-import { CRUDResult } from '@lib/common';
-import { StaffEntity } from '@lib/service/order';
+import { CRUDResult } from '@lib';
+import { StaffEntity } from '@service/order';
 const patterns = serviceConfig.get('order.patterns');
 
 @Injectable()

@@ -5,15 +5,9 @@ import {
    EntityResponse,
    PaginationResponse,
 } from '@gateway/lib';
-import { CRUDClient, ParseMongoIdPipe, ThrowException, User } from '@lib/common';
-import { UserEntity } from '@lib/service';
-import {
-   TableEntity,
-   CreateTableDto,
-   UpdateTableDto,
-   OrderPaginationQueryDto,
-   RestaurantEntity,
-} from '@lib/service/order';
+import { CRUDClient, ParseMongoIdPipe, ThrowException, User } from '@lib';
+import { UserEntity } from '@service';
+import { TableEntity, CreateTableDto, UpdateTableDto, OrderPaginationQueryDto, RestaurantEntity } from '@service/order';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';

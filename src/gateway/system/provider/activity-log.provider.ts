@@ -1,14 +1,14 @@
 import { OnEvent } from '@gateway/lib';
-import { OnServiceResponse, eventConstant } from '@lib/common';
-import { ActivityLogDto } from '@lib/service/system';
-import { serviceConfig } from '@metadata';
+import { OnServiceResponse, eventConstant } from '@lib';
+import { ActivityLogDto } from '@service/system';
+import { injectProxy, serviceConfig } from '@metadata';
 import { Is, Util } from '@mvanvu/ujs';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class ActivityLogProvider {
-   @Inject(serviceConfig.get('system.name').toUpperCase() + '_MICROSERVICE')
+   @Inject(injectProxy(serviceConfig.get('system.name')))
    private readonly clientProxy: ClientProxy;
 
    private hideSecret(data: any, secretDeep?: boolean): void {

@@ -1,9 +1,9 @@
-import { ActivityLogDto, SystemConfigDto } from '@lib/service/system';
+import { ActivityLogDto, SystemConfigDto } from '@service/system';
 import { Registry } from '@mvanvu/ujs';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-import { CRUDResult } from '@lib/common';
-import { ActivityLogEntity } from '@lib/service/system/entity';
+import { CRUDResult } from '@lib';
+import { ActivityLogEntity } from '@service/system/entity';
 
 @Injectable()
 export class SystemService {

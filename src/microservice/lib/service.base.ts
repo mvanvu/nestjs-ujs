@@ -1,5 +1,5 @@
-import { MessageMeta } from '@lib/common';
-import { UserEntity } from '@lib/service';
+import { MessageMeta } from '@lib';
+import { UserEntity } from '@service';
 import { Registry } from '@mvanvu/ujs';
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { CONTEXT, RequestContext } from '@nestjs/microservices';

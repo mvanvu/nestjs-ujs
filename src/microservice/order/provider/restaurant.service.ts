@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-import { CreateRestaurantDto, RestaurantEntity, UpdateRestaurantDto } from '@lib/service/order';
+import { CreateRestaurantDto, RestaurantEntity, UpdateRestaurantDto } from '@service/order';
 import { CRUDService } from '@service/lib';
 
 @Injectable()

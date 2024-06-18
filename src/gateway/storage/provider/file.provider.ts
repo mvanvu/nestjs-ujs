@@ -1,12 +1,12 @@
 import { Injectable, StreamableFile } from '@nestjs/common';
-import { FileEntity, FinalUploadDto, UploadDto } from '@lib/service';
+import { FileEntity, FinalUploadDto, UploadDto } from '@service';
 import { FileProviderLocal } from './file.provider.local';
 import { FileProviderGoogleDrive } from './file.provider.google-drive';
 import { Provider } from '.prisma/storage';
 import { FileProviderInterface } from './file.provider.interface';
 import { Transform } from '@mvanvu/ujs';
 import { serviceConfig } from '@metadata';
-import { ThrowException } from '@lib/common';
+import { ThrowException } from '@lib';
 import { allAcceptedFileTypes, fileTypes } from './file.mime';
 const storageConfig = serviceConfig.get('storage');
 

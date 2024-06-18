@@ -10,9 +10,9 @@ import {
    SendResetPasswordCodeDto,
    VerifyAccountDto,
    ResetPasswordDto,
-} from '@lib/service';
+} from '@service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { CRUDResult, MetaResult } from '@lib/common';
+import { CRUDResult, MetaResult } from '@lib';
 import { serviceConfig } from '@metadata';
 const patterns = serviceConfig.get('user.patterns');
 

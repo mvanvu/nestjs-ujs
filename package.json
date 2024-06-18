@@ -20,7 +20,7 @@
     "system:prisma:generate": "prisma generate --schema=src/microservice/system/provider/prisma/schema.prisma",
     "content:prisma:generate": "prisma generate --schema=src/microservice/content/provider/prisma/schema.prisma",
     "order:prisma:generate": "prisma generate --schema=src/microservice/order/provider/prisma/schema.prisma",
-    "prisma:generate:service": "ts-node scripts/generate-prisma-services.ts"
+    "prisma:generate:service": "yarn user:prisma:generate && yarn storage:prisma:generate && yarn system:prisma:generate && yarn content:prisma:generate && yarn order:prisma:generate"
   },
   "dependencies": {
     "@mvanvu/ujs": "file:../utils/dist",

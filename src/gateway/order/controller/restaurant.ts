@@ -6,9 +6,9 @@ import {
    PaginationResponse,
    Permission,
 } from '@gateway/lib';
-import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
-import { UserRefEntity } from '@lib/service';
-import { RestaurantEntity, UpdateRestaurantDto, CreateRestaurantDto } from '@lib/service/order';
+import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@lib';
+import { UserRefEntity } from '@service';
+import { RestaurantEntity, UpdateRestaurantDto, CreateRestaurantDto } from '@service/order';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';

@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { RestaurantService } from '../provider';
 import { serviceConfig } from '@metadata';
 import { MessagePattern } from '@nestjs/microservices';
-import { CRUDResult } from '@lib/common';
-import { RestaurantEntity } from '@lib/service/order';
+import { CRUDResult } from '@lib';
+import { RestaurantEntity } from '@service/order';
 const patterns = serviceConfig.get('order.patterns');
 
 @Injectable()

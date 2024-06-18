@@ -1,16 +1,16 @@
 import { type INestMicroservice } from '@nestjs/common';
 import { type NestExpressApplication } from '@nestjs/platform-express';
 import { EventEmitter, Registry } from '@mvanvu/ujs';
-import { loadPermissionKeys } from './lib/common';
+import { loadPermissionKeys } from './lib';
 import { ClientProxy } from '@nestjs/microservices';
 
 // Service shared config
-import system from './lib/service/system/config';
-import user from './lib/service/user/config';
-import storage from './lib/service/storage/config';
-import mailer from './lib/service/mailer/config';
-import content from './lib/service/content/config';
-import order from './lib/service/order/config';
+import system from './microservice/system/config';
+import user from './microservice/user/config';
+import storage from './microservice/storage/config';
+import mailer from './microservice/mailer/config';
+import content from './microservice/content/config';
+import order from './microservice/order/config';
 
 export { appConfig } from './config';
 const serviceConfigData = { system, mailer, storage, user, content, order };
