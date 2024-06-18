@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { RoleService } from '../provider';
-import { RoleEntity } from '@service';
+import { RoleEntity } from '../entity';
 import { MessagePattern } from '@nestjs/microservices';
 import { CRUDResult } from '@lib';
 import { serviceConfig } from '@metadata';

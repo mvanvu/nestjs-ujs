@@ -3,7 +3,7 @@ import { GroupEntity } from '@service/user';
 import { MessagePattern } from '@nestjs/microservices';
 import { CRUDResult } from '@lib';
 import { serviceConfig } from '@metadata';
-import { GroupService } from '../provider/group.service';
+import { GroupService } from '../provider';
 const patterns = serviceConfig.get('user.patterns');
 export class GroupController {
    @Inject(GroupService) readonly groupService: GroupService;

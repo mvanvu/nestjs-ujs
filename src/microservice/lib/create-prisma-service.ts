@@ -8,8 +8,6 @@ export function CreatePrismaService<TClientRef extends ClassConstructor<PrismaCl
    PrismaClientRef: TClientRef,
    dataModels: TDataModel,
 ) {
-   type ModelName = keyof TDataModel;
-
    class BasePrismaService extends PrismaClientRef implements OnModuleInit, OnApplicationShutdown {
       get models(): TDataModel {
          return dataModels;
@@ -24,7 +22,7 @@ export function CreatePrismaService<TClientRef extends ClassConstructor<PrismaCl
          await this.$disconnect();
       }
 
-      createCRUDService(model: ModelName): CRUDService<this> {
+      createCRUDService(model: string): CRUDService<this> {
          return new CRUDService(this, <string>model, this.ctx);
       }
    }

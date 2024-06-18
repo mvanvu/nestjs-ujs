@@ -10,7 +10,7 @@ import {
    SendResetPasswordCodeDto,
    VerifyAccountDto,
    ResetPasswordDto,
-} from '@service';
+} from '@service/user';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CRUDResult, MetaResult } from '@lib';
 import { serviceConfig } from '@metadata';
