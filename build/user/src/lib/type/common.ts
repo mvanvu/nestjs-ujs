@@ -1,0 +1,115 @@
+import { IsValidOptions, IsValidType, ObjectRecord, Registry, Transform } from '@mvanvu/ujs';
+import { HttpStatus, RequestMethod } from '@nestjs/common';
+import { Type, VersionValue } from '@nestjs/common/interfaces';
+import { type UserEntity } from '@service/user/entity/user';
+import { SystemConfigDto } from '@service/system/dto';
+import { Request } from 'express';
+import { ResultOs } from 'node-device-detector';
+
+export type HttpCacheOptions = {
+   disabled?: boolean;
+   withUserIdPrefix?: boolean;
+   cacheKey?: string;
+   cacheRefKeys?: string | RegExp | Array<string | RegExp>;
+};
+
+export type UserRole = { id: string; name: string; permissions: string[] }[];
+
+export type DeviceOS = {
+   name: ResultOs['name'];
+   shortName: ResultOs['short_name'];
+   platform: ResultOs['platform'];
+   version: ResultOs['version'];
+};
+
+export type RequestRegistryData = {
+   user?: UserEntity;
+   tz?: string;
+   deviceType: 'web' | 'mobile' | 'desktop';
+   userAgent: string;
+   ipAddress: string;
+   systemConfig: SystemConfigDto;
+   deviceOS?: DeviceOS;
+};
+
+export interface HttpRequest extends Request {
+   cacheRefKeys?: HttpCacheOptions['cacheRefKeys'];
+   registry: Registry<RequestRegistryData>;
+}
+
+export type ClassConstructor<T> = new (...arg: any[]) => T;
+
+export type ExecuteOptions<TInput> = {
+   messagePattern: string;
+   clientProxy: string;
+   data?: TInput;
+   timeout?: number;
+   excuter: ((...args: any[]) => any | Promise<any>) | (new (...args: any[]) => any | Promise<any>) | object;
+};
+
+export type ServiceConfig = {
+   proxy: string;
+   patterns: Record<string, string>;
+};
+
+export type ServiceOptions = {
+   params?: Record<string, string | number | boolean>;
+   timeOut?: number;
+   noEmitEvent?: boolean;
+};
+
+export type IRouteOptions = {
+   pattern: string;
+   route?: {
+      method?: RequestMethod;
+      path?: string | string[];
+      version?: VersionValue;
+      public?: boolean;
+      httpStatus?: HttpStatus;
+   };
+   swagger?: {
+      summary?: string;
+      responseType?: any;
+      example?: any;
+   };
+};
+
+export type EntityConstructor<T> = new (...args: any[]) => T;
+
+export type ValidationCode = string | number | ObjectRecord;
+
+export type ValidationOptions<TIs> = {
+   is: TIs;
+   each?: boolean;
+   not?: boolean;
+   meta?: IsValidOptions<TIs>['meta'];
+   code?: ValidationCode;
+};
+
+export type TransformType<T = keyof typeof Transform> = T extends 'clean' | 'cleanIfType' | 'prototype' ? never : T;
+
+export type TransformOptions = {
+   toType: TransformType | TransformType[];
+   fromType?: IsValidType | IsValidType[];
+};
+
+export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> | [ClassConstructor<any>]> = {
+   validate?:
+      | ValidationOptions<ClassConstructor<any>>
+      | [ValidationOptions<ClassConstructor<any>>]
+      | ValidationOptions<IsType>
+      | Array<ValidationOptions<IsType>>;
+   transform?: TransformOptions;
+   optional?: boolean;
+   defaultValue?: any;
+   swagger?: {
+      disable?: boolean;
+      description?: string;
+      type?: Type<unknown> | Function | [Function] | string | Record<string, any>;
+      enum?: any[] | Record<string, any>;
+      example?: any;
+      readOnly?: boolean;
+   };
+};
+
+export type PermissionOptions = { key?: string; or?: string[]; and?: string[]; adminScope?: boolean } | string;

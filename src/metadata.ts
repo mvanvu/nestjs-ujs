@@ -3,17 +3,18 @@ import { type NestExpressApplication } from '@nestjs/platform-express';
 import { EventEmitter, Registry } from '@mvanvu/ujs';
 import { loadPermissionKeys } from './lib';
 import { ClientProxy } from '@nestjs/microservices';
+export { appConfig } from './config';
 
-// Service shared config
+// ==== DON'T CHANGE THIS BLOCK BELOW, BECAUSE IT WILL USED TO BUILD THE PRODUCTION SOURCE CODE =========
+// ============================================== START MICROSERVICE CONFIG BLOCK =======================
 import system from './microservice/system/config';
 import user from './microservice/user/config';
 import storage from './microservice/storage/config';
 import mailer from './microservice/mailer/config';
 import content from './microservice/content/config';
 import order from './microservice/order/config';
-
-export { appConfig } from './config';
 const serviceConfigData = { system, mailer, storage, user, content, order };
+// ============================================== END MICROSERVICE CONFIG BLOCK ==========================
 
 export const serviceConfig = Registry.from<typeof serviceConfigData>(serviceConfigData, { consistent: true });
 
@@ -27,9 +28,12 @@ let _app: NestExpressApplication | INestMicroservice;
 
 export const bootstrap = (app: NestExpressApplication | INestMicroservice): void => {
    _app = app;
-   loadPermissionKeys(user.permissions, permissionKeys);
-   loadPermissionKeys(storage.permissions, permissionKeys);
-   loadPermissionKeys(system.permissions, permissionKeys);
+
+   for (const service in serviceConfigData) {
+      if (serviceConfigData[service].permissions) {
+         loadPermissionKeys(serviceConfigData[service].permissions, permissionKeys);
+      }
+   }
 };
 
 export const app = <
