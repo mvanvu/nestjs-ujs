@@ -1,0 +1,8 @@
+{
+    "apiGateway": {
+        "defaultServiceList": ["user", "system", "mailer", "storage"]
+    },
+    "microservice": {
+        "list": ["user", "system", "content", "mailer", "order", "storage"]
+    }
+}

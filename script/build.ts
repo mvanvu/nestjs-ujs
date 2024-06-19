@@ -4,8 +4,10 @@ import * as fs from 'fs';
 import { spawn } from 'child_process';
 
 (async () => {
-   const microservice = ['user', 'system', 'content', 'mailer', 'order', 'storage'];
-   const buildFor = ['all', 'gateway', 'microservice'];
+   // eslint-disable-next-line @typescript-eslint/no-var-requires
+   const buildConfig = require('../build/config.json');
+   const microservice = buildConfig.microservice.list;
+   const buildFor = ['all', 'api-gateway', 'microservice'];
    const { buildFor: fIndex } = await prompts({
       type: 'select',
       name: 'buildFor',
@@ -16,9 +18,10 @@ import { spawn } from 'child_process';
    const sources: { gateway: string[]; microservice: string[] } = { gateway: [], microservice: [] };
 
    switch (buildFor[fIndex]) {
-      case 'gateway':
-         sources.gateway.push('system', 'user', 'mailer', 'storage'); // Add requirement services
-         const gatewayServices = microservice.filter((srv) => !['user', 'system', 'mailer', 'storage'].includes(srv));
+      case 'api-gateway':
+         const defaultServices = buildConfig.apiGateway.defaultServiceList as string[];
+         sources.gateway.push(...defaultServices); // Add requirement services
+         const gatewayServices = microservice.filter((srv: string) => !defaultServices.includes(srv));
          const indexs = (
             await prompts({
                type: 'multiselect',
@@ -61,22 +64,20 @@ import { spawn } from 'child_process';
          break;
    }
 
+   console.log('START TO BUILD, PLEASE WAIT...');
    const cwd = process.cwd();
    const sourceBase = `${cwd}/src`;
    const buildDir = `${cwd}/build`;
+   const buildScripts: Record<string, string[]> = {};
 
-   if (fs.existsSync(buildDir)) {
-      fs.rmSync(buildDir, { recursive: true });
-   }
-
-   const copyFiles = (path: string | string[], buildDir: string, type: 'gateway' | 'microservice') => {
+   const copyFiles = (path: string | string[], buildDir: string) => {
       if (Array.isArray(path)) {
-         path.forEach((p) => copyFiles(p, buildDir, type));
+         path.forEach((p) => copyFiles(p, buildDir));
       } else if (fs.existsSync(path)) {
          const stat = fs.statSync(path);
 
          if (stat.isDirectory()) {
-            fs.readdirSync(path).forEach((dir) => copyFiles(`${path}/${dir}`, buildDir, type));
+            fs.readdirSync(path).forEach((dir) => copyFiles(`${path}/${dir}`, buildDir));
          } else if (stat.isFile()) {
             const dest = path.replace(cwd, buildDir);
             const dir = Util.dirName(dest);
@@ -85,16 +86,68 @@ import { spawn } from 'child_process';
                fs.mkdirSync(dir, { recursive: true });
             }
 
-            fs.copyFileSync(path, dest);
+            const appEnv = buildDir.split('/').pop();
+            const fName = path.split('/').pop();
+
+            if (fName === '.env') {
+               // Preprogress env
+               fs.writeFileSync(
+                  dest,
+                  `APP_ENV="${appEnv}"\r\n` +
+                     fs
+                        .readFileSync(path)
+                        .toString()
+                        .replace(/NODE_ENV="?([a-zA-Z]+)"?/, 'NODE_ENV="production"'),
+               );
+            } else if (fName === 'package.json') {
+               const pks = JSON.parse(fs.readFileSync(path).toString());
+               pks.name += `-${appEnv === 'gateway' ? appEnv : `${appEnv}-microservice`}`;
+               const scripts = {
+                  build: 'nest build',
+                  start: 'nest start',
+                  'start:prod': 'node dist/main',
+                  format: 'prettier --write "./**/src/**/*.ts"',
+               };
+
+               for (const script in pks.scripts) {
+                  if (
+                     /^(docker|mongodb):/.test(script) ||
+                     (appEnv === 'api-gateway' && /prisma:/.test(script)) ||
+                     (appEnv !== 'api-gateway' && new RegExp(`^${appEnv}:prisma:`).test(script))
+                  ) {
+                     scripts[script] = pks.scripts[script];
+                  }
+               }
+
+               if (!buildScripts[appEnv]) {
+                  buildScripts[appEnv] = [];
+               }
+
+               pks.scripts = scripts;
+
+               if (pks.scripts[`${appEnv}:prisma:generate`]) {
+                  buildScripts[appEnv].push(`yarn ${appEnv}:prisma:generate`);
+               }
+
+               fs.writeFileSync(dest, JSON.stringify(pks, null, 2));
+            } else {
+               fs.copyFileSync(path, dest);
+            }
          }
       }
    };
    const baseFiles: string[] = [
+      `${cwd}/docker/Dockerfile`,
       `${sourceBase}/lib`,
       `${sourceBase}/config.ts`,
       `${sourceBase}/main.ts`,
       `${sourceBase}/metadata.ts`,
       `${cwd}/.env`,
+      `${cwd}/.eslintrc.js`,
+      `${cwd}/.gitignore`,
+      `${cwd}/.prittierignore`,
+      `${cwd}/.prettierrc`,
+      `${cwd}/docker-compose.yml`,
       `${cwd}/nest-cli.json`,
       `${cwd}/package.json`,
       `${cwd}/tsconfig.json`,
@@ -102,17 +155,24 @@ import { spawn } from 'child_process';
    ];
 
    if (sources.gateway.length) {
-      const files = [...baseFiles, `${sourceBase}/gateway/lib`, `${sourceBase}/gateway/app.module.ts`];
-      sources.gateway.forEach((srv) => files.push(`${sourceBase}/gateway/${srv}`));
-      copyFiles(files, `${buildDir}/api-gateway`, 'gateway');
+      if (fs.existsSync(`${buildDir}/api-gateway`)) {
+         fs.rmSync(`${buildDir}/api-gateway`, { recursive: true });
+      }
+
+      const files = [...baseFiles, `${sourceBase}/api-gateway/lib`, `${sourceBase}/api-gateway/app.module.ts`];
+      sources.gateway.forEach((srv) => files.push(`${sourceBase}/api-gateway/${srv}`));
+      copyFiles(files, `${buildDir}/api-gateway`);
    }
 
    if (sources.microservice.length) {
       sources.microservice.forEach((srv) => {
+         if (fs.existsSync(`${buildDir}/microservice/${srv}`)) {
+            fs.rmSync(`${buildDir}/microservice/${srv}`, { recursive: true });
+         }
+
          copyFiles(
             [...baseFiles, `${sourceBase}/microservice/lib`, `${sourceBase}/microservice/${srv}`],
             `${buildDir}/microservice/${srv}`,
-            'microservice',
          );
       });
    }
@@ -128,26 +188,22 @@ import { spawn } from 'child_process';
    }
 
    for (const source of sourcesDir) {
-      console.log(`================= START TO BUILD ${source.toUpperCase()} =================`);
-      const scripts: string[] = [`cd build/${source}`, '&& yarn'];
+      const scripts: string[] = [`cd build/${source}`, 'yarn'];
+      const appEnv = source.split('/').pop();
 
-      if (source !== 'api-gateway') {
-         const pkgJson = JSON.parse(fs.readFileSync(`${buildDir}/${source}/package.json`).toString());
-         const srv = source.split('/')[1];
-
-         if (pkgJson[`${srv}:prisma:generate`]) {
-            scripts.push(`&& yarn ${srv}:prisma:generate`);
-         }
+      if (buildScripts[appEnv]?.length) {
+         scripts.push(...buildScripts[appEnv]);
       }
 
-      scripts.push(`&& yarn nest:build`);
-      const build = spawn(scripts.join(' '), { shell: true });
-
+      scripts.push(`yarn build`);
+      const build = spawn(scripts.join(' && '), { shell: true });
       await new Promise((resolve) => {
          build.stdout.on('data', (data) => console.log(`${data}`));
          build.stderr.on('data', (data) => console.log(`${data}`));
          build.on('close', (code) => {
-            console.log(`Build ${source.toUpperCase()} ${code === 0 ? 'successfully' : 'ERROR'}`);
+            const warnStr = `================= BUILD ${source.toUpperCase()} ${code === 0 ? 'SUCCESSFULLY' : 'FAILURE'} =================`;
+            const repeatStr = '='.repeat(warnStr.length);
+            console.log(`${repeatStr}\r\n${warnStr}\r\n${repeatStr}`);
             resolve(code);
          });
       });

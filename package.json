@@ -21,7 +21,7 @@
     "system:prisma:generate": "prisma generate --schema=src/lib/microservice/system/prisma/schema.prisma",
     "content:prisma:generate": "prisma generate --schema=src/lib/microservice/content/prisma/schema.prisma",
     "order:prisma:generate": "prisma generate --schema=src/lib/microservice/order/prisma/schema.prisma",
-    "prisma:generate:service": "yarn user:prisma:generate && yarn storage:prisma:generate && yarn system:prisma:generate && yarn content:prisma:generate && yarn order:prisma:generate"
+    "api-gateway:prisma:generate": "yarn user:prisma:generate && yarn storage:prisma:generate && yarn system:prisma:generate && yarn content:prisma:generate && yarn order:prisma:generate"
   },
   "dependencies": {
     "@mvanvu/ujs": "file:/Users/nexroot/DEV/utils/dist",
