@@ -5,7 +5,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "start:gateway:dev": "cross-env APP_ENV=gateway nest start -w",
+    "start:gateway:dev": "cross-env APP_ENV=api-gateway nest start -w",
     "start:user:dev": "cross-env APP_ENV=user nest start -w",
     "start:storage:dev": "cross-env APP_ENV=storage nest start -w",
     "start:mailer:dev": "cross-env APP_ENV=mailer nest start -w",

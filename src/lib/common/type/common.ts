@@ -103,7 +103,7 @@ export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> |
    optional?: boolean;
    defaultValue?: any;
    swagger?: {
-      disable?: boolean;
+      disabled?: boolean;
       description?: string;
       type?: Type<unknown> | Function | [Function] | string | Record<string, any>;
       enum?: any[] | Record<string, any>;

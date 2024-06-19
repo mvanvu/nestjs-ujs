@@ -40,8 +40,6 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
       const propOptions = propertyOptions[prop];
 
       if (!propOptions || (propOptions.optional === true && Is.nothing(val))) {
-         delete data[prop];
-
          continue;
       }
 

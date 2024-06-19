@@ -17,7 +17,7 @@ export function Property<IsType extends IsValidType | ClassConstructor<any> | [C
       },
    ];
 
-   if (options?.swagger?.disable !== true) {
+   if (options?.swagger?.disabled !== true) {
       decorators.push(ApiProperty({ ...(options?.swagger || {}), required: options?.optional !== true }));
    }
 

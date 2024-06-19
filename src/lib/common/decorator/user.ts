@@ -33,7 +33,7 @@ export const User = createParamDecorator(
       }
 
       if (!(user instanceof UserEntity)) {
-         user = new UserEntity(UserEntity);
+         user = new UserEntity(user);
       }
 
       if (Is.string(property, true)) {

@@ -26,6 +26,7 @@ import {
    ApiPaginationResponse,
    Public,
    Permission,
+   HttpCache,
 } from '@gateway/lib';
 import { serviceConfig } from '@metadata';
 
@@ -100,6 +101,7 @@ export class UserController {
 
    @Get('me')
    @ApiBearerAuth()
+   @HttpCache({ withUserIdPrefix: true })
    @ApiEntityResponse(UserEntity, { summary: 'Get the detail of the logged user' })
    me(@User() user: UserEntity): UserEntity {
       return user;

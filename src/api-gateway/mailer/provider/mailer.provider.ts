@@ -7,7 +7,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import * as fs from 'fs';
 
 export type MailerTemplate = { index: string; resetPasswordBody: string; verifyAccountBody: string };
-const mailerTmplPath = process.cwd() + '/src/gateway/mailer/template';
+const mailerTmplPath = process.cwd() + '/src/api-gateway/mailer/template';
 
 @Injectable()
 export class MailerProvider {

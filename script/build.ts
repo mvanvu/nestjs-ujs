@@ -289,7 +289,7 @@ import { spawn } from 'child_process';
       });
    }
 
-   const warnStr = `================= BUILD ${successAll ? ' ALL SUCCESSFULLY' : ' HAS SOME FAILURE'} =================`;
+   const warnStr = `================= BUILD ${successAll ? 'ALL SUCCESSFULLY' : 'HAS SOME FAILURE'} =================`;
    const repeatStr = '='.repeat(warnStr.length);
    console.log(`${repeatStr}\r\n${warnStr}\r\n${repeatStr}`);
 })();

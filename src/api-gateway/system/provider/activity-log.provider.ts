@@ -1,4 +1,4 @@
-import { OnEvent } from '@gateway/lib';
+import { OnEvent } from '@gateway/lib/event-emitter.decorator';
 import { OnServiceResponse, eventConstant } from '@lib/common';
 import { ActivityLogDto } from '@lib/microservice/system';
 import { injectProxy, serviceConfig } from '@metadata';

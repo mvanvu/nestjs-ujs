@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { OnEvent } from '../../lib/event-emitter/event-emitter.decorator';
 import { OnServiceResponse, eventConstant } from '@lib/common';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Is } from '@mvanvu/ujs';
+import { OnEvent } from '@gateway/lib/event-emitter.decorator';
 
 @Injectable()
 export class PurgeCacheProvider {

@@ -1,5 +1,5 @@
-import { DynamicModule, MiddlewareConsumer, Module, VersioningType } from '@nestjs/common';
-import { APP_GUARD, APP_INTERCEPTOR, NestFactory } from '@nestjs/core';
+import { DynamicModule, Global, MiddlewareConsumer, Module, VersioningType } from '@nestjs/common';
+import { APP_GUARD, APP_INTERCEPTOR, DiscoveryModule, NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
@@ -7,7 +7,7 @@ import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib/comm
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import {
    BaseClientProxy,
-   EventEmitterModule,
+   EventEmitterLoader,
    HttpCacheInterceptor,
    HttpMiddleware,
    UserAuthGuard,
@@ -17,13 +17,28 @@ import { bootstrap, appConfig, serviceListNames, serviceConfig } from '@metadata
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { Util } from '@mvanvu/ujs';
+import { EventEmitter, Util } from '@mvanvu/ujs';
+
+@Global()
+@Module({
+   imports: [DiscoveryModule],
+   providers: [
+      BaseClientProxy,
+      EventEmitterLoader,
+      {
+         provide: EventEmitter,
+         useValue: new EventEmitter(),
+      },
+   ],
+   exports: [EventEmitter, BaseClientProxy],
+})
+class CoreModule {}
 
 @Module({})
-export class MicroserviceModule {
+class MicroserviceModule {
    static registerAsync(): DynamicModule {
       return {
-         module: MicroserviceModule,
+         module: CoreModule,
          imports: serviceListNames.map((serviceName) =>
             import(`./${serviceName}/${serviceName}.module`).then(
                (moduleRef) => moduleRef[`${Util.uFirst(serviceName)}Module`],
@@ -55,7 +70,6 @@ export class MicroserviceModule {
             ],
          }),
       ),
-      EventEmitterModule,
       CacheModule.register({
          isGlobal: true,
          store: redisStore,
@@ -63,7 +77,6 @@ export class MicroserviceModule {
          ttl: appConfig.get('cache.ttl'),
          max: appConfig.get('cache.maxItems'),
       }),
-
       // Dynamic microservice modules
       MicroserviceModule.registerAsync(),
    ],
@@ -80,7 +93,6 @@ export class MicroserviceModule {
          provide: APP_GUARD,
          useClass: UserRoleGuard,
       },
-      BaseClientProxy,
    ],
 })
 export class AppModule {
