@@ -19,7 +19,7 @@ import { spawn } from 'child_process';
 
    switch (buildFor[fIndex]) {
       case 'api-gateway':
-         const defaultServices = buildConfig.apiGateway.defaultServiceList as string[];
+         const defaultServices = buildConfig.apiGateway.defaultList as string[];
          sources.gateway.push(...defaultServices); // Add requirement services
          const gatewayServices = microservice.filter((srv: string) => !defaultServices.includes(srv));
          const indexs = (
@@ -64,7 +64,7 @@ import { spawn } from 'child_process';
          break;
    }
 
-   console.log('START TO BUILD, PLEASE WAIT...');
+   console.log('STARTING TO BUILD, PLEASE WAIT...');
    const cwd = process.cwd();
    const sourceBase = `${cwd}/src`;
    const buildDir = `${cwd}/build`;
@@ -101,7 +101,7 @@ import { spawn } from 'child_process';
                );
             } else if (fName === 'package.json') {
                const pks = JSON.parse(fs.readFileSync(path).toString());
-               pks.name += `-${appEnv === 'gateway' ? appEnv : `${appEnv}-microservice`}`;
+               pks.name += `-${appEnv === 'api-gateway' ? appEnv : `${appEnv}-microservice`}`;
                const scripts = {
                   build: 'nest build',
                   start: 'nest start',
@@ -129,7 +129,56 @@ import { spawn } from 'child_process';
                   buildScripts[appEnv].push(`yarn ${appEnv}:prisma:generate`);
                }
 
+               const cfgKey = appEnv === 'api-gateway' ? 'apiGateway' : 'microservice';
+               const pkgExcludes = buildConfig[cfgKey]?.dependencies?.exclude || [];
+               const pkgIncludes = buildConfig[cfgKey]?.dependencies?.include || [];
+
+               for (const excl of pkgExcludes) {
+                  const [service, pkg] = excl.includes(':') ? excl.split(':') : [null, excl];
+
+                  if (!service || service === appEnv) {
+                     delete pks.dependencies[pkg];
+                     delete pks.devDependencies[pkg];
+                  }
+               }
+
+               for (const excl of pkgIncludes) {
+                  const [service, pkg] = excl.includes(':') ? excl.split(':') : [null, excl];
+
+                  if (!service || service === appEnv) {
+                     pks.dependencies[pkg] = pkg;
+                  }
+               }
+
                fs.writeFileSync(dest, JSON.stringify(pks, null, 2));
+            } else if (fName === 'metadata.ts' && appEnv !== 'api-gateway') {
+               const lines = fs
+                  .readFileSync(path)
+                  .toString()
+                  .split(/\n|\r\n/g);
+               const output: string[] = [];
+               let loadStart = false;
+               let loadEnd = false;
+
+               for (const line of lines) {
+                  if (line.includes(`// START TO LOAD THE MICROSERVICE CONFIGUARATION, DON'T REMOVE THIS LINE`)) {
+                     loadStart = true;
+                     output.push(`import ${appEnv} from './lib/microservice/${appEnv}/config';`);
+                     output.push(`const serviceConfigData = { ${appEnv} };`);
+                     continue;
+                  }
+
+                  if (line.includes(`// END TO LOAD THE MICROSERVICE CONFIGUARATION, DON'T REMOVE THIS LINE`)) {
+                     loadEnd = true;
+                     continue;
+                  }
+
+                  if (!loadStart || loadEnd) {
+                     output.push(line);
+                  }
+               }
+
+               fs.writeFileSync(dest, output.join('\r\n'));
             } else {
                fs.copyFileSync(path, dest);
             }
@@ -138,7 +187,7 @@ import { spawn } from 'child_process';
    };
    const baseFiles: string[] = [
       `${cwd}/docker/Dockerfile`,
-      `${sourceBase}/lib`,
+      `${sourceBase}/lib/common`,
       `${sourceBase}/config.ts`,
       `${sourceBase}/main.ts`,
       `${sourceBase}/metadata.ts`,
@@ -160,7 +209,10 @@ import { spawn } from 'child_process';
       }
 
       const files = [...baseFiles, `${sourceBase}/api-gateway/lib`, `${sourceBase}/api-gateway/app.module.ts`];
-      sources.gateway.forEach((srv) => files.push(`${sourceBase}/api-gateway/${srv}`));
+
+      sources.gateway.forEach((srv) =>
+         files.push(`${sourceBase}/lib/microservice/${srv}`, `${sourceBase}/api-gateway/${srv}`),
+      );
       copyFiles(files, `${buildDir}/api-gateway`);
    }
 
@@ -171,7 +223,12 @@ import { spawn } from 'child_process';
          }
 
          copyFiles(
-            [...baseFiles, `${sourceBase}/microservice/lib`, `${sourceBase}/microservice/${srv}`],
+            [
+               ...baseFiles,
+               `${sourceBase}/lib/microservice/${srv}`,
+               `${sourceBase}/microservice/lib`,
+               `${sourceBase}/microservice/${srv}`,
+            ],
             `${buildDir}/microservice/${srv}`,
          );
       });

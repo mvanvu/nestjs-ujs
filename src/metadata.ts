@@ -5,6 +5,7 @@ import { loadPermissionKeys } from './lib/common';
 import { ClientProxy } from '@nestjs/microservices';
 export { appConfig } from './config';
 
+// START TO LOAD THE MICROSERVICE CONFIGUARATION, DON'T REMOVE THIS LINE
 import system from './lib/microservice/system/config';
 import user from './lib/microservice/user/config';
 import storage from './lib/microservice/storage/config';
@@ -12,6 +13,7 @@ import mailer from './lib/microservice/mailer/config';
 import content from './lib/microservice/content/config';
 import order from './lib/microservice/order/config';
 const serviceConfigData = { system, mailer, storage, user, content, order };
+// END TO LOAD THE MICROSERVICE CONFIGUARATION, DON'T REMOVE THIS LINE
 
 export const serviceConfig = Registry.from<typeof serviceConfigData>(serviceConfigData, { consistent: true });
 
