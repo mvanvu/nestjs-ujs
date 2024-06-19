@@ -1,8 +1,8 @@
 import { AvailableStatus, TableStatus } from '.prisma/order';
 import { Property } from '@lib/common/decorator/property';
 import { BaseEntity } from '@lib/common/entity/base';
-import { UserRefEntity } from '@lib/microservice/user/entity/user';
 import { RestaurantRefEntity } from './restaurant';
+import { UserRefEntity } from '@lib/common/entity/user';
 
 export class TableEntity extends BaseEntity {
    @Property()

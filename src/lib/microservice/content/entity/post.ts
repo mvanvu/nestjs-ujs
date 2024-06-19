@@ -1,9 +1,9 @@
 import { AvailableStatus } from '.prisma/content';
 import { Property } from '@lib/common/decorator/property';
-import { UserRefEntity } from '@lib/microservice/user/entity/user';
 import { BaseEntity } from '@lib/common/entity/base';
 import { CategoryRef } from './category';
 import { MetadataEntity } from './metadata';
+import { UserRefEntity } from '@lib/common/entity/user';
 
 export class PostEntity extends BaseEntity {
    @Property()

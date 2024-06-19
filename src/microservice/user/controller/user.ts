@@ -3,16 +3,13 @@ import { UserService } from '../provider/user.service';
 import {
    UserSignInDto,
    UserSignUpDto,
-   UserEntity,
-   AuthEntity,
    AuthTokenDto,
-   AuthTokenEntity,
    SendResetPasswordCodeDto,
    VerifyAccountDto,
    ResetPasswordDto,
 } from '@lib/microservice/user';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { CRUDResult, MetaResult } from '@lib/common';
+import { AuthEntity, AuthTokenEntity, CRUDResult, MetaResult, UserEntity } from '@lib/common';
 import { serviceConfig } from '@metadata';
 const patterns = serviceConfig.get('user.patterns');
 

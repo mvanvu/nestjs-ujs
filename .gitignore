@@ -34,5 +34,5 @@ node_modules
 /dist
 /storage
 credentials
-/build/*
-!/build/config.json
+/build
+/build.json

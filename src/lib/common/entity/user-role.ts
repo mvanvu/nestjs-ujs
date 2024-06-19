@@ -1,6 +1,6 @@
 import { $Enums } from '.prisma/user';
-import { Property } from '@lib/common/decorator';
-import { BaseEntity } from '@lib/common/entity';
+import { Property } from '../decorator/property';
+import { BaseEntity } from './base';
 
 export class RoleEntity extends BaseEntity {
    @Property()

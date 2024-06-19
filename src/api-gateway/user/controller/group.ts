@@ -9,9 +9,9 @@ import {
    PaginationResponse,
    Permission,
 } from '@gateway/lib';
-import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
+import { CRUDClient, GroupEntity, PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
 import { serviceConfig } from '@metadata';
-import { GroupEntity, CreateGroupDto, UpdateGroupDto } from '@lib/microservice/user';
+import { CreateGroupDto, UpdateGroupDto } from '@lib/microservice/user';
 const { name, permissions, patterns } = serviceConfig.get('user');
 
 @ApiBearerAuth()

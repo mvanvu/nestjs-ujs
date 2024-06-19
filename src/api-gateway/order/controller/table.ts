@@ -5,8 +5,7 @@ import {
    EntityResponse,
    PaginationResponse,
 } from '@gateway/lib';
-import { CRUDClient, ParseMongoIdPipe, ThrowException, User } from '@lib/common';
-import { UserEntity } from '@lib/microservice/user';
+import { CRUDClient, ParseMongoIdPipe, ThrowException, User, UserEntity } from '@lib/common';
 import {
    TableEntity,
    CreateTableDto,

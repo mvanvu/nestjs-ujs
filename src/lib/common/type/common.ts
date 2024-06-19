@@ -1,8 +1,8 @@
 import { IsValidOptions, IsValidType, ObjectRecord, Registry, Transform } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { Type, VersionValue } from '@nestjs/common/interfaces';
-import { type UserEntity } from '@lib/microservice/user/entity/user';
-import { SystemConfigDto } from '@lib/microservice/system/dto';
+import { type UserEntity } from '@lib/common/entity/user';
+import { SystemConfigDto } from '@lib/common/dto/config';
 import { Request } from 'express';
 import { ResultOs } from 'node-device-detector';
 
@@ -113,3 +113,5 @@ export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> |
 };
 
 export type PermissionOptions = { key?: string; or?: string[]; and?: string[]; adminScope?: boolean } | string;
+
+export type MailerTransporter = 'SMTP';

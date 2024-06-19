@@ -24,7 +24,7 @@
     "api-gateway:prisma:generate": "yarn user:prisma:generate && yarn storage:prisma:generate && yarn system:prisma:generate && yarn content:prisma:generate && yarn order:prisma:generate"
   },
   "dependencies": {
-    "@mvanvu/ujs": "file:/Users/nexroot/DEV/utils/dist",
+    "@mvanvu/ujs": "file:/home/rainy/DEV/utils/dist",
     "@nestjs/cache-manager": "^2.2.2",
     "@nestjs/common": "^10.3.1",
     "@nestjs/core": "^10.3.1",

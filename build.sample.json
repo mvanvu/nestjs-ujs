@@ -1,5 +1,5 @@
 {
-    "apiGateway": {
+    "api-gateway": {
         "defaultList": ["user", "system", "mailer", "storage"],
         "dependencies": {
             "exclude": ["argon2"]
@@ -11,5 +11,14 @@
             "exclude": ["helmet", "argon2", "cache-manager", "cache-manager-redis-yet", "googleapis", "node-device-detector"],
             "include": ["user:argon2"]
         }
+    },
+    "env": {
+        "api-gateway": {},
+        "user": {},
+        "system": {},
+        "content": {},
+        "mailer": {},
+        "order": {},
+        "storage": {}
     }
 }

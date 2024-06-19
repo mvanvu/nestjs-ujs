@@ -1,6 +1,6 @@
 import { BaseEntity } from '@lib/common/entity/base';
 import { Property } from '@lib/common/decorator/property';
-import { MailerTransporter } from '../type';
+import { MailerTransporter } from '../type/common';
 
 const transporters: MailerTransporter[] = ['SMTP'];
 

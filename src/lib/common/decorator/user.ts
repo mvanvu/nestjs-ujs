@@ -1,8 +1,8 @@
 import { ExecutionContext, UnauthorizedException, createParamDecorator } from '@nestjs/common';
 import { HttpRequest, MessageMeta } from '../type';
-import { UserEntity } from '@lib/microservice/user/entity/user';
 import { Is, Registry } from '@mvanvu/ujs';
 import { isGateway } from '@metadata';
+import { UserEntity } from '../entity/user';
 
 export const User = createParamDecorator(
    (

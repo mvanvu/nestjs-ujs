@@ -1,8 +1,8 @@
 import { AvailableStatus } from '.prisma/content';
-import { IPickType } from '@lib/common';
 import { Property } from '@lib/common/decorator/property';
 import { BaseEntity } from '@lib/common/entity/base';
-import { UserRefEntity } from '@lib/microservice/user/entity/user';
+import { IPickType } from '@lib/common/entity/mapped-type';
+import { UserRefEntity } from '@lib/common/entity/user';
 
 export class RestaurantEntity extends BaseEntity {
    @Property()

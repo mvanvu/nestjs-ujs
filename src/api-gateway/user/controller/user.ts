@@ -1,15 +1,20 @@
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { PaginationQueryDto, ParseMongoIdPipe, User, CRUDClient } from '@lib/common';
+import {
+   PaginationQueryDto,
+   ParseMongoIdPipe,
+   User,
+   CRUDClient,
+   AuthTokenEntity,
+   UserEntity,
+   AuthEntity,
+} from '@lib/common';
 import {
    CreateUserDto,
    UserSignInDto,
    UserSignUpDto,
-   UserEntity,
-   AuthEntity,
    UpdateUserDto,
    AuthTokenDto,
-   AuthTokenEntity,
    SendResetPasswordCodeDto,
    ResetPasswordDto,
 } from '@lib/microservice/user';

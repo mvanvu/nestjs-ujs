@@ -5,8 +5,6 @@ import { BaseService } from '@microservice/lib';
 
 @Injectable()
 export class MailerService extends BaseService {
-   private static transporter: SMTPTransporter;
-
    get transporter(): SMTPTransporter {
       const mailerConfig = this.meta.get('headers.systemConfig.mailer');
 

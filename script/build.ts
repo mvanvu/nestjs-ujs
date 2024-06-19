@@ -1,17 +1,18 @@
-import { Util } from '@mvanvu/ujs';
+import { ObjectRecord, Util } from '@mvanvu/ujs';
 import * as prompts from 'prompts';
 import * as fs from 'fs';
 import { spawn } from 'child_process';
 
 (async () => {
-   // eslint-disable-next-line @typescript-eslint/no-var-requires
-   const buildConfig = require('../build/config.json');
+   const cwd = process.cwd();
+   const buildFile = fs.existsSync(`${cwd}/build.json`) ? `${cwd}/build.json` : `${cwd}/build.sample.json`;
+   const buildConfig = JSON.parse(fs.readFileSync(buildFile).toString());
    const microservice = buildConfig.microservice.list;
    const buildFor = ['all', 'api-gateway', 'microservice'];
    const { buildFor: fIndex } = await prompts({
       type: 'select',
       name: 'buildFor',
-      message: 'Choose a service',
+      message: 'Build for',
       choices: buildFor.map((service) => ({ title: Util.uFirst(service) })),
    });
 
@@ -19,7 +20,7 @@ import { spawn } from 'child_process';
 
    switch (buildFor[fIndex]) {
       case 'api-gateway':
-         const defaultServices = buildConfig.apiGateway.defaultList as string[];
+         const defaultServices = buildConfig[buildFor[fIndex]].defaultList as string[];
          sources.gateway.push(...defaultServices); // Add requirement services
          const gatewayServices = microservice.filter((srv: string) => !defaultServices.includes(srv));
          const indexs = (
@@ -44,7 +45,7 @@ import { spawn } from 'child_process';
                type: 'multiselect',
                name: 'services',
                message: 'Choose some services',
-               choices: microservice.map((service) => ({ title: Util.uFirst(service) })),
+               choices: microservice.map((service: string) => ({ title: Util.uFirst(service) })),
             })
          ).services as number[];
 
@@ -57,7 +58,6 @@ import { spawn } from 'child_process';
 
          break;
 
-      default:
       case 'all':
          sources.gateway.push(...microservice);
          sources.microservice.push(...microservice);
@@ -65,19 +65,18 @@ import { spawn } from 'child_process';
    }
 
    console.log('STARTING TO BUILD, PLEASE WAIT...');
-   const cwd = process.cwd();
+   const sourcesDir: string[] = [];
    const sourceBase = `${cwd}/src`;
    const buildDir = `${cwd}/build`;
    const buildScripts: Record<string, string[]> = {};
-
-   const copyFiles = (path: string | string[], buildDir: string) => {
+   const copyFiles = (path: string | string[], buildDir: string, servicesConfig: string[]) => {
       if (Array.isArray(path)) {
-         path.forEach((p) => copyFiles(p, buildDir));
+         path.forEach((p) => copyFiles(p, buildDir, servicesConfig));
       } else if (fs.existsSync(path)) {
          const stat = fs.statSync(path);
 
          if (stat.isDirectory()) {
-            fs.readdirSync(path).forEach((dir) => copyFiles(`${path}/${dir}`, buildDir));
+            fs.readdirSync(path).forEach((dir) => copyFiles(`${path}/${dir}`, buildDir, servicesConfig));
          } else if (stat.isFile()) {
             const dest = path.replace(cwd, buildDir);
             const dir = Util.dirName(dest);
@@ -87,20 +86,42 @@ import { spawn } from 'child_process';
             }
 
             const appEnv = buildDir.split('/').pop();
-            const fName = path.split('/').pop();
 
-            if (fName === '.env') {
+            if (path === `${cwd}/.env`) {
                // Preprogress env
+               const envConfig: ObjectRecord = {};
+
+               for (let line of fs
+                  .readFileSync(path)
+                  .toString()
+                  .split(/\n|\r\n/g)) {
+                  line = line.trim();
+
+                  if (!line.startsWith('#') && line.includes('=')) {
+                     const parts = line.split('=');
+                     const k = parts.shift();
+                     const v = parts.join('=');
+                     envConfig[k] = v;
+                  }
+               }
+
+               envConfig.APP_ENV = `"${appEnv}"`;
+               envConfig.NODE_ENV = '"production"';
+               const envOverride = buildConfig.env?.[appEnv] || {};
+
+               for (const k in envOverride) {
+                  envConfig[k] = envOverride[k];
+               }
+
                fs.writeFileSync(
                   dest,
-                  `APP_ENV="${appEnv}"\r\n` +
-                     fs
-                        .readFileSync(path)
-                        .toString()
-                        .replace(/NODE_ENV="?([a-zA-Z]+)"?/, 'NODE_ENV="production"'),
+                  Object.entries(envConfig)
+                     .map(([k, v]) => `${k}=${v}`)
+                     .join('\r\n'),
                );
-            } else if (fName === 'package.json') {
+            } else if (path === `${cwd}/package.json`) {
                const pks = JSON.parse(fs.readFileSync(path).toString());
+               const dependencies = JSON.parse(JSON.stringify(pks.dependencies));
                pks.name += `-${appEnv === 'api-gateway' ? appEnv : `${appEnv}-microservice`}`;
                const scripts = {
                   build: 'nest build',
@@ -146,30 +167,34 @@ import { spawn } from 'child_process';
                   const [service, pkg] = excl.includes(':') ? excl.split(':') : [null, excl];
 
                   if (!service || service === appEnv) {
-                     pks.dependencies[pkg] = pkg;
+                     pks.dependencies[pkg] = dependencies[pkg];
                   }
                }
 
                fs.writeFileSync(dest, JSON.stringify(pks, null, 2));
-            } else if (fName === 'metadata.ts' && appEnv !== 'api-gateway') {
+            } else if (path === `${sourceBase}/metadata.ts`) {
                const lines = fs
                   .readFileSync(path)
                   .toString()
-                  .split(/\n|\r\n/g);
+                  .split(/\n|\r\n/);
                const output: string[] = [];
                let loadStart = false;
                let loadEnd = false;
 
                for (const line of lines) {
-                  if (line.includes(`// START TO LOAD THE MICROSERVICE CONFIGUARATION, DON'T REMOVE THIS LINE`)) {
+                  if (line.includes(`START TO LOAD THE MICROSERVICE CONFIGUARATION, DON'T REMOVE THIS LINE`)) {
                      loadStart = true;
-                     output.push(`import ${appEnv} from './lib/microservice/${appEnv}/config';`);
-                     output.push(`const serviceConfigData = { ${appEnv} };`);
+                     output.push(
+                        line,
+                        ...servicesConfig.map((srv) => `import ${srv} from './lib/microservice/${srv}/config';`),
+                     );
+                     output.push(`const serviceConfigData = { ${servicesConfig.join(', ')} };`);
                      continue;
                   }
 
-                  if (line.includes(`// END TO LOAD THE MICROSERVICE CONFIGUARATION, DON'T REMOVE THIS LINE`)) {
+                  if (line.includes(`END TO LOAD THE MICROSERVICE CONFIGUARATION, DON'T REMOVE THIS LINE`)) {
                      loadEnd = true;
+                     output.push(line);
                      continue;
                   }
 
@@ -208,12 +233,12 @@ import { spawn } from 'child_process';
          fs.rmSync(`${buildDir}/api-gateway`, { recursive: true });
       }
 
+      sourcesDir.push('api-gateway');
       const files = [...baseFiles, `${sourceBase}/api-gateway/lib`, `${sourceBase}/api-gateway/app.module.ts`];
-
       sources.gateway.forEach((srv) =>
          files.push(`${sourceBase}/lib/microservice/${srv}`, `${sourceBase}/api-gateway/${srv}`),
       );
-      copyFiles(files, `${buildDir}/api-gateway`);
+      copyFiles(files, `${buildDir}/api-gateway`, sources.gateway);
    }
 
    if (sources.microservice.length) {
@@ -222,6 +247,7 @@ import { spawn } from 'child_process';
             fs.rmSync(`${buildDir}/microservice/${srv}`, { recursive: true });
          }
 
+         sourcesDir.push(`microservice/${srv}`);
          copyFiles(
             [
                ...baseFiles,
@@ -230,19 +256,12 @@ import { spawn } from 'child_process';
                `${sourceBase}/microservice/${srv}`,
             ],
             `${buildDir}/microservice/${srv}`,
+            [srv],
          );
       });
    }
 
-   const sourcesDir: string[] = [];
-
-   if (fs.existsSync(`${buildDir}/api-gateway`)) {
-      sourcesDir.push('api-gateway');
-   }
-
-   if (fs.existsSync(`${buildDir}/microservice`)) {
-      sourcesDir.push(...fs.readdirSync(`${buildDir}/microservice`).map((dir) => `microservice/${dir}`));
-   }
+   let successAll = true;
 
    for (const source of sourcesDir) {
       const scripts: string[] = [`cd build/${source}`, 'yarn'];
@@ -258,6 +277,10 @@ import { spawn } from 'child_process';
          build.stdout.on('data', (data) => console.log(`${data}`));
          build.stderr.on('data', (data) => console.log(`${data}`));
          build.on('close', (code) => {
+            if (code) {
+               successAll = false;
+            }
+
             const warnStr = `================= BUILD ${source.toUpperCase()} ${code === 0 ? 'SUCCESSFULLY' : 'FAILURE'} =================`;
             const repeatStr = '='.repeat(warnStr.length);
             console.log(`${repeatStr}\r\n${warnStr}\r\n${repeatStr}`);
@@ -265,4 +288,8 @@ import { spawn } from 'child_process';
          });
       });
    }
+
+   const warnStr = `================= BUILD ${successAll ? ' ALL SUCCESSFULLY' : ' HAS SOME FAILURE'} =================`;
+   const repeatStr = '='.repeat(warnStr.length);
+   console.log(`${repeatStr}\r\n${warnStr}\r\n${repeatStr}`);
 })();

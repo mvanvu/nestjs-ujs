@@ -6,8 +6,7 @@ import {
    PaginationResponse,
    Permission,
 } from '@gateway/lib';
-import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
-import { UserRefEntity } from '@lib/microservice/user';
+import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe, UserRefEntity } from '@lib/common';
 import { RestaurantEntity, UpdateRestaurantDto, CreateRestaurantDto } from '@lib/microservice/order';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';

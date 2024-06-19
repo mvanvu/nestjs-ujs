@@ -1,7 +1,7 @@
 import { Property } from '@lib/common/decorator/property';
 import { AvailableStatus } from '.prisma/content';
 import { IPartialType } from '@lib/common/entity/mapped-type';
-import { UserRefEntity } from '@lib/microservice/user/entity/user';
+import { UserRefEntity } from '@lib/common/entity/user';
 
 export class CreateRestaurantDto {
    @Property({ validate: { is: 'mongoId' } })

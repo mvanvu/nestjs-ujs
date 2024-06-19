@@ -1,7 +1,7 @@
 import { AvailableStatus } from '.prisma/order';
 import { Property } from '@lib/common/decorator/property';
 import { BaseEntity } from '@lib/common/entity/base';
-import { UserRefEntity } from '@lib/microservice/user/entity/user';
+import { UserRefEntity } from '@lib/common/entity/user';
 
 export class CategoryEntity extends BaseEntity {
    @Property()

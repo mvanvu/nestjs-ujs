@@ -44,7 +44,7 @@ export const app = <
         : NestExpressApplication | INestMicroservice,
 >(): R => <R>_app;
 
-export const isGateway = (): boolean => process.env.APP_ENV === 'gateway';
+export const isGateway = (): boolean => process.env.APP_ENV === 'api-gateway';
 export const isMicroservice = (): boolean => !isGateway();
 export const injectProxy = (serviceName: ServiceName): string => `${serviceName.toUpperCase()}_MICROSERVICE`;
 export const clientProxy = (serviceName: ServiceName): ClientProxy =>

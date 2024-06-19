@@ -1,11 +1,11 @@
-import { serviceConfig } from '@metadata';
 import { Is } from '@mvanvu/ujs';
 import { UserStatus } from '.prisma/user';
-import { Property } from '@lib/common/decorator/property';
-import { BaseEntity } from '@lib/common/entity/base';
-import { PermissionOptions } from '@lib/common/type/common';
-import { IPickType } from '@lib/common/entity/mapped-type';
-import { GroupEntity } from './group';
+import { Property } from '../decorator/property';
+import { BaseEntity } from './base';
+import { PermissionOptions } from '../type/common';
+import { IPickType } from './mapped-type';
+import { GroupEntity } from './user-group';
+import { SYSTEM_PERMISSION_ADMIN_SCOPE } from '../constant/common';
 
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
 
@@ -72,7 +72,7 @@ export class UserEntity extends BaseEntity {
 
    get isRoot(): boolean {
       let isUserRoot: boolean = false;
-      const rootUID = serviceConfig.get('user.rootUID');
+      const rootUID = process.env.ROOT_UID || '';
 
       if (rootUID) {
          if (Is.email(rootUID)) {
@@ -107,7 +107,7 @@ export class UserEntity extends BaseEntity {
 
       if (
          !userPermissions.length ||
-         (permission.adminScope === true && !userPermissions.includes(serviceConfig.get('system.permissions.admin'))) ||
+         (permission.adminScope === true && !userPermissions.includes(SYSTEM_PERMISSION_ADMIN_SCOPE)) ||
          (permission.key && !userPermissions.includes(permission.key)) ||
          (permission.or?.length && !userPermissions.find((permit) => permission.or.includes(permit))) ||
          (permission.and?.length &&

@@ -3,10 +3,9 @@ import { Response, NextFunction } from 'express';
 import DeviceDetector from 'node-device-detector';
 import DeviceHelper from 'node-device-detector/helper';
 import { Registry } from '@mvanvu/ujs';
-import { HttpRequest, RequestRegistryData } from '@lib/common';
+import { HttpRequest, RequestRegistryData, SYSTEM_GET_CONFIG_PATTERN, SystemConfigDto } from '@lib/common';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { SystemConfigDto } from '@lib/microservice/system';
-import { injectProxy, serviceConfig } from '@metadata';
+import { injectProxy } from '@metadata';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 
@@ -31,7 +30,7 @@ export class HttpMiddleware implements NestMiddleware {
       }
 
       // Load system config
-      const systemConfigPattern = serviceConfig.get('system.patterns.getConfig');
+      const systemConfigPattern = SYSTEM_GET_CONFIG_PATTERN;
       let systemConfig: SystemConfigDto = await this.cacheManager.get(systemConfigPattern);
 
       if (!systemConfig) {
