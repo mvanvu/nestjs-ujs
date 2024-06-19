@@ -25,8 +25,8 @@
          "@lib/*": ["src/lib/*"],
          "@gateway": ["src/gateway"],
          "@gateway/*": ["src/gateway/*"],
-         "@service": ["src/microservice"],
-         "@service/*": ["src/microservice/*"],
+         "@microservice": ["src/microservice"],
+         "@microservice/*": ["src/microservice/*"],
          "@": ["src"],
          "@/*": ["src/*"]
       }

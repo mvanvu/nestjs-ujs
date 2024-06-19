@@ -1,8 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { RoleService } from '../provider';
-import { RoleEntity } from '../entity';
+import { RoleEntity } from '../../../lib/microservice/user/entity';
 import { MessagePattern } from '@nestjs/microservices';
-import { CRUDResult } from '@lib';
+import { CRUDResult } from '@lib/common';
 import { serviceConfig } from '@metadata';
 const patterns = serviceConfig.get('user.patterns');
 export class RoleController {

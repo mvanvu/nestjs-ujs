@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PrismaService } from './prisma/prisma.service';
-import { CreateGroupDto, GroupEntity, UpdateGroupDto } from '@service/user';
-import { BaseService, CRUDService } from '@service/lib';
-import { ThrowException, CRUDExecuteContext } from '@lib';
+import { PrismaService } from './prisma.service';
+import { CreateGroupDto, GroupEntity, UpdateGroupDto } from '@lib/microservice/user';
+import { BaseService, CRUDService } from '@microservice/lib';
+import { ThrowException, CRUDExecuteContext } from '@lib/common';
 import { Prisma, AvailableStatus } from '.prisma/user';
 import { Is } from '@mvanvu/ujs';
 

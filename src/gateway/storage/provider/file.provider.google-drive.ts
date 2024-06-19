@@ -1,11 +1,11 @@
-import { ThrowException } from '@lib';
+import { ThrowException } from '@lib/common';
 import { FileProviderInterface } from './file.provider.interface';
 import { google, drive_v3 as v3 } from 'googleapis';
 import { Readable } from 'stream';
 import { Provider } from '.prisma/storage';
 import { StreamableFile } from '@nestjs/common';
 import { serviceConfig } from '@metadata';
-import { FileEntity, FinalUploadDto, UploadDto } from '@service/storage';
+import { FileEntity, FinalUploadDto, UploadDto } from '@lib/microservice/storage';
 
 const storageConfig = serviceConfig.get('storage');
 

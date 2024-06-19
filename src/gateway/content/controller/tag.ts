@@ -6,8 +6,8 @@ import {
    PaginationResponse,
    Permission,
 } from '@gateway/lib';
-import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@lib';
-import { TagEntity, CreateTagDto, UpdateTagDto } from '@service/content';
+import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
+import { TagEntity, CreateTagDto, UpdateTagDto } from '@lib/microservice/content';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';

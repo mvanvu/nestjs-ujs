@@ -3,7 +3,7 @@ import { APP_GUARD, APP_INTERCEPTOR, NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
-import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib';
+import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import {
    BaseClientProxy,

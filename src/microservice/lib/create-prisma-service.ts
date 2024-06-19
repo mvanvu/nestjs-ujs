@@ -1,5 +1,5 @@
 import { ObjectRecord } from '@mvanvu/ujs';
-import { ClassConstructor } from '@lib';
+import { ClassConstructor } from '@lib/common';
 import { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { CRUDService } from './service.crud';
 import { PrismaClient } from '@prisma/client';
@@ -23,7 +23,7 @@ export function CreatePrismaService<TClientRef extends ClassConstructor<PrismaCl
       }
 
       createCRUDService(model: string): CRUDService<this> {
-         return new CRUDService(this, <string>model, this.ctx);
+         return new CRUDService(this, <string>model, this['ctx']);
       }
    }
 

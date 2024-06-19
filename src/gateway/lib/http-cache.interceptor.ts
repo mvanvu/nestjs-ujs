@@ -1,6 +1,6 @@
 import { CACHE_MANAGER, Cache, CacheInterceptor } from '@nestjs/cache-manager';
 import { ExecutionContext, Inject, Injectable } from '@nestjs/common';
-import { HTTP_CACHE_KEY, HttpRequest, HttpCacheOptions } from '@lib';
+import { HTTP_CACHE_KEY, HttpRequest, HttpCacheOptions } from '@lib/common';
 
 @Injectable()
 export class HttpCacheInterceptor extends CacheInterceptor {

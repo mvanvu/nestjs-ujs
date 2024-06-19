@@ -1,2 +1,2 @@
 export * from './system.service';
-export * from './prisma/prisma.service';
+export * from './prisma.service';

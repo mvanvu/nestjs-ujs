@@ -6,8 +6,8 @@ import {
    PaginationResponse,
    Permission,
 } from '@gateway/lib';
-import { PaginationQueryDto } from '@lib';
-import { ActivityLogDto, SystemConfigDto } from '@service/system';
+import { PaginationQueryDto } from '@lib/common';
+import { ActivityLogDto, SystemConfigDto } from '@lib/microservice/system';
 import { serviceConfig } from '@metadata';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Body, Controller, Get, HttpStatus, Inject, Post, Query } from '@nestjs/common';

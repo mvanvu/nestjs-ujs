@@ -7,15 +7,15 @@ import {
    UpdateUserDto,
    AuthTokenEntity,
    ResetPasswordDto,
-} from '@service/user';
+} from '@lib/microservice/user';
 import { Inject, Injectable } from '@nestjs/common';
-import { PrismaService } from './prisma/prisma.service';
+import { PrismaService } from './prisma.service';
 import { Prisma, UserStatus, VerifyCode } from '.prisma/user';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is, JWTError } from '@mvanvu/ujs';
 import { serviceConfig } from '@metadata';
-import { BaseService, CRUDService } from '@service/lib';
-import { FieldsException, ThrowException, MetaResult, CRUDExecuteContext } from '@lib';
+import { BaseService, CRUDService } from '@microservice/lib';
+import { FieldsException, ThrowException, MetaResult, CRUDExecuteContext } from '@lib/common';
 
 @Injectable()
 export class UserService extends BaseService {

@@ -1,4 +1,4 @@
-export * from './prisma/prisma.service';
+export * from './prisma.service';
 export * from './category.service';
 export * from './item.service';
 export * from './restaurant.service';

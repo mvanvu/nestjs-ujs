@@ -1,6 +1,6 @@
 import { OnEvent } from '@gateway/lib';
-import { OnServiceResponse, eventConstant } from '@lib';
-import { ActivityLogDto } from '@service/system';
+import { OnServiceResponse, eventConstant } from '@lib/common';
+import { ActivityLogDto } from '@lib/microservice/system';
 import { injectProxy, serviceConfig } from '@metadata';
 import { Is, Util } from '@mvanvu/ujs';
 import { Inject, Injectable } from '@nestjs/common';

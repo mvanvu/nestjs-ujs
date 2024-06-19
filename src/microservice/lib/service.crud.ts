@@ -1,5 +1,5 @@
 import { appConfig } from '@metadata';
-import { FieldsException, ThrowException } from '@lib/exception';
+import { FieldsException, ThrowException } from '@lib/common/exception';
 import {
    OrderBy,
    OrderDirection,
@@ -19,7 +19,7 @@ import {
    OnBeforeExecute,
    OnBeforeExecuteOptions,
    CRUDExecuteContext,
-} from '@lib';
+} from '@lib/common';
 import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { BaseService } from './service.base';

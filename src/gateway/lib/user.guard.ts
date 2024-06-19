@@ -1,8 +1,8 @@
-import { HttpRequest, PermissionOptions, USER_PUBLIC_KEY, USER_ROLE_KEY } from '@lib';
+import { HttpRequest, PermissionOptions, USER_PUBLIC_KEY, USER_ROLE_KEY } from '@lib/common';
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
-import { UserEntity } from '@service/user';
+import { UserEntity } from '@lib/microservice/user';
 import { lastValueFrom, timeout } from 'rxjs';
 import { serviceConfig } from '@metadata';
 import { app as getApplication } from '@metadata';

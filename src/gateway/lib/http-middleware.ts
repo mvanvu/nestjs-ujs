@@ -3,10 +3,10 @@ import { Response, NextFunction } from 'express';
 import DeviceDetector from 'node-device-detector';
 import DeviceHelper from 'node-device-detector/helper';
 import { Registry } from '@mvanvu/ujs';
-import { HttpRequest, RequestRegistryData } from '@lib';
+import { HttpRequest, RequestRegistryData } from '@lib/common';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { SystemConfigDto } from '@service/system';
-import { serviceConfig } from '@metadata';
+import { SystemConfigDto } from '@lib/microservice/system';
+import { injectProxy, serviceConfig } from '@metadata';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 
@@ -14,7 +14,7 @@ import { lastValueFrom } from 'rxjs';
 export class HttpMiddleware implements NestMiddleware {
    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache;
 
-   @Inject(serviceConfig.get('system.name').toUpperCase() + '_MICROSERVICE')
+   @Inject(injectProxy('system'))
    private readonly systemProxy: ClientProxy;
 
    async use(req: HttpRequest, _res: Response, next: NextFunction) {

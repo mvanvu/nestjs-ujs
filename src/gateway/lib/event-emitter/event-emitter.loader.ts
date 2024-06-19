@@ -1,4 +1,4 @@
-import { eventConstant } from '@lib';
+import { eventConstant } from '@lib/common';
 import { EventEmitter, Is } from '@mvanvu/ujs';
 import { Injectable, InjectionToken, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import { ContextIdFactory, DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';

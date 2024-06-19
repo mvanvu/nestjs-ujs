@@ -1,7 +1,7 @@
 import { OnEvent } from '@gateway/lib';
-import { MetaResult, OnServiceResponse, eventConstant } from '@lib';
-import { UserEntity } from '@service';
-import { SendMailDto } from '@service/mailer';
+import { MetaResult, OnServiceResponse, eventConstant } from '@lib/common';
+import { UserEntity } from '@lib/microservice/user';
+import { SendMailDto } from '@lib/microservice/mailer';
 import { serviceConfig } from '@metadata';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';

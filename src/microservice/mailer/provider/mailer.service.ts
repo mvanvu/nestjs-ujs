@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SMTPTransporter } from '../transporter';
-import { MessageInfoEntity, SendMailDto } from '@service/mailer';
-import { BaseService } from '@service/lib';
+import { MessageInfoEntity, SendMailDto } from '@lib/microservice/mailer';
+import { BaseService } from '@microservice/lib';
 
 @Injectable()
 export class MailerService extends BaseService {

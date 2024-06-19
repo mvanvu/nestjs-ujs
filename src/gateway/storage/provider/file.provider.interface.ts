@@ -1,4 +1,4 @@
-import { FileEntity, FinalUploadDto, UploadDto } from '@service';
+import { FileEntity, FinalUploadDto, UploadDto } from '@lib/microservice/storage';
 import { StreamableFile } from '@nestjs/common';
 
 export interface FileProviderInterface {

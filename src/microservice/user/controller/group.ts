@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
-import { GroupEntity } from '@service/user';
+import { GroupEntity } from '@lib/microservice/user';
 import { MessagePattern } from '@nestjs/microservices';
-import { CRUDResult } from '@lib';
+import { CRUDResult } from '@lib/common';
 import { serviceConfig } from '@metadata';
 import { GroupService } from '../provider';
 const patterns = serviceConfig.get('user.patterns');
