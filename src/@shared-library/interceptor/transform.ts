@@ -11,8 +11,8 @@ export class TransformInterceptor implements NestInterceptor {
          .pipe(
             map((response) =>
                Is.object(response, { suitable: false, rules: { meta: 'object' } })
-                  ? { success: true, data: response.data, meta: response.meta }
-                  : { success: true, data: response },
+                  ? { success: true, data: response.data ?? null, meta: response.meta }
+                  : { success: true, data: response ?? null },
             ),
          );
    }

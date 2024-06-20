@@ -39,6 +39,9 @@ services:
       command: mongod --bind_ip_all --replSet rs0 --keyFile /mongodb-keyfile --port ${MONGODB_PRIMARY_PORT}
       networks:
          - mongodb-network
+      depends_on:
+         - mongodb-secondary-1
+         - mongodb-secondary-2
 
    mongodb-secondary-1:
       image: mongodb:latest
@@ -54,7 +57,6 @@ services:
          - ${MONGODB_SECONDARY1_PORT}:${MONGODB_SECONDARY1_PORT}
       expose:
          - ${MONGODB_SECONDARY1_PORT}
-      command: mongod --bind_ip_all --replSet rs0 --keyFile /mongodb-keyfile --port ${MONGODB_SECONDARY1_PORT}
       networks:
          - mongodb-network
 

@@ -1,12 +1,16 @@
 import { HttpRequest, PermissionOptions, USER_PUBLIC_KEY, USER_ROLE_KEY, UserEntity } from '@shared-library';
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom, timeout } from 'rxjs';
-import { injectProxy, serviceConfig, app as getApplication } from '@metadata';
+import { injectProxy, serviceConfig, app as getApplication, appConfig } from '@metadata';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { Hash, Is } from '@mvanvu/ujs';
 
 @Injectable()
 export class UserAuthGuard implements CanActivate {
+   @Inject(CACHE_MANAGER) private readonly cacheManager: Cache;
+
    async canActivate(context: ExecutionContext): Promise<boolean> {
       const app = getApplication();
       const reflector = app.get(Reflector);
@@ -27,13 +31,30 @@ export class UserAuthGuard implements CanActivate {
       }
 
       try {
-         const user = await lastValueFrom(
-            app
-               .get<ClientProxy>(injectProxy('user'))
-               .send(serviceConfig.get('user.patterns.verifyToken'), { token })
-               .pipe(timeout(5000)),
-         );
-         request.registry.set('user', new UserEntity(user));
+         const decode = Hash.jwt().decode(token);
+         const userId = decode?.payload?.data?.id;
+
+         if (Is.mongoId(userId)) {
+            const cacheKey = `${userId}:users/verify-token`;
+            let user: UserEntity = await this.cacheManager.get(cacheKey);
+
+            if (!user) {
+               user = await lastValueFrom<UserEntity>(
+                  app
+                     .get<ClientProxy>(injectProxy('user'))
+                     .send(serviceConfig.get('user.patterns.verifyToken'), { token })
+                     .pipe(timeout(appConfig.get('apiGateway.requestTimeout'))),
+               );
+
+               if (user.id === userId) {
+                  await this.cacheManager.set(cacheKey, user, appConfig.get('cache.ttl'));
+               }
+            }
+
+            request.registry.set('user', new UserEntity(user));
+         } else {
+            throw new ForbiddenException();
+         }
       } catch (e) {
          if (isPublic) {
             return true;

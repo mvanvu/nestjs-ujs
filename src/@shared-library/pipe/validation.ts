@@ -6,7 +6,7 @@ import { CLASS_PROPERTIES } from '../constant';
 import { ThrowException } from '../exception/throw';
 import { RpcException } from '@nestjs/microservices';
 
-export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstructor<any>) {
+export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstructor<any>, whiteList?: boolean) {
    if (!Is.object(data) || !Is.class(DTOClassRef)) {
       return data;
    }
@@ -18,10 +18,20 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
    const props: string[] = Object.keys(DTOClassRef.prototype[CLASS_PROPERTIES] || {});
 
    // Cleanup data
+   const notAcceptedProps: string[] = [];
+
    for (const prop in data) {
       if (!props.includes(prop)) {
+         if (whiteList !== true) {
+            notAcceptedProps.push(prop);
+         }
+
          delete data[prop];
       }
+   }
+
+   if (notAcceptedProps.length) {
+      ThrowException(`The ${notAcceptedProps.join(', ')} ${notAcceptedProps.length > 1 ? `aren't` : `isn't`} accpeted`);
    }
 
    // Handle transformer
@@ -171,9 +181,11 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
 
 @Injectable()
 export class ValidationPipe implements PipeTransform {
+   constructor(private readonly options?: { whiteList?: boolean }) {}
+
    async transform(value: ObjectRecord, meta: ArgumentMetadata) {
       const { metatype: ClassContructor } = meta;
 
-      return await validateDTO(value, ClassContructor);
+      return await validateDTO(value, ClassContructor, this.options?.whiteList);
    }
 }

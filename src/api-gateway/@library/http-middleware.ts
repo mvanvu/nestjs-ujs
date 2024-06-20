@@ -5,9 +5,9 @@ import DeviceHelper from 'node-device-detector/helper';
 import { Registry } from '@mvanvu/ujs';
 import { HttpRequest, RequestRegistryData, SYSTEM_GET_CONFIG_PATTERN, SystemConfigDto } from '@shared-library';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { injectProxy } from '@metadata';
+import { appConfig, injectProxy } from '@metadata';
 import { ClientProxy } from '@nestjs/microservices';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, timeout } from 'rxjs';
 
 @Injectable()
 export class HttpMiddleware implements NestMiddleware {
@@ -34,9 +34,13 @@ export class HttpMiddleware implements NestMiddleware {
       let systemConfig: SystemConfigDto = await this.cacheManager.get(systemConfigPattern);
 
       if (!systemConfig && this.systemProxy instanceof ClientProxy) {
-         systemConfig = await lastValueFrom<SystemConfigDto>(this.systemProxy.send(systemConfigPattern, {}).pipe());
+         systemConfig = await lastValueFrom<SystemConfigDto>(
+            this.systemProxy.send(systemConfigPattern, {}).pipe(timeout(appConfig.get('apiGateway.requestTimeout'))),
+         );
          await this.cacheManager.set(systemConfigPattern, systemConfig, 0);
       }
+
+      const ipAddress = req.ips.length ? req.ips[0] : req.ip;
 
       // Registry for local storage
       req.registry = Registry.from<RequestRegistryData>({
@@ -50,7 +54,7 @@ export class HttpMiddleware implements NestMiddleware {
             : null,
          deviceType,
          userAgent,
-         ipAddress: req.ips.length ? req.ips[0] : req.ip,
+         ipAddress,
          systemConfig,
       });
 

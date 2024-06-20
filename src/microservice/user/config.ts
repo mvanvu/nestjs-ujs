@@ -1,3 +1,5 @@
+import { USER_PERMISSION_ADMIN_SCOPE } from '@shared-library';
+
 export default {
    name: 'user',
    patterns: {
@@ -14,7 +16,7 @@ export default {
    },
    permissions: {
       admin: {
-         scope: 'user.admin.scope',
+         scope: USER_PERMISSION_ADMIN_SCOPE,
       },
 
       group: {

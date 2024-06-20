@@ -21,13 +21,14 @@ const appConfigData = {
             const [name, ttl, limit] = opt.split(':');
             return { name, ttl: Number(ttl), limit: Number(limit) };
          }),
+      requestTimeout: envConfig.get<number>('HTTP_REQUEST_TIME_OUT', 5000, 'toUInt'),
    },
    redis: {
       url: envConfig.get<string>('REDIS_URL'),
    },
    cache: {
-      ttl: envConfig.get<number>('CACHE_TTL_IN_SECONDS', 300, 'toUInt') * 1000,
-      maxItems: envConfig.get<number>('CACHE_MAX_ITEMS', 1000, 'toUInt'),
+      ttl: envConfig.get<number>('CACHE_TTL_IN_SECONDS', 60, 'toUInt') * 1000,
+      maxItems: envConfig.get<number>('CACHE_MAX_ITEMS', 5000, 'toUInt'),
    },
    rabbitMQ: {
       url: envConfig.get<string>('RABBITMQ_URL'),

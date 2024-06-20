@@ -134,7 +134,7 @@ import { spawn } from 'child_process';
                pks.name += `-${isGateway ? appEnv : `${appEnv}-microservice`}`;
                const scripts = {
                   build: 'nest build',
-                  'start:dev': 'nest start',
+                  'start:dev': 'nest start -w',
                   'start:prod': 'node dist/main',
                   format: 'prettier --write "./**/src/**/*.ts"',
                };

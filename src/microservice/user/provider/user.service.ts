@@ -221,7 +221,10 @@ export class UserService extends BaseService {
    createCRUDService(): CRUDService<PrismaService> {
       return this.prisma
          .createCRUDService('User')
-         .options({ softDelete: true, list: { searchFields: ['name', 'username', 'email'] } })
+         .options({
+            softDelete: true,
+            list: { searchFields: ['name', 'username', 'email'], filterFields: ['username', 'email'] },
+         })
          .entityResponse(UserEntity)
          .include(this.userInclude)
          .validateDTOPipe(CreateUserDto, UpdateUserDto)

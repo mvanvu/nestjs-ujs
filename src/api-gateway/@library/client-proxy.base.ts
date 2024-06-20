@@ -69,7 +69,9 @@ export class BaseClientProxy {
             .build();
 
          const response = await lastValueFrom(
-            this.clientProxy.send(messagePattern, record).pipe(timeout(options?.timeOut ?? 5000)),
+            this.clientProxy
+               .send(messagePattern, record)
+               .pipe(timeout(options?.timeOut ?? appConfig.get('apiGateway.requestTimeout'))),
          );
 
          if (options?.noEmitEvent !== true) {

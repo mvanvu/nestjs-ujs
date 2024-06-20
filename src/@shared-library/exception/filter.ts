@@ -33,7 +33,7 @@ export class ExceptionFilter implements NestExceptionFilter {
             status = error.statusCode;
          }
 
-         if (appConfig.get('nodeEnv') !== 'production') {
+         if (!appConfig.is('nodeEnv', 'production')) {
             jsonRes.stack = exception.stack;
          }
 
@@ -44,7 +44,7 @@ export class ExceptionFilter implements NestExceptionFilter {
                ? exception.getError()
                : {
                     code: HttpStatus.BAD_GATEWAY,
-                    error: exception?.stack || exception?.message,
+                    error: exception?.stack || exception?.message || exception,
                  },
          );
       }

@@ -5,7 +5,7 @@ import { BaseEntity } from './base';
 import { PermissionOptions } from '../type/common';
 import { IPickType } from './mapped-type';
 import { GroupEntity } from './user-group';
-import { serviceConfig } from '@metadata';
+import { USER_PERMISSION_ADMIN_SCOPE } from '@shared-library/constant/common';
 
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
 
@@ -107,8 +107,7 @@ export class UserEntity extends BaseEntity {
 
       if (
          !userPermissions.length ||
-         (permission.adminScope === true &&
-            !userPermissions.includes(serviceConfig.get('user.permissions.admin.scope'))) ||
+         (permission.adminScope === true && !userPermissions.includes(USER_PERMISSION_ADMIN_SCOPE)) ||
          (permission.key && !userPermissions.includes(permission.key)) ||
          (permission.or?.length && !userPermissions.find((permit) => permission.or.includes(permit))) ||
          (permission.and?.length &&

@@ -14,8 +14,8 @@ export class HttpCacheInterceptor extends CacheInterceptor {
       ]);
 
       const { httpAdapter } = this.httpAdapterHost;
-      const isGetRequest = httpAdapter.getRequestMethod(request) === 'GET';
       const isHttpApp = httpAdapter && !!httpAdapter.getRequestMethod;
+      const isGetRequest = isHttpApp && httpAdapter.getRequestMethod(request) === 'GET';
 
       if (isHttpApp && cacheMetadata?.cacheRefKeys) {
          request.cacheRefKeys = cacheMetadata.cacheRefKeys;

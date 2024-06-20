@@ -3,6 +3,7 @@ import { CLASS_PROPERTIES } from '../constant';
 import { IsValidType } from '@mvanvu/ujs';
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
+import { isGateway } from '@metadata';
 
 export function Property<IsType extends IsValidType | ClassConstructor<any> | [ClassConstructor<any>]>(
    options?: PropertyOptions<IsType>,
@@ -17,7 +18,7 @@ export function Property<IsType extends IsValidType | ClassConstructor<any> | [C
       },
    ];
 
-   if (options?.swagger?.disabled !== true) {
+   if (options?.swagger?.disabled !== true && isGateway()) {
       decorators.push(ApiProperty({ ...(options?.swagger || {}), required: options?.optional !== true }));
    }
 
