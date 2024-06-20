@@ -52,14 +52,14 @@ export class UserController {
       statusCode: HttpStatus.OK,
    })
    refreshToken(@Body() data: AuthTokenDto): Promise<AuthTokenEntity> {
-      return this.userProxy.send(patterns.refreshToken, { data });
+      return this.userProxy.send(patterns.refreshToken, data);
    }
 
    @Public()
    @Post('signup')
    @ApiEntityResponse(UserEntity, { summary: 'Register a new user account', statusCode: HttpStatus.CREATED })
    signUp(@Body() data: UserSignUpDto): Promise<UserEntity> {
-      return this.userProxy.send(patterns.signUp, { data });
+      return this.userProxy.send(patterns.signUp, data);
    }
 
    @Public()
@@ -69,14 +69,14 @@ export class UserController {
       statusCode: HttpStatus.OK,
    })
    activateAccount(@Body() data: UserSignUpDto): Promise<UserEntity> {
-      return this.userProxy.send(patterns.verifyAccount, { data });
+      return this.userProxy.send(patterns.verifyAccount, data);
    }
 
    @Public()
    @Post('signin')
    @ApiEntityResponse(AuthEntity, { summary: 'Sign-in with the user account', statusCode: HttpStatus.OK })
    signIn(@Body() data: UserSignInDto): Promise<AuthEntity> {
-      return this.userProxy.send(patterns.signIn, { data });
+      return this.userProxy.send(patterns.signIn, data);
    }
 
    @Public()
@@ -86,7 +86,7 @@ export class UserController {
       statusCode: HttpStatus.OK,
    })
    async sendResetPassword(@Body() data: SendResetPasswordCodeDto): Promise<true> {
-      await this.userProxy.send(patterns.sendResetPasswordCode, { data });
+      await this.userProxy.send(patterns.sendResetPasswordCode, data);
 
       // Always returns true for security perpose
       return true;
@@ -96,7 +96,7 @@ export class UserController {
    @Post('reset-password')
    @ApiEntityResponse(UserEntity, { summary: 'Activate the account by pass a verification code' })
    resetPassword(@Body() data: ResetPasswordDto): Promise<UserEntity> {
-      return this.userProxy.send(patterns.resetPassword, { data });
+      return this.userProxy.send(patterns.resetPassword, data);
    }
 
    @Get('me')

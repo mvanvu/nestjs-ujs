@@ -29,6 +29,6 @@ export class StorageController {
    async upload(@Body() dto: UploadDto, @UploadedFile() file: Express.Multer.File): Promise<FileEntity> {
       const data = await this.fileProvider.upload({ ...dto, file });
 
-      return await this.storageClient.send(patterns.upload, { data });
+      return await this.storageClient.send(patterns.upload, data);
    }
 }

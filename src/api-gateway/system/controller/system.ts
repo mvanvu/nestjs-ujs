@@ -31,7 +31,7 @@ export class SystemController {
    @Permission({ key: permissions.config.save })
    @ApiEntityResponse(SystemConfigDto, { statusCode: HttpStatus.OK })
    async saveConfig(@Body() data: SystemConfigDto): Promise<SystemConfigDto> {
-      const configData = await this.systemClient.send<SystemConfigDto, SystemConfigDto>(patterns.saveConfig, { data });
+      const configData = await this.systemClient.send<SystemConfigDto, SystemConfigDto>(patterns.saveConfig, data);
       await this.cacheManager.set(patterns.getConfig, configData, 0);
 
       return configData;

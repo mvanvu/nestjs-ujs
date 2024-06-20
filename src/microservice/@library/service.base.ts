@@ -12,7 +12,7 @@ export class BaseService {
    }
 
    get user(): UserEntity | undefined {
-      return this.meta.get('headers.user');
+      return this.meta.get('user');
    }
 
    static parseMeta(ctx: RequestContext): Registry<MessageMeta> {
@@ -22,8 +22,8 @@ export class BaseService {
 
       const meta = Registry.from<MessageMeta>(headers?.['x-meta']);
 
-      if (meta.has('headers.user')) {
-         meta.set('headers.user', new UserEntity(meta.get('headers.user')));
+      if (meta.has('user')) {
+         meta.set('user', new UserEntity(meta.get('user')));
       }
 
       return meta;

@@ -37,7 +37,7 @@ export class PurgeCacheProvider {
             const cacheKeyWithoutSuffix = cacheKey.replace(/\/?\?.*$/g, '');
 
             if (
-               (messagePattern.startsWith('user.') && responseData?.id === userId) ||
+               (messagePattern.startsWith('user.') && responseData?.data?.id === userId) ||
                cacheKey.startsWith(requestUrlWithoutParams) ||
                requestUrlWithoutParams.startsWith(cacheKeyWithoutSuffix) ||
                isRelatedCacheKey(cacheKey)

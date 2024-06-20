@@ -56,6 +56,7 @@ export type ServiceOptions = {
    params?: Record<string, string | number | boolean>;
    timeOut?: number;
    noEmitEvent?: boolean;
+   meta?: ObjectRecord;
 };
 
 export type IRouteOptions = {

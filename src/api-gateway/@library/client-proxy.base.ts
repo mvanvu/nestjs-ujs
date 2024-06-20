@@ -4,7 +4,6 @@ import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import {
    CRUDClient,
    HttpRequest,
-   MessageData,
    OnServiceResponse,
    PaginationQueryDto,
    ServiceOptions,
@@ -32,42 +31,34 @@ export class BaseClientProxy {
       return instance;
    }
 
-   async send<TResult, TInput>(
-      messagePattern: string,
-      dataDelivery?: MessageData<TInput>,
-      options?: ServiceOptions,
-   ): Promise<TResult> {
+   async send<TResult, TInput>(messagePattern: string, data?: TInput, options?: ServiceOptions): Promise<TResult> {
       if (!this.clientProxy) {
          throw new NotImplementedException('The client proxy is not initialized');
       }
 
+      const user = this.req.registry.get('user');
+      const regReq = Registry.from<any>({
+         method: this.req.method,
+         systemConfig: this.req.registry.get('systemConfig'),
+      });
+
+      if (user) {
+         // Just send some important user data
+         regReq.set('user', { id: user.id, username: user.name, email: user.email, group: user.group });
+      }
+
+      const meta = Registry.from({})
+         .extends(options?.meta || {})
+         .extends({ headers: regReq.valueOf() });
       const eventPayload: OnServiceResponse = {
          messagePattern,
-         requestData: dataDelivery?.data,
+         requestData: { data, meta },
          httpRequest: this.req,
          success: true,
       };
 
       try {
-         const regReq = this.req.registry.clone();
-         const user = regReq.get('user');
-
-         if (user) {
-            // Just send some important user data
-            regReq.set('user', { id: user.id, username: user.name, email: user.email, group: user.group });
-         }
-
-         const record = new RmqRecordBuilder<any>(dataDelivery?.data || {})
-            .setOptions({
-               headers: {
-                  'x-meta': Registry.from({})
-                     .extends(dataDelivery?.meta || {})
-                     .extends({ headers: regReq.valueOf() })
-                     .toString(),
-               },
-            })
-            .build();
-
+         const record = new RmqRecordBuilder(data).setOptions({ headers: { 'x-meta': meta.toString() } }).build();
          const response = await lastValueFrom(
             this.clientProxy
                .send(messagePattern, record)
@@ -114,23 +105,19 @@ export class BaseClientProxy {
    createCRUD(patternCRUD: string, options?: ServiceOptions): CRUDClient {
       return {
          read: <TResult>(id: string, optionsOveride?: ServiceOptions): Promise<TResult> =>
-            this.send(patternCRUD, { meta: { params: { id }, CRUD: { method: 'read' } } }, optionsOveride ?? options),
+            this.send(patternCRUD, id, optionsOveride ?? options),
 
          paginate: <TResult>(query?: PaginationQueryDto, optionsOveride?: ServiceOptions): Promise<TResult> =>
-            this.send(patternCRUD, { meta: { query, CRUD: { method: 'read' } } }, optionsOveride ?? options),
+            this.send(patternCRUD, query, optionsOveride ?? options),
 
          create: <TResult, TData>(data: TData, optionsOveride?: ServiceOptions): Promise<TResult> =>
-            this.send(patternCRUD, { data, meta: { CRUD: { method: 'write' } } }, optionsOveride ?? options),
+            this.send(patternCRUD, data, optionsOveride ?? options),
 
          update: <TResult, TData>(id: string, data: TData, optionsOveride?: ServiceOptions): Promise<TResult> =>
-            this.send(
-               patternCRUD,
-               { data, meta: { params: { id }, CRUD: { method: 'write' } } },
-               optionsOveride ?? options,
-            ),
+            this.send(patternCRUD, { id, data }, optionsOveride ?? options),
 
          delete: <TResult>(id: string, optionsOveride?: ServiceOptions): Promise<TResult> =>
-            this.send(patternCRUD, { meta: { params: { id }, CRUD: { method: 'delete' } } }, optionsOveride ?? options),
+            this.send(patternCRUD, id, optionsOveride ?? options),
       };
    }
 

@@ -1,4 +1,4 @@
-import { ClassConstructor, ValidationPipe, ExceptionFilter } from '@shared-library';
+import { ClassConstructor, ValidationPipe, ExceptionFilter, TransformInterceptor } from '@shared-library';
 import { Callable, Util } from '@mvanvu/ujs';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -23,6 +23,9 @@ export async function createMicroserviceApp(
 
    // Global exception filter
    app.useGlobalFilters(new ExceptionFilter());
+
+   // Global transform response
+   app.useGlobalInterceptors(new TransformInterceptor());
 
    if (onBeforeListen) {
       await Util.call(app, onBeforeListen);

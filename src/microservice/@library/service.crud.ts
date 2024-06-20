@@ -666,48 +666,56 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
 
    async execute<TResult>(): Promise<CRUDResult<TResult>> {
       const meta = BaseService.parseMeta(this.ctx);
-      const recordId = meta.get('params.id');
-      const user = meta.get('headers.user');
-      const method = meta.get('CRUD.method');
+      const method = meta.get('method');
+      const dto = this.ctx.getData();
 
-      if (!['read', 'write', 'delete'].includes(method)) {
-         ThrowException(
-            `The header sending message method must be one of (read, write, delete)`,
-            HttpStatus.NOT_IMPLEMENTED,
-         );
+      if (method === 'GET') {
+         return Is.mongoId(dto)
+            ? this.read<TResult>(dto)
+            : this.paginate<TResult>(dto, { itemsPerPage: meta.get('systemConfig.itemsPerPage') });
       }
 
-      switch (method) {
-         case 'read':
-            return recordId
-               ? this.read<TResult>(recordId, meta.get('CRUD.where'))
-               : this.paginate<TResult>(meta.get('query'), meta.get('CRUD.where'), {
-                    itemsPerPage: meta.get('headers.systemConfig.itemsPerPage'),
-                 });
-
-         case 'write':
-            // Check to validate data
-            const DTOClassRef: ClassConstructor<any> = recordId
-               ? this.updateDTO ?? (this.createDTO ? IPartialType(this.createDTO) : undefined)
-               : this.createDTO;
-            const data = DTOClassRef ? await validateDTO(this.ctx.getData(), DTOClassRef) : this.ctx.getData();
-
-            if (user) {
-               // Append some dynamic user data
-               data[recordId ? 'updatedBy' : 'createdBy'] = user.id;
-               data[recordId ? 'editor' : 'author'] = {
-                  id: user.id,
-                  name: user.name,
-                  username: user.username,
-                  email: user.email,
-                  avatarUrl: user.avatarUrl,
-               };
-            }
-
-            return recordId ? this.update<TResult, any>(recordId, data) : this.create<TResult, any>(data);
-
-         case 'delete':
-            return this.delete<TResult>(recordId);
+      if (method === 'DELETE' && Is.mongoId(dto)) {
+         return this.delete<TResult>(dto);
       }
+
+      const user = meta.get('user');
+      const userRef = user
+         ? {
+              id: user.id,
+              name: user.name,
+              username: user.username,
+              email: user.email,
+              avatarUrl: user.avatarUrl,
+           }
+         : null;
+
+      if (method === 'PATCH' && Is.object(dto, { rules: { id: 'mongoId', data: 'object' } })) {
+         const DTOClassRef: ClassConstructor<any> =
+            this.updateDTO ?? (this.createDTO ? IPartialType(this.createDTO) : undefined);
+         const data = DTOClassRef ? await validateDTO(dto.data, DTOClassRef) : dto.data;
+
+         if (userRef) {
+            // Append some dynamic user data
+            data.updatedBy = userRef.id;
+            data.editor = userRef;
+         }
+
+         return this.update<TResult, any>(dto.id, data);
+      }
+
+      if (method === 'POST' && Is.object(dto)) {
+         const data = this.createDTO ? await validateDTO(dto.data, this.createDTO) : dto.data;
+
+         if (userRef) {
+            // Append some dynamic user data
+            data.createdBy = userRef.id;
+            data.author = userRef;
+         }
+
+         return this.create<TResult, any>(data);
+      }
+
+      ThrowException('CRUD request wrong method or data', HttpStatus.NOT_IMPLEMENTED);
    }
 }

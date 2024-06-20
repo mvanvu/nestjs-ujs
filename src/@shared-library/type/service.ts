@@ -1,7 +1,9 @@
-import { ClassConstructor, HttpRequest, RequestRegistryData, ServiceOptions } from './common';
+import { ClassConstructor, HttpRequest, ServiceOptions } from './common';
 import { IsEqual, ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
 import { type PaginationQueryDto } from './dto';
+import { type UserEntity } from '@shared-library/entity/user';
+import { type SystemConfigDto } from '@shared-library/dto/system-config';
 
 export type PrismaModels = Record<string, DMMF.Model>;
 
@@ -47,9 +49,9 @@ export type CRUDResult<T> = T | PaginationResult<T> | UpdateResult<T>;
 
 export type MessageMeta = {
    query?: ObjectRecord;
-   params?: ObjectRecord;
-   headers?: RequestRegistryData;
-   CRUD?: { method: 'read' | 'write' | 'delete'; where?: Record<string, any> };
+   user?: UserEntity;
+   method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+   systemConfig?: SystemConfigDto;
 };
 
 export type MessageData<TData = any, TMeta = MessageMeta | Registry<MessageMeta>> = {
@@ -58,11 +60,11 @@ export type MessageData<TData = any, TMeta = MessageMeta | Registry<MessageMeta>
 };
 
 export type OnServiceResponse = {
+   success: boolean;
    messagePattern: string;
    httpRequest: HttpRequest;
-   requestData?: any;
-   responseData?: any;
-   success: boolean;
+   requestData?: { data?: any; meta?: ObjectRecord };
+   responseData?: { data?: any; meta?: ObjectRecord };
 };
 
 export type CRUDContext = 'read' | 'create' | 'update' | 'delete';
