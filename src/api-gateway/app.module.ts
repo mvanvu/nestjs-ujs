@@ -138,13 +138,18 @@ export class AppModule {
       app.useGlobalPipes(new ValidationPipe());
       app.useGlobalInterceptors(new TransformInterceptor());
 
-      const swaggerConfig = new DocumentBuilder()
-         .setTitle('NestJS UJS')
-         .setDescription('NestJS App API')
-         .addBearerAuth()
-         .build();
-      const document = SwaggerModule.createDocument(app, swaggerConfig);
-      SwaggerModule.setup('api-docs', app, document, { swaggerOptions: { persistAuthorization: true } });
+      if (!appConfig.is('appEnv', 'production')) {
+         const swaggerConfig = new DocumentBuilder()
+            .setTitle('NestJS UJS')
+            .setDescription('NestJS App API')
+            .addBearerAuth()
+            .build();
+         const document = SwaggerModule.createDocument(app, swaggerConfig);
+         SwaggerModule.setup('api-docs', app, document, {
+            swaggerOptions: { persistAuthorization: true, defaultModelsExpandDepth: -1 },
+         });
+      }
+
       const port = appConfig.get('apiGateway.port');
 
       // Bootstrap Metadata
