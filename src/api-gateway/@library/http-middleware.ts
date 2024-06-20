@@ -33,7 +33,7 @@ export class HttpMiddleware implements NestMiddleware {
       const systemConfigPattern = SYSTEM_GET_CONFIG_PATTERN;
       let systemConfig: SystemConfigDto = await this.cacheManager.get(systemConfigPattern);
 
-      if (!systemConfig) {
+      if (!systemConfig && this.systemProxy instanceof ClientProxy) {
          systemConfig = await lastValueFrom<SystemConfigDto>(this.systemProxy.send(systemConfigPattern, {}).pipe());
          await this.cacheManager.set(systemConfigPattern, systemConfig, 0);
       }

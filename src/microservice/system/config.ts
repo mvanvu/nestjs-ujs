@@ -1,4 +1,4 @@
-import { SYSTEM_GET_CONFIG_PATTERN, SYSTEM_PERMISSION_ADMIN_SCOPE } from '@shared-library';
+import { SYSTEM_GET_CONFIG_PATTERN } from '@shared-library';
 
 export default {
    name: 'system',
@@ -9,9 +9,6 @@ export default {
       writeActivityLog: 'system.writeActivityLog',
    },
    permissions: {
-      admin: {
-         scope: SYSTEM_PERMISSION_ADMIN_SCOPE,
-      },
       activityLog: {
          get: 'system.activityLog.get',
       },

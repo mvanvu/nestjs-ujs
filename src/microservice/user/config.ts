@@ -13,6 +13,10 @@ export default {
       roleCRUD: 'user.role.CRUD',
    },
    permissions: {
+      admin: {
+         scope: 'user.admin.scope',
+      },
+
       group: {
          create: 'user.group.create',
          read: 'user.group.read',
