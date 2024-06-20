@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { createMicroserviceApp } from '../lib';
+import { createMicroserviceApp } from '../@library';
 import { serviceConfig } from '@metadata';
 import { MailerController } from './controller';
 import { MailerService } from './provider';

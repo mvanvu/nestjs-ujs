@@ -1,13 +1,14 @@
 import { Injectable, StreamableFile } from '@nestjs/common';
-import { FileEntity, FinalUploadDto, UploadDto } from '@lib/microservice/storage';
 import { FileProviderLocal } from './file.provider.local';
 import { FileProviderGoogleDrive } from './file.provider.google-drive';
 import { Provider } from '.prisma/storage';
 import { FileProviderInterface } from './file.provider.interface';
 import { Transform } from '@mvanvu/ujs';
 import { serviceConfig } from '@metadata';
-import { ThrowException } from '@lib/common';
+import { ThrowException } from '@shared-library';
 import { allAcceptedFileTypes, fileTypes } from './file.mime';
+import { FinalUploadDto, UploadDto } from '@microservice/storage/dto';
+import { FileEntity } from '@microservice/storage/entity';
 const storageConfig = serviceConfig.get('storage');
 
 @Injectable()

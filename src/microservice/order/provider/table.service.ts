@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
-import { CreateTableDto, TableEntity, UpdateTableDto } from '@lib/microservice/order';
-import { CRUDService } from '@microservice/lib';
+import { CRUDService } from '@microservice/@library';
+import { CreateTableDto, UpdateTableDto } from '../dto';
+import { TableEntity } from '../entity';
 
 @Injectable()
 export class TableService {

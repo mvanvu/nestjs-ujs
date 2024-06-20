@@ -1,6 +1,6 @@
 import * as nodemailer from 'nodemailer';
 import { BaseTransporter } from './base';
-import { SystemConfigDto } from '@lib/common';
+import { SystemConfigDto } from '@shared-library';
 
 export class SMTPTransporter extends BaseTransporter {
    constructor(config: SystemConfigDto['mailer']) {

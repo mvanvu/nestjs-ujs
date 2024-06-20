@@ -4,12 +4,13 @@ import {
    BaseClientProxy,
    EntityResponse,
    PaginationResponse,
-} from '@gateway/lib';
-import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
-import { StaffEntity, CreateStaffDto, UpdateStaffDto } from '@lib/microservice/order';
+} from '@gateway/@library';
+import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { StaffEntity } from '@microservice/order/entity';
+import { CreateStaffDto, UpdateStaffDto } from '@microservice/order/dto';
 
 const { name, patterns } = serviceConfig.get('order');
 

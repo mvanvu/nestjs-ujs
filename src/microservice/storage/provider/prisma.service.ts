@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient, Prisma } from '.prisma/storage';
-import { CreatePrismaService } from '@microservice/lib';
+import { CreatePrismaService } from '@microservice/@library';
 import { CONTEXT, RequestContext } from '@nestjs/microservices';
 
 @Injectable()

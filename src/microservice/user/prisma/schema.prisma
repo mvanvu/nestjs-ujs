@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+    output   = "../../../../node_modules/.prisma/user"
+}
+
+datasource db {
+    provider = "mongodb"
+    url      = env("MONGODB_USER_URL")
+}
+
+enum UserStatus {
+    Active
+    Pending
+    Blocked
+    Trashed
+}
+
+enum AvailableStatus {
+    Active
+    Drafted
+    Trashed
+}
+
+type RoleRef {
+    id          String   @db.ObjectId
+    name        String
+    permissions String[]
+}
+
+type ChildGroup {
+    id    String    @db.ObjectId
+    name  String
+    roles RoleRef[]
+}
+
+type VerifyCode {
+    activateAccount String?
+    resetPassword   String?
+}
+
+model User {
+    id         String      @id @default(auto()) @map("_id") @db.ObjectId
+    username   String?     @unique
+    email      String      @unique
+    name       String?
+    password   String?
+    avatarUrl  String?
+    status     UserStatus  @default(Pending)
+    verifyCode VerifyCode?
+    groupId    String?     @db.ObjectId
+    group      Group?      @relation(fields: [groupId], references: [id], onDelete: SetNull)
+    createdAt  DateTime    @default(now())
+    createdBy  String?     @db.ObjectId
+    updatedAt  DateTime?   @updatedAt
+    updatedBy  String?     @db.ObjectId
+}
+
+model Role {
+    id          String          @id @default(auto()) @map("_id") @db.ObjectId
+    name        String          @unique
+    description String?
+    status      AvailableStatus @default(Drafted)
+    createdAt   DateTime        @default(now())
+    createdBy   String?         @db.ObjectId
+    updatedAt   DateTime?       @updatedAt
+    updatedBy   String?         @db.ObjectId
+    permissions String[]
+}
+
+model Group {
+    id          String          @id @default(auto()) @map("_id") @db.ObjectId
+    name        String          @unique
+    description String?
+    status      AvailableStatus @default(Drafted)
+    createdAt   DateTime        @default(now())
+    createdBy   String?         @db.ObjectId
+    updatedAt   DateTime?       @updatedAt
+    updatedBy   String?         @db.ObjectId
+    users       User[]
+    groups      ChildGroup[]
+    roles       RoleRef[]
+}

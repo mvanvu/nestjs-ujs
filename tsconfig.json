@@ -21,8 +21,8 @@
       "checkJs": true,
       "paths": {
          "@metadata": ["src/metadata"],
-         "@lib": ["src/lib"],
-         "@lib/*": ["src/lib/*"],
+         "@shared-library": ["src/@shared-library"],
+         "@shared-library/*": ["src/@shared-library/*"],
          "@gateway": ["src/api-gateway"],
          "@gateway/*": ["src/api-gateway/*"],
          "@microservice": ["src/microservice"],

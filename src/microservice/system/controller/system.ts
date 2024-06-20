@@ -2,8 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { SystemService } from '../provider';
 import { serviceConfig } from '@metadata';
 import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
-import { ActivityLogDto, ActivityLogEntity } from '@lib/microservice/system';
-import { CRUDResult, SystemConfigDto } from '@lib/common';
+import { CRUDResult, SystemConfigDto } from '@shared-library';
+import { ActivityLogDto } from '../dto';
+import { ActivityLogEntity } from '../entity';
 const patterns = serviceConfig.get('system.patterns');
 
 @Injectable()

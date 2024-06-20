@@ -3,7 +3,7 @@ import { APP_GUARD, APP_INTERCEPTOR, DiscoveryModule, NestFactory } from '@nestj
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
-import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@lib/common';
+import { TransformInterceptor, ValidationPipe, ExceptionFilter } from '@shared-library';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import {
    BaseClientProxy,
@@ -12,12 +12,13 @@ import {
    HttpMiddleware,
    UserAuthGuard,
    UserRoleGuard,
-} from './lib';
+} from './@library';
 import { bootstrap, appConfig, serviceListNames, serviceConfig } from '@metadata';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { EventEmitter, Util } from '@mvanvu/ujs';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Global()
 @Module({
@@ -50,6 +51,7 @@ class MicroserviceModule {
 
 @Module({
    imports: [
+      ThrottlerModule.forRoot(appConfig.get('apiGateway.throttler')),
       ...serviceListNames.map((name) =>
          ClientsModule.registerAsync({
             isGlobal: true,
@@ -84,6 +86,10 @@ class MicroserviceModule {
       {
          provide: APP_INTERCEPTOR,
          useClass: HttpCacheInterceptor,
+      },
+      {
+         provide: APP_GUARD,
+         useClass: ThrottlerGuard,
       },
       {
          provide: APP_GUARD,

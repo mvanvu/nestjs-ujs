@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { createMicroserviceApp } from '../lib';
+import { createMicroserviceApp } from '../@library';
 import { serviceConfig } from '@metadata';
 import { CategoryService, ItemService, PrismaService, RestaurantService, StaffService, TableService } from './provider';
 import {

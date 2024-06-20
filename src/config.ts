@@ -14,6 +14,13 @@ const appConfigData = {
          origin: envConfig.get<string>('CORS_ORIGIN', '*').split(','),
          methods: envConfig.get<string>('CORS_METHODS', '*').split(','),
       },
+      throttler: envConfig
+         .get<string>('THROTTLER_OPTIONS', 'short:1000:10,medium:10000:50,long:60000:100')
+         .split(',')
+         .map((opt) => {
+            const [name, ttl, limit] = opt.split(':');
+            return { name, ttl: Number(ttl), limit: Number(limit) };
+         }),
    },
    redis: {
       url: envConfig.get<string>('REDIS_URL'),

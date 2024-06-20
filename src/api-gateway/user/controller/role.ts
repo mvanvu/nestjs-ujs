@@ -8,10 +8,10 @@ import {
    HttpCache,
    PaginationResponse,
    Permission,
-} from '@gateway/lib';
-import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe, RoleEntity } from '@lib/common';
+} from '@gateway/@library';
+import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe, RoleEntity } from '@shared-library';
 import { serviceConfig } from '@metadata';
-import { CreateRoleDto, UpdateRoleDto } from '@lib/microservice/user';
+import { CreateRoleDto, UpdateRoleDto } from '@microservice/user/dto';
 const { name, permissions, patterns } = serviceConfig.get('user');
 
 @ApiBearerAuth()

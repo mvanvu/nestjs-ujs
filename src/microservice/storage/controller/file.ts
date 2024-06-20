@@ -1,8 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { FileService } from '../provider';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { FileEntity, FinalUploadDto } from '@lib/microservice/storage';
 import { serviceConfig } from '@metadata';
+import { FinalUploadDto } from '../dto';
+import { FileEntity } from '../entity';
 const patterns = serviceConfig.get('storage.patterns');
 
 @Injectable()

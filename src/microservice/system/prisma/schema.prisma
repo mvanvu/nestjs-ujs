@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+    output   = "../../../../node_modules/.prisma/system"
+}
+
+datasource db {
+    provider = "mongodb"
+    url      = env("MONGODB_SYSTEM_URL")
+}
+
+type User {
+    id        String  @db.ObjectId
+    name      String?
+    username  String?
+    email     String?
+    avatarUrl String?
+}
+
+model Config {
+    id    String @id @default(auto()) @map("_id") @db.ObjectId
+    key   String @unique
+    value String
+}
+
+model ActivityLog {
+    id             String   @id @default(auto()) @map("_id") @db.ObjectId
+    messagePattern String
+    success        Boolean
+    dataInput      Json?
+    dataResult     Json?
+    ipAddress      String?
+    userAgent      String?
+    deviceType     String?
+    deviceOS       Json?
+    createdAt      DateTime @default(now())
+    author         User?
+}

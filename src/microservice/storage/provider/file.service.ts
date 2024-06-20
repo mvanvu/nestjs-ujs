@@ -1,8 +1,9 @@
-import { FileEntity, FinalUploadDto } from '@lib/microservice/storage';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
-import { BaseService } from '@microservice/lib';
-import { RequestRegistryData } from '@lib/common';
+import { BaseService } from '@microservice/@library';
+import { RequestRegistryData } from '@shared-library';
+import { FinalUploadDto } from '../dto';
+import { FileEntity } from '../entity';
 
 @Injectable()
 export class FileService extends BaseService {

@@ -1,11 +1,11 @@
-import { ObjectRecord, Util } from '@mvanvu/ujs';
+import { Is, ObjectRecord, Util } from '@mvanvu/ujs';
 import * as prompts from 'prompts';
 import * as fs from 'fs';
 import { spawn } from 'child_process';
 
 (async () => {
    const cwd = process.cwd();
-   const buildFile = fs.existsSync(`${cwd}/build.json`) ? `${cwd}/build.json` : `${cwd}/build.sample.json`;
+   const buildFile = fs.existsSync(`${cwd}/build.json`) ? `${cwd}/build.json` : `${cwd}/build.origin.json`;
    const buildConfig = JSON.parse(fs.readFileSync(buildFile).toString());
    const microservice = buildConfig.microservice.list;
    const buildFor = ['all', 'api-gateway', 'microservice'];
@@ -110,7 +110,15 @@ import { spawn } from 'child_process';
                const envOverride = buildConfig.env?.[appEnv] || {};
 
                for (const k in envOverride) {
-                  envConfig[k] = envOverride[k];
+                  if (!Is.primitive(envOverride[k])) {
+                     continue;
+                  }
+
+                  if (Is.nothing(envOverride[k])) {
+                     delete envConfig[k];
+                  } else {
+                     envConfig[k] = Is.string(envOverride[k]) ? `"${envOverride[k]}"` : envOverride[k];
+                  }
                }
 
                fs.writeFileSync(
@@ -120,12 +128,13 @@ import { spawn } from 'child_process';
                      .join('\r\n'),
                );
             } else if (path === `${cwd}/package.json`) {
-               const pks = JSON.parse(fs.readFileSync(path).toString());
-               const dependencies = JSON.parse(JSON.stringify(pks.dependencies));
-               pks.name += `-${appEnv === 'api-gateway' ? appEnv : `${appEnv}-microservice`}`;
+               const orginPks = JSON.parse(fs.readFileSync(path).toString());
+               const pks = JSON.parse(JSON.stringify(orginPks));
+               const isGateway = appEnv === 'api-gateway';
+               pks.name += `-${isGateway ? appEnv : `${appEnv}-microservice`}`;
                const scripts = {
                   build: 'nest build',
-                  start: 'nest start',
+                  'start:dev': 'nest start',
                   'start:prod': 'node dist/main',
                   format: 'prettier --write "./**/src/**/*.ts"',
                };
@@ -133,10 +142,23 @@ import { spawn } from 'child_process';
                for (const script in pks.scripts) {
                   if (
                      /^(docker|mongodb):/.test(script) ||
-                     (appEnv === 'api-gateway' && /prisma:/.test(script)) ||
-                     (appEnv !== 'api-gateway' && new RegExp(`^${appEnv}:prisma:`).test(script))
+                     (!isGateway && new RegExp(`^${appEnv}:prisma:`).test(script))
                   ) {
                      scripts[script] = pks.scripts[script];
+                  }
+
+                  if (isGateway) {
+                     const prismaScript: string[] = [];
+                     sources.gateway.forEach((srv) => {
+                        if (pks.scripts[`${srv}:prisma:generate`]) {
+                           scripts[`${srv}:prisma:generate`] = pks.scripts[`${srv}:prisma:generate`];
+                           prismaScript.push(`yarn ${pks.scripts[`${srv}:prisma:generate`]}`);
+                        }
+                     });
+
+                     if (prismaScript.length) {
+                        scripts['api-gateway:prisma:generate'] = prismaScript.join(' && ');
+                     }
                   }
                }
 
@@ -150,9 +172,9 @@ import { spawn } from 'child_process';
                   buildScripts[appEnv].push(`yarn ${appEnv}:prisma:generate`);
                }
 
-               const cfgKey = appEnv === 'api-gateway' ? 'apiGateway' : 'microservice';
-               const pkgExcludes = buildConfig[cfgKey]?.dependencies?.exclude || [];
-               const pkgIncludes = buildConfig[cfgKey]?.dependencies?.include || [];
+               const pckName = isGateway ? 'api-gateway' : 'microservice';
+               const pkgExcludes = buildConfig[pckName]?.dependencies?.exclude || [];
+               const pkgIncludes = buildConfig[pckName]?.dependencies?.include || [];
 
                for (const excl of pkgExcludes) {
                   const [service, pkg] = excl.includes(':') ? excl.split(':') : [null, excl];
@@ -160,14 +182,25 @@ import { spawn } from 'child_process';
                   if (!service || service === appEnv) {
                      delete pks.dependencies[pkg];
                      delete pks.devDependencies[pkg];
+                     delete pks.devDependencies[`@types/${pkg}`];
                   }
                }
 
-               for (const excl of pkgIncludes) {
-                  const [service, pkg] = excl.includes(':') ? excl.split(':') : [null, excl];
+               for (const incl of pkgIncludes) {
+                  const [service, pkg] = incl.includes(':') ? incl.split(':') : [null, incl];
 
                   if (!service || service === appEnv) {
-                     pks.dependencies[pkg] = dependencies[pkg];
+                     if (orginPks.dependencies[pkg]) {
+                        pks.dependencies[pkg] = orginPks.dependencies[pkg];
+                     }
+
+                     if (orginPks.devDependencies[pkg]) {
+                        pks.devDependencies[pkg] = orginPks.devDependencies[pkg];
+                     }
+
+                     if (orginPks.devDependencies[`@types/${pkg}`]) {
+                        pks.devDependencies[`@types/${pkg}`] = orginPks.devDependencies[`@types/${pkg}`];
+                     }
                   }
                }
 
@@ -186,7 +219,7 @@ import { spawn } from 'child_process';
                      loadStart = true;
                      output.push(
                         line,
-                        ...servicesConfig.map((srv) => `import ${srv} from './lib/microservice/${srv}/config';`),
+                        ...servicesConfig.map((srv) => `import ${srv} from '@microservice/${srv}/config';`),
                      );
                      output.push(`const serviceConfigData = { ${servicesConfig.join(', ')} };`);
                      continue;
@@ -212,7 +245,7 @@ import { spawn } from 'child_process';
    };
    const baseFiles: string[] = [
       `${cwd}/docker/Dockerfile`,
-      `${sourceBase}/lib/common`,
+      `${sourceBase}/@shared-library`,
       `${sourceBase}/config.ts`,
       `${sourceBase}/main.ts`,
       `${sourceBase}/metadata.ts`,
@@ -234,9 +267,16 @@ import { spawn } from 'child_process';
       }
 
       sourcesDir.push('api-gateway');
-      const files = [...baseFiles, `${sourceBase}/api-gateway/lib`, `${sourceBase}/api-gateway/app.module.ts`];
+      const files = [...baseFiles, `${sourceBase}/api-gateway/@library`, `${sourceBase}/api-gateway/app.module.ts`];
       sources.gateway.forEach((srv) =>
-         files.push(`${sourceBase}/lib/microservice/${srv}`, `${sourceBase}/api-gateway/${srv}`),
+         files.push(
+            `${sourceBase}/api-gateway/${srv}`,
+            `${sourceBase}/microservice/${srv}/config.ts`,
+            `${sourceBase}/microservice/${srv}/prisma`,
+            `${sourceBase}/microservice/${srv}/dto`,
+            `${sourceBase}/microservice/${srv}/entity`,
+            `${sourceBase}/microservice/${srv}/type`,
+         ),
       );
       copyFiles(files, `${buildDir}/api-gateway`, sources.gateway);
    }
@@ -249,19 +289,14 @@ import { spawn } from 'child_process';
 
          sourcesDir.push(`microservice/${srv}`);
          copyFiles(
-            [
-               ...baseFiles,
-               `${sourceBase}/lib/microservice/${srv}`,
-               `${sourceBase}/microservice/lib`,
-               `${sourceBase}/microservice/${srv}`,
-            ],
+            [...baseFiles, `${sourceBase}/microservice/@library`, `${sourceBase}/microservice/${srv}`],
             `${buildDir}/microservice/${srv}`,
             [srv],
          );
       });
    }
 
-   let successAll = true;
+   const buildResults: Record<string, boolean> = {};
 
    for (const source of sourcesDir) {
       const scripts: string[] = [`cd build/${source}`, 'yarn'];
@@ -277,10 +312,7 @@ import { spawn } from 'child_process';
          build.stdout.on('data', (data) => console.log(`${data}`));
          build.stderr.on('data', (data) => console.log(`${data}`));
          build.on('close', (code) => {
-            if (code) {
-               successAll = false;
-            }
-
+            buildResults[source] = !code;
             const warnStr = `================= BUILD ${source.toUpperCase()} ${code === 0 ? 'SUCCESSFULLY' : 'FAILURE'} =================`;
             const repeatStr = '='.repeat(warnStr.length);
             console.log(`${repeatStr}\r\n${warnStr}\r\n${repeatStr}`);
@@ -289,7 +321,5 @@ import { spawn } from 'child_process';
       });
    }
 
-   const warnStr = `================= BUILD ${successAll ? 'ALL SUCCESSFULLY' : 'HAS SOME FAILURE'} =================`;
-   const repeatStr = '='.repeat(warnStr.length);
-   console.log(`${repeatStr}\r\n${warnStr}\r\n${repeatStr}`);
+   console.log(buildResults);
 })();

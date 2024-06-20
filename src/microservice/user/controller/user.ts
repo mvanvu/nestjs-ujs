@@ -7,9 +7,9 @@ import {
    SendResetPasswordCodeDto,
    VerifyAccountDto,
    ResetPasswordDto,
-} from '@lib/microservice/user';
+} from '../dto';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { AuthEntity, AuthTokenEntity, CRUDResult, MetaResult, UserEntity } from '@lib/common';
+import { AuthEntity, AuthTokenEntity, CRUDResult, MetaResult, UserEntity } from '@shared-library';
 import { serviceConfig } from '@metadata';
 const patterns = serviceConfig.get('user.patterns');
 

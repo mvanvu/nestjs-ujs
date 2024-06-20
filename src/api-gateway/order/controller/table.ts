@@ -4,18 +4,13 @@ import {
    BaseClientProxy,
    EntityResponse,
    PaginationResponse,
-} from '@gateway/lib';
-import { CRUDClient, ParseMongoIdPipe, ThrowException, User, UserEntity } from '@lib/common';
-import {
-   TableEntity,
-   CreateTableDto,
-   UpdateTableDto,
-   OrderPaginationQueryDto,
-   RestaurantEntity,
-} from '@lib/microservice/order';
+} from '@gateway/@library';
+import { CRUDClient, ParseMongoIdPipe, ThrowException, User, UserEntity } from '@shared-library';
+import { CreateTableDto, UpdateTableDto, OrderPaginationQueryDto } from '@microservice/order/dto';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { RestaurantEntity, TableEntity } from '@microservice/order/entity';
 
 const { name, patterns, permissions } = serviceConfig.get('order');
 

@@ -2,7 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { MailerService } from '../provider';
 import { EventPattern } from '@nestjs/microservices';
 import { serviceConfig } from '@metadata';
-import { MessageInfoEntity, SendMailDto } from '@lib/microservice/mailer';
+import { SendMailDto } from '../dto';
+import { MessageInfoEntity } from '../entity';
 const patterns = serviceConfig.get('mailer.patterns');
 
 @Injectable()

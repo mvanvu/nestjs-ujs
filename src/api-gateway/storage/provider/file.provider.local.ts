@@ -4,7 +4,8 @@ import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { FileProviderInterface } from './file.provider.interface';
 import { serviceConfig } from '@metadata';
-import { FileEntity, FinalUploadDto, UploadDto } from '@lib/microservice/storage';
+import { FinalUploadDto, UploadDto } from '@microservice/storage/dto';
+import { FileEntity } from '@microservice/storage/entity';
 const storageConfig = serviceConfig.get('storage');
 
 export class FileProviderLocal implements FileProviderInterface {

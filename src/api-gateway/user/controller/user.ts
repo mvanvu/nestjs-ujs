@@ -8,7 +8,7 @@ import {
    AuthTokenEntity,
    UserEntity,
    AuthEntity,
-} from '@lib/common';
+} from '@shared-library';
 import {
    CreateUserDto,
    UserSignInDto,
@@ -17,7 +17,7 @@ import {
    AuthTokenDto,
    SendResetPasswordCodeDto,
    ResetPasswordDto,
-} from '@lib/microservice/user';
+} from '@microservice/user/dto';
 import {
    BaseClientProxy,
    PaginationResponse,
@@ -27,7 +27,7 @@ import {
    Public,
    Permission,
    HttpCache,
-} from '@gateway/lib';
+} from '@gateway/@library';
 import { serviceConfig } from '@metadata';
 
 const { name, permissions, patterns } = serviceConfig.get('user');

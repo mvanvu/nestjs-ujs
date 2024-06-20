@@ -5,12 +5,13 @@ import {
    EntityResponse,
    PaginationResponse,
    Permission,
-} from '@gateway/lib';
-import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@lib/common';
-import { CategoryEntity, CreateCategoryDto, UpdateCategoryDto } from '@lib/microservice/order';
+} from '@gateway/@library';
+import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CategoryEntity } from '@microservice/order/entity';
+import { CreateCategoryDto, UpdateCategoryDto } from '@microservice/order/dto';
 
 const { name, permissions, patterns } = serviceConfig.get('order');
 

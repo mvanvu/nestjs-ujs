@@ -1,0 +1,34 @@
+{
+   "api-gateway": {
+      "defaultList": ["user", "system", "mailer", "storage"],
+      "dependencies": {
+         "exclude": ["argon2"]
+      }
+   },
+   "microservice": {
+      "list": ["user", "system", "content", "mailer", "order", "storage"],
+      "dependencies": {
+         "exclude": [
+            "helmet",
+            "argon2",
+            "@nestjs/cache-manager",
+            "cache-manager",
+            "cache-manager-redis-yet",
+            "googleapis",
+            "node-device-detector",
+            "@nestjs/throttler",
+            "nodemailer"
+         ],
+         "include": ["user:argon2", "mailer:nodemailer"]
+      }
+   },
+   "env": {
+      "api-gateway": {},
+      "user": {},
+      "system": {},
+      "content": {},
+      "mailer": {},
+      "order": {},
+      "storage": {}
+   }
+}

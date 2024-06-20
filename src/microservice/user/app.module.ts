@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { createMicroserviceApp } from '../lib';
+import { createMicroserviceApp } from '../@library';
 import { serviceConfig } from '@metadata';
 import { GroupController, RoleController, UserController } from './controller';
 import { PrismaService, RoleService, UserService, GroupService } from './provider';

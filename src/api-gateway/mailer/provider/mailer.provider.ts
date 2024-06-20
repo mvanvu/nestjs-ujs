@@ -1,10 +1,10 @@
-import { OnEvent } from '@gateway/lib';
-import { MetaResult, OnServiceResponse, UserEntity, eventConstant } from '@lib/common';
-import { SendMailDto } from '@lib/microservice/mailer';
+import { OnEvent } from '@gateway/@library';
+import { MetaResult, OnServiceResponse, UserEntity, eventConstant } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import * as fs from 'fs';
+import { SendMailDto } from '@microservice/mailer/dto';
 
 export type MailerTemplate = { index: string; resetPasswordBody: string; verifyAccountBody: string };
 const mailerTmplPath = process.cwd() + '/src/api-gateway/mailer/template';

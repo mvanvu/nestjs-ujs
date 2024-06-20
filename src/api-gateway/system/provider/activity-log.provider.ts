@@ -1,10 +1,10 @@
-import { OnEvent } from '@gateway/lib/event-emitter.decorator';
-import { OnServiceResponse, eventConstant } from '@lib/common';
-import { ActivityLogDto } from '@lib/microservice/system';
+import { OnServiceResponse, eventConstant } from '@shared-library';
 import { injectProxy, serviceConfig } from '@metadata';
 import { Is, Util } from '@mvanvu/ujs';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { OnEvent } from '@gateway/@library/event-emitter.decorator';
+import { ActivityLogDto } from '@microservice/system/dto';
 
 @Injectable()
 export class ActivityLogProvider {
