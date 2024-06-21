@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { BaseService } from '@microservice/@library';
-import { RequestRegistryData } from '@shared-library';
+import { UserRefEntity } from '@shared-library';
 import { FinalUploadDto } from '../dto';
 import { FileEntity } from '../entity';
 
@@ -10,7 +10,7 @@ export class FileService extends BaseService {
    @Inject(PrismaService) prisma: PrismaService;
 
    async upload(data: FinalUploadDto): Promise<FileEntity> {
-      const user: RequestRegistryData['user'] = this.meta?.get('headers.user');
+      const user: UserRefEntity = this.meta?.get('user');
 
       if (user) {
          Object.assign(data, { author: { id: user.id, username: user.username, email: user.email } });

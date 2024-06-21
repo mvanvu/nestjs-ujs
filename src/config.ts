@@ -6,6 +6,8 @@ const envConfig = Registry.from(process.env);
 const appConfigData = {
    nodeEnv: envConfig.get<'development' | 'production' | 'test'>('NODE_ENV'),
    appEnv: envConfig.get<'api-gateway' | 'mailer' | 'storage' | 'user' | 'order' | 'content'>('APP_ENV'),
+   multilingual: envConfig.get<boolean>('MULTILINGUAL', false, 'toBoolean'),
+   acceptLanguage: envConfig.get<string>('ACCEPT_LANGUAGES', '*'),
    apiGateway: {
       port: envConfig.get<number>('PORT', 9000, 'toUInt'),
       prefix: envConfig.get<string>('API_PREFIX', 'api'),
@@ -37,7 +39,6 @@ const appConfigData = {
       default: envConfig.get<string>('DEFAULT_LANGUAGE', 'en-GB'),
       accept: envConfig.get<string>('ACCEPT_LANGUAGE', '*').split(','),
    },
-   queryScope: envConfig.get<string>('QUERY_PARAM_SCOPE', ''),
 } as const;
 
 export const appConfig = Registry.from<typeof appConfigData>(appConfigData, { consistent: true });

@@ -12,14 +12,13 @@ export const User = createParamDecorator(
       let user: UserEntity;
 
       if (isGateway()) {
-         const { registry } = ctx.switchToHttp().getRequest<HttpRequest>();
-         user = registry.get('user');
+         user = ctx.switchToHttp().getRequest<HttpRequest>().user;
       } else {
          const {
             properties: { headers },
          } = ctx.switchToRpc().getContext().getMessage();
 
-         user = Registry.from<MessageMeta>(headers?.['x-meta']).get('headers.user');
+         user = Registry.from<MessageMeta>(headers?.['x-meta']).get('user');
       }
 
       const isOptional = typeof property === 'object' && !Array.isArray(property) && property?.optional === true;

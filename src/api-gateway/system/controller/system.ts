@@ -1,62 +1,39 @@
-import {
-   ApiEntityResponse,
-   ApiPaginationResponse,
-   BaseClientProxy,
-   HttpCache,
-   PaginationResponse,
-   Permission,
-} from '@gateway/@library';
-import { PaginationQueryDto, SystemConfigDto } from '@shared-library';
+import { ApiEntityResponse, ApiPaginationResponse, HttpCache, Permission } from '@gateway/@library';
+import { EntityResult, PaginationQueryDto, PaginationResult, SystemConfigDto } from '@shared-library';
 import { ActivityLogDto } from '@microservice/system/dto';
 import { serviceConfig } from '@metadata';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { Body, Controller, Get, HttpStatus, Inject, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { SystemConfigService } from '../provider';
 
-const { name, permissions, patterns } = serviceConfig.get('system');
+const { permissions } = serviceConfig.get('system');
 
 @ApiBearerAuth()
 @ApiTags('Systems')
 @Controller('systems')
 export class SystemController {
-   @Inject(CACHE_MANAGER) private readonly cacheManager: Cache;
-
-   @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
-
-   get systemClient(): BaseClientProxy {
-      return this.proxy.createClient(name);
-   }
+   constructor(private readonly systemConfigService: SystemConfigService) {}
 
    @Post('config')
    @Permission({ key: permissions.config.save })
    @ApiEntityResponse(SystemConfigDto, { statusCode: HttpStatus.OK })
-   async saveConfig(@Body() data: SystemConfigDto): Promise<SystemConfigDto> {
-      const configData = await this.systemClient.send<SystemConfigDto, SystemConfigDto>(patterns.saveConfig, data);
-      await this.cacheManager.set(patterns.getConfig, configData, 0);
-
-      return configData;
+   saveConfig(@Body() data: SystemConfigDto): Promise<EntityResult<SystemConfigDto>> {
+      return this.systemConfigService.saveConfig(data);
    }
 
    @Get('config')
    @HttpCache({ disabled: true })
    @Permission({ key: permissions.config.get })
    @ApiEntityResponse(SystemConfigDto, { statusCode: HttpStatus.OK })
-   async getConfig(): Promise<SystemConfigDto> {
-      let configData: SystemConfigDto = await this.cacheManager.get(patterns.getConfig);
-
-      if (!configData) {
-         configData = await this.systemClient.send<undefined, SystemConfigDto>(patterns.getConfig);
-         await this.cacheManager.set(patterns.getConfig, configData, 0);
-      }
-
-      return configData;
+   getConfig(): Promise<EntityResult<SystemConfigDto>> {
+      return this.systemConfigService.getConfig();
    }
 
    @Get('activity-logs')
    @HttpCache({ disabled: true })
    @Permission({ key: permissions.activityLog.get })
    @ApiPaginationResponse(ActivityLogDto, { summary: 'Admin get list pagination of the activity logs' })
-   activityLogsPaginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<ActivityLogDto>> {
-      return this.systemClient.createCRUD(patterns.getActivityLog).paginate(query);
+   activityLogsPaginate(@Query() query: PaginationQueryDto): Promise<PaginationResult<ActivityLogDto>> {
+      return this.systemConfigService.activityLogsPaginate(query);
    }
 }

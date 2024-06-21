@@ -9,7 +9,7 @@ import { BaseService, CRUDService } from '@microservice/@library';
 import {
    FieldsException,
    ThrowException,
-   MetaResult,
+   DataMetaResult,
    CRUDExecuteContext,
    UserEntity,
    AuthTokenEntity,
@@ -68,7 +68,7 @@ export class UserService extends BaseService {
       fieldsError.validate();
    }
 
-   async signUp(data: UserSignUpDto): Promise<MetaResult<UserEntity>> {
+   async signUp(data: UserSignUpDto): Promise<DataMetaResult<UserEntity>> {
       await this.validateUserDto(data);
       const { name, username, email, password } = data;
       const newUser = await this.prisma.user
@@ -199,7 +199,7 @@ export class UserService extends BaseService {
       return await this.generateTokens(user.id);
    }
 
-   async updateResetPasswordCode(email: string): Promise<false | MetaResult<UserEntity>> {
+   async updateResetPasswordCode(email: string): Promise<false | DataMetaResult<UserEntity>> {
       const user = await this.prisma.user.findUnique({
          where: { email },
          select: { id: true, status: true, verifyCode: true },
@@ -264,7 +264,7 @@ export class UserService extends BaseService {
                }
             } else if (context === 'delete') {
                // Verify permission
-               const author = new UserEntity(this.meta.get('headers.user'));
+               const author = new UserEntity(this.meta.get('user'));
                const isSelf = author.id === user.id;
 
                if (isSelf) {

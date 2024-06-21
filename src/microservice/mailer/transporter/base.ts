@@ -1,13 +1,11 @@
 import * as nodemailer from 'nodemailer';
 import { Transform } from '@mvanvu/ujs';
-import { SystemConfigDto, TransporterMessageInfo } from '@shared-library';
+import { TransporterMessageInfo } from '@shared-library';
 import { MessageInfoEntity } from '../entity';
 import { SendMailDto } from '../dto';
 
 export class BaseTransporter {
    protected transporter: nodemailer.Transporter<TransporterMessageInfo>;
-
-   constructor(protected readonly config: SystemConfigDto['mailer']) {}
 
    async send(dto: SendMailDto): Promise<MessageInfoEntity | false> {
       try {

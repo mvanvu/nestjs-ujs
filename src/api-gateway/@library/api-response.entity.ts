@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class PaginationMetaResponse {
+export class PaginationMeta {
    @ApiProperty()
    totalCount: number;
 
@@ -15,15 +15,17 @@ export class PaginationResponse<TData> {
    @ApiProperty()
    success: true;
 
+   @ApiProperty()
    data: TData[];
 
-   @ApiProperty({ type: () => PaginationMetaResponse })
-   meta: PaginationMetaResponse;
+   @ApiProperty({ type: PaginationMeta })
+   meta: PaginationMeta;
 }
 
 export class EntityResponse<TData> {
    @ApiProperty()
    success: true;
 
+   @ApiProperty()
    data: TData;
 }

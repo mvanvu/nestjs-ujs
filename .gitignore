@@ -36,3 +36,4 @@ node_modules
 credentials
 /build
 /build.json
+/src/microservice/**/system.config.json

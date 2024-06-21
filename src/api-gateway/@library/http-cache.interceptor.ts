@@ -26,7 +26,7 @@ export class HttpCacheInterceptor extends CacheInterceptor {
       }
 
       const cacheKeybase = cacheMetadata?.cacheKey ?? httpAdapter.getRequestUrl(request);
-      const reqUserId = request.registry.get('user.id');
+      const reqUserId = request.user?.id;
       let cacheKey = cacheKeybase;
 
       if (cacheMetadata?.withUserIdPrefix && reqUserId) {

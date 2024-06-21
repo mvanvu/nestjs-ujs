@@ -77,7 +77,7 @@ export class GroupService extends BaseService {
             }
          })
          .transaction<GroupEntity, UpdateGroupDto, CRUDExecuteContext>(async (tx, { data, record, context }) => {
-            if (context === 'create' || (!Is.array(data['groups']) && !Is.array(data['roles']))) {
+            if (['create', 'delete'].includes(context) || (!Is.array(data['groups']) && !Is.array(data['roles']))) {
                return;
             }
 

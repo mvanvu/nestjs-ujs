@@ -8,6 +8,8 @@ import {
    AuthTokenEntity,
    UserEntity,
    AuthEntity,
+   EntityResult,
+   PaginationResult,
 } from '@shared-library';
 import {
    CreateUserDto,
@@ -20,8 +22,6 @@ import {
 } from '@microservice/user/dto';
 import {
    BaseClientProxy,
-   PaginationResponse,
-   EntityResponse,
    ApiEntityResponse,
    ApiPaginationResponse,
    Public,
@@ -51,14 +51,14 @@ export class UserController {
       summary: 'Generate a new pair access/refresh token',
       statusCode: HttpStatus.OK,
    })
-   refreshToken(@Body() data: AuthTokenDto): Promise<AuthTokenEntity> {
+   refreshToken(@Body() data: AuthTokenDto): Promise<EntityResult<AuthTokenEntity>> {
       return this.userProxy.send(patterns.refreshToken, data);
    }
 
    @Public()
    @Post('signup')
    @ApiEntityResponse(UserEntity, { summary: 'Register a new user account', statusCode: HttpStatus.CREATED })
-   signUp(@Body() data: UserSignUpDto): Promise<UserEntity> {
+   signUp(@Body() data: UserSignUpDto): Promise<EntityResult<UserEntity>> {
       return this.userProxy.send(patterns.signUp, data);
    }
 
@@ -68,14 +68,14 @@ export class UserController {
       summary: 'Activate the account by pass a verification code',
       statusCode: HttpStatus.OK,
    })
-   activateAccount(@Body() data: UserSignUpDto): Promise<UserEntity> {
+   activateAccount(@Body() data: UserSignUpDto): Promise<EntityResult<UserEntity>> {
       return this.userProxy.send(patterns.verifyAccount, data);
    }
 
    @Public()
    @Post('signin')
    @ApiEntityResponse(AuthEntity, { summary: 'Sign-in with the user account', statusCode: HttpStatus.OK })
-   signIn(@Body() data: UserSignInDto): Promise<AuthEntity> {
+   signIn(@Body() data: UserSignInDto): Promise<EntityResult<AuthEntity>> {
       return this.userProxy.send(patterns.signIn, data);
    }
 
@@ -95,7 +95,7 @@ export class UserController {
    @Public()
    @Post('reset-password')
    @ApiEntityResponse(UserEntity, { summary: 'Activate the account by pass a verification code' })
-   resetPassword(@Body() data: ResetPasswordDto): Promise<UserEntity> {
+   resetPassword(@Body() data: ResetPasswordDto): Promise<EntityResult<UserEntity>> {
       return this.userProxy.send(patterns.resetPassword, data);
    }
 
@@ -111,7 +111,7 @@ export class UserController {
    @Permission({ key: permissions.user.read })
    @ApiBearerAuth()
    @ApiPaginationResponse(UserEntity, { summary: 'Admin get list pagination of the users' })
-   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<UserEntity>> {
+   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResult<UserEntity>> {
       return this.userCRUD.paginate(query);
    }
 
@@ -119,7 +119,7 @@ export class UserController {
    @Permission({ key: permissions.user.read, adminScope: true })
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin get the detail of user account' })
-   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
+   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<UserEntity>> {
       return this.userCRUD.read(id);
    }
 
@@ -127,7 +127,7 @@ export class UserController {
    @Permission({ key: permissions.user.create, adminScope: true })
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin create a new user account', statusCode: HttpStatus.CREATED })
-   create(@Body() data: CreateUserDto): Promise<EntityResponse<UserEntity>> {
+   create(@Body() data: CreateUserDto): Promise<EntityResult<UserEntity>> {
       return this.userCRUD.create(data);
    }
 
@@ -135,7 +135,7 @@ export class UserController {
    @Permission({ key: permissions.user.update, adminScope: true })
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin update the user account' })
-   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateUserDto): Promise<EntityResponse<UserEntity>> {
+   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateUserDto): Promise<EntityResult<UserEntity>> {
       return this.userCRUD.update(id, data);
    }
 
@@ -143,14 +143,14 @@ export class UserController {
    @Permission({ key: permissions.user.delete, adminScope: true })
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin delete an user account' })
-   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<UserEntity>> {
+   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<UserEntity>> {
       return this.userCRUD.delete(id);
    }
 
    @Delete()
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'The user delete his/her self' })
-   deleteSelf(@User('id') id: string): Promise<EntityResponse<UserEntity>> {
+   deleteSelf(@User('id') id: string): Promise<EntityResult<UserEntity>> {
       return this.userCRUD.delete(id);
    }
 }

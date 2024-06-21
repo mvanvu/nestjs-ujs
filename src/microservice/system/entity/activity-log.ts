@@ -1,5 +1,6 @@
 import { User, ActivityLog } from '.prisma/system';
-import { BaseEntity, DeviceOS, Property } from '@shared-library';
+import { BaseEntity, Property } from '@shared-library';
+import { DetectResult } from 'node-device-detector';
 
 export class ActivityLogEntity extends BaseEntity<ActivityLog> {
    @Property()
@@ -24,7 +25,7 @@ export class ActivityLogEntity extends BaseEntity<ActivityLog> {
    deviceType?: string;
 
    @Property()
-   deviceOS?: DeviceOS;
+   device?: DetectResult;
 
    @Property()
    userAgent?: string;

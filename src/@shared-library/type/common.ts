@@ -1,10 +1,8 @@
-import { IsValidOptions, IsValidType, ObjectRecord, Registry, Transform } from '@mvanvu/ujs';
+import { IsValidOptions, IsValidType, ObjectRecord, Transform } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { Type, VersionValue } from '@nestjs/common/interfaces';
 import { type UserEntity } from '../entity/user';
-import { SystemConfigDto } from '../dto/system-config';
 import { Request } from 'express';
-import { ResultOs } from 'node-device-detector';
 
 export type HttpCacheOptions = {
    disabled?: boolean;
@@ -15,26 +13,18 @@ export type HttpCacheOptions = {
 
 export type UserRole = { id: string; name: string; permissions: string[] }[];
 
-export type DeviceOS = {
-   name: ResultOs['name'];
-   shortName: ResultOs['short_name'];
-   platform: ResultOs['platform'];
-   version: ResultOs['version'];
-};
-
-export type RequestRegistryData = {
-   user?: UserEntity;
-   tz?: string;
-   deviceType: 'web' | 'mobile' | 'desktop';
-   userAgent: string;
-   ipAddress: string;
-   systemConfig: SystemConfigDto;
-   deviceOS?: DeviceOS;
+export type DeviceType = 'web' | 'mobile' | 'desktop';
+export type DeviceRequest = {
+   type: DeviceType;
+   name: string;
+   shortName: string;
+   platform: string;
+   version: string;
 };
 
 export interface HttpRequest extends Request {
    cacheRefKeys?: HttpCacheOptions['cacheRefKeys'];
-   registry: Registry<RequestRegistryData>;
+   user?: UserEntity;
 }
 
 export type ClassConstructor<T> = new (...arg: any[]) => T;

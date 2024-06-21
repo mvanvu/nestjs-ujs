@@ -1,7 +1,6 @@
 import { ArgumentMetadata, HttpException, Injectable, PipeTransform } from '@nestjs/common';
 import { EqualsRulesOptions, Is, IsValidType, ObjectRecord, Transform, Util } from '@mvanvu/ujs';
 import { ClassConstructor, PropertyOptions, ValidationCode, ValidationOptions } from '../type/common';
-import { initParentProperties } from '../entity/mapped-type';
 import { CLASS_PROPERTIES } from '../constant';
 import { ThrowException } from '../exception/throw';
 import { RpcException } from '@nestjs/microservices';
@@ -11,7 +10,6 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
       return data;
    }
 
-   initParentProperties(DTOClassRef);
    const error: Record<string, Array<string | number | ObjectRecord>> = {};
    const propertyOptions: Record<string, PropertyOptions<IsValidType>> | undefined =
       DTOClassRef.prototype[CLASS_PROPERTIES];

@@ -3,9 +3,11 @@ import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import {
    CRUDClient,
+   EntityResult,
    HttpRequest,
    OnServiceResponse,
    PaginationQueryDto,
+   PaginationResult,
    ServiceOptions,
    UserRefEntity,
    eventConstant,
@@ -36,23 +38,13 @@ export class BaseClientProxy {
          throw new NotImplementedException('The client proxy is not initialized');
       }
 
-      const user = this.req.registry.get('user');
-      const regReq = Registry.from<any>({
-         method: this.req.method,
-         systemConfig: this.req.registry.get('systemConfig'),
-      });
-
-      if (user) {
-         // Just send some important user data
-         regReq.set('user', { id: user.id, username: user.name, email: user.email, group: user.group });
-      }
-
-      const meta = Registry.from({})
+      const { user } = this.req;
+      const meta = Registry.from()
          .extends(options?.meta || {})
-         .extends({ headers: regReq.valueOf() });
+         .extends({ method: this.req.method, user: user ? new UserRefEntity(user) : user });
       const eventPayload: OnServiceResponse = {
          messagePattern,
-         requestData: { data, meta },
+         requestData: { data, meta: meta.valueOf() },
          httpRequest: this.req,
          success: true,
       };
@@ -71,7 +63,7 @@ export class BaseClientProxy {
             await this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
          }
 
-         // Check to remove unneeded metadata
+         // Check to remove noneeded metadata
          if (Is.object(response) && Is.object(response.meta)) {
             const allowedMeta: string[] = ['totalCount', 'page', 'limit'];
 
@@ -84,7 +76,7 @@ export class BaseClientProxy {
 
          return response;
       } catch (e: any) {
-         if (appConfig.is('nodeEnv', 'development')) {
+         if (!appConfig.is('nodeEnv', 'production')) {
             console.debug(e);
          }
 
@@ -104,19 +96,24 @@ export class BaseClientProxy {
 
    createCRUD(patternCRUD: string, options?: ServiceOptions): CRUDClient {
       return {
-         read: <TResult>(id: string, optionsOveride?: ServiceOptions): Promise<TResult> =>
+         read: <TEntity>(id: string, optionsOveride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
             this.send(patternCRUD, id, optionsOveride ?? options),
 
-         paginate: <TResult>(query?: PaginationQueryDto, optionsOveride?: ServiceOptions): Promise<TResult> =>
-            this.send(patternCRUD, query, optionsOveride ?? options),
+         paginate: <TEntity>(
+            query?: PaginationQueryDto,
+            optionsOveride?: ServiceOptions,
+         ): Promise<PaginationResult<TEntity>> => this.send(patternCRUD, query, optionsOveride ?? options),
 
-         create: <TResult, TData>(data: TData, optionsOveride?: ServiceOptions): Promise<TResult> =>
+         create: <TEntity, TData>(data: TData, optionsOveride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
             this.send(patternCRUD, data, optionsOveride ?? options),
 
-         update: <TResult, TData>(id: string, data: TData, optionsOveride?: ServiceOptions): Promise<TResult> =>
-            this.send(patternCRUD, { id, data }, optionsOveride ?? options),
+         update: <TEntity, TData>(
+            id: string,
+            data: TData,
+            optionsOveride?: ServiceOptions,
+         ): Promise<EntityResult<TEntity>> => this.send(patternCRUD, { id, data }, optionsOveride ?? options),
 
-         delete: <TResult>(id: string, optionsOveride?: ServiceOptions): Promise<TResult> =>
+         delete: <TEntity>(id: string, optionsOveride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
             this.send(patternCRUD, id, optionsOveride ?? options),
       };
    }

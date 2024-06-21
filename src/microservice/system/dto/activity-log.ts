@@ -1,24 +1,25 @@
-import { DeviceOS, Property } from '@shared-library';
+import { Prisma } from '.prisma/system';
+import { Property } from '@shared-library';
 
 export class ActivityLogAuthor {
-   @Property({ validate: { is: 'mongoId' }, swagger: { disabled: true } })
+   @Property({ validate: { is: 'mongoId' } })
    id: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, swagger: { disabled: true } })
+   @Property({ optional: true, validate: { is: 'string' } })
    name?: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, swagger: { disabled: true } })
+   @Property({ optional: true, validate: { is: 'string' } })
    username?: string;
 
-   @Property({ optional: true, validate: { is: 'email' }, swagger: { disabled: true } })
+   @Property({ optional: true, validate: { is: 'email' } })
    email?: string;
 }
 
 export class ActivityLogDto {
-   @Property({ validate: { is: 'boolean' }, swagger: { disabled: true } })
+   @Property({ validate: { is: 'boolean' } })
    success: boolean;
 
-   @Property({ validate: [{ is: 'string' }, { is: 'empty', not: true }], swagger: { disabled: true } })
+   @Property({ validate: [{ is: 'string' }, { is: 'empty', not: true }] })
    messagePattern: string;
 
    @Property({
@@ -28,21 +29,18 @@ export class ActivityLogDto {
    })
    dataInput?: { origin: any };
 
-   @Property({ optional: true, validate: { is: 'object' }, swagger: { disabled: true } })
+   @Property({ optional: true, validate: { is: 'object' } })
    dataResult?: { origin: any };
 
-   @Property({ optional: true, validate: { is: ActivityLogAuthor }, swagger: { disabled: true } })
+   @Property({ optional: true, validate: { is: ActivityLogAuthor } })
    author?: ActivityLogAuthor;
 
-   @Property({ optional: true, validate: { is: 'string' }, swagger: { disabled: true } })
+   @Property({ optional: true, validate: { is: 'string' } })
    ipAddress?: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, swagger: { disabled: true } })
+   @Property({ optional: true, validate: { is: 'string' } })
    userAgent?: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, swagger: { disabled: true } })
-   deviceType?: string;
-
-   @Property({ optional: true, validate: { is: 'object' }, swagger: { disabled: true } })
-   deviceOS?: DeviceOS;
+   @Property({ optional: true, validate: { is: 'object' } })
+   device?: Prisma.InputJsonObject;
 }

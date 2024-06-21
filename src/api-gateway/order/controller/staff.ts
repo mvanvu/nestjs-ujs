@@ -1,11 +1,5 @@
-import {
-   ApiEntityResponse,
-   ApiPaginationResponse,
-   BaseClientProxy,
-   EntityResponse,
-   PaginationResponse,
-} from '@gateway/@library';
-import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@shared-library';
+import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy } from '@gateway/@library';
+import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseMongoIdPipe } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -26,34 +20,31 @@ export class OrderStaffController {
 
    @ApiPaginationResponse(StaffEntity, { summary: 'Get list pagination of restaurant staffs' })
    @Get()
-   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<StaffEntity>> {
+   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResult<StaffEntity>> {
       return this.staffCRUD.paginate(query);
    }
 
    @ApiEntityResponse(StaffEntity, { summary: 'Get detail of the staff' })
    @Get(':id')
-   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<StaffEntity>> {
+   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<StaffEntity>> {
       return this.staffCRUD.read(id);
    }
 
    @ApiEntityResponse(StaffEntity, { summary: 'Create a new staff', statusCode: HttpStatus.CREATED })
    @Post()
-   create(@Body() data: CreateStaffDto): Promise<EntityResponse<StaffEntity>> {
+   create(@Body() data: CreateStaffDto): Promise<EntityResult<StaffEntity>> {
       return this.staffCRUD.create(data);
    }
 
    @Patch(':id')
    @ApiEntityResponse(StaffEntity, { summary: 'Update a staff' })
-   update(
-      @Param('id', ParseMongoIdPipe) id: string,
-      @Body() data: UpdateStaffDto,
-   ): Promise<EntityResponse<StaffEntity>> {
+   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateStaffDto): Promise<EntityResult<StaffEntity>> {
       return this.staffCRUD.update(id, data);
    }
 
    @ApiEntityResponse(StaffEntity, { summary: 'Delete a table' })
    @Delete(':id')
-   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<StaffEntity>> {
+   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<StaffEntity>> {
       return this.staffCRUD.delete(id);
    }
 }

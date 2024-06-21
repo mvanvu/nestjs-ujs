@@ -4,7 +4,7 @@ import { SystemConfigDto } from '@shared-library';
 
 export class SMTPTransporter extends BaseTransporter {
    constructor(config: SystemConfigDto['mailer']) {
-      super(config);
+      super();
       this.transporter = nodemailer.createTransport({
          // pool: true,
          host: config.smtp.host,

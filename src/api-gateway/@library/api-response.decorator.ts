@@ -1,4 +1,4 @@
-import { EntityResponse, PaginationMetaResponse, PaginationResponse } from './api-response.entity';
+import { EntityResponse, PaginationMeta, PaginationResponse } from './api-response.entity';
 import { HttpCode, HttpStatus, Type, applyDecorators } from '@nestjs/common';
 import { ApiExtraModels, ApiOperation, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
@@ -46,7 +46,7 @@ export const ApiPaginationResponse = <TEntity extends Type<any>>(entity: TEntity
                         type: 'array',
                         items: { $ref: getSchemaPath(entity) },
                      },
-                     meta: { $ref: getSchemaPath(PaginationMetaResponse) },
+                     meta: { $ref: getSchemaPath(PaginationMeta) },
                   },
                },
             ],

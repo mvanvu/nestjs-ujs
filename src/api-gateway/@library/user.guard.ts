@@ -1,4 +1,11 @@
-import { HttpRequest, PermissionOptions, USER_PUBLIC_KEY, USER_ROLE_KEY, UserEntity } from '@shared-library';
+import {
+   DataMetaResult,
+   HttpRequest,
+   PermissionOptions,
+   USER_PUBLIC_KEY,
+   USER_ROLE_KEY,
+   UserEntity,
+} from '@shared-library';
 import { CanActivate, ExecutionContext, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
@@ -38,20 +45,22 @@ export class UserAuthGuard implements CanActivate {
             const cacheKey = `${userId}:users/verify-token`;
             let user: UserEntity = await this.cacheManager.get(cacheKey);
 
-            if (!user) {
-               user = await lastValueFrom<UserEntity>(
+            if (!user || 1) {
+               const response = await lastValueFrom<DataMetaResult<UserEntity>>(
                   app
                      .get<ClientProxy>(injectProxy('user'))
                      .send(serviceConfig.get('user.patterns.verifyToken'), { token })
                      .pipe(timeout(appConfig.get('apiGateway.requestTimeout'))),
                );
 
+               user = response.data;
+
                if (user.id === userId) {
                   await this.cacheManager.set(cacheKey, user, appConfig.get('cache.ttl'));
                }
             }
 
-            request.registry.set('user', new UserEntity(user));
+            request.user = new UserEntity(user);
          } else {
             throw new ForbiddenException();
          }
@@ -86,8 +95,7 @@ export class UserRoleGuard implements CanActivate {
          return true;
       }
 
-      const { registry } = context.switchToHttp().getRequest<HttpRequest>();
-      const user = registry.get('user');
+      const { user } = context.switchToHttp().getRequest<HttpRequest>();
 
       if (!user?.authorise(permission)) {
          throw new ForbiddenException();

@@ -1,10 +1,11 @@
-import { OnServiceResponse, eventConstant } from '@shared-library';
+import { OnServiceResponse, UserRefEntity, detectDevice, eventConstant } from '@shared-library';
 import { injectProxy, serviceConfig } from '@metadata';
 import { Is, Util } from '@mvanvu/ujs';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { OnEvent } from '@gateway/@library/event-emitter.decorator';
 import { ActivityLogDto } from '@microservice/system/dto';
+import { Prisma } from '.prisma/system';
 
 @Injectable()
 export class ActivityLogProvider {
@@ -12,7 +13,7 @@ export class ActivityLogProvider {
    private readonly clientProxy: ClientProxy;
 
    private hideSecret(data: any, secretDeep?: boolean): void {
-      const secretKeys: string[] = ['secret', 'tokens', 'token', 'hash', 'password'];
+      const secretKeys: string[] = ['secret', 'token', 'pass', 'hash', 'password', 'cardNumber', 'cvc', 'cvv'];
 
       if (Is.array(data)) {
          for (const datum of data) {
@@ -30,35 +31,31 @@ export class ActivityLogProvider {
    }
 
    @OnEvent(eventConstant.onServiceResponse)
-   onServiceResponse(payload: OnServiceResponse): void {
-      if (payload.httpRequest.method === 'GET') {
+   onServiceResponse({ success, messagePattern, httpRequest, requestData, responseData }: OnServiceResponse): void {
+      if (httpRequest.method === 'GET') {
          return;
       }
 
-      const { registry } = payload.httpRequest;
-      const user = registry.get('user');
+      const userAgent = httpRequest.headers['user-agent'] || '';
+      const { user } = httpRequest;
+      const userRef = user ? new UserRefEntity(user) : null;
       const data: ActivityLogDto = {
-         success: payload.success,
-         messagePattern: payload.messagePattern,
-         dataInput: { origin: Util.clone(payload.requestData ?? null) },
-         dataResult: { origin: Util.clone(payload.responseData ?? null) },
-         author: user ? { id: user.id, name: user.name, username: user.username, email: user.email } : null,
-         ipAddress: registry.get('ipAddress', null),
-         deviceType: registry.get('deviceType', null),
-         userAgent: registry.get('userAgent', null),
-         deviceOS: registry.get('deviceOS', null),
+         success,
+         messagePattern,
+         dataInput: { origin: Util.clone(requestData ?? null) },
+         dataResult: { origin: Util.clone(responseData ?? null) },
+         author: userRef,
+         userAgent,
+         ipAddress: httpRequest.ips.length ? httpRequest.ips[0] : httpRequest.ip,
+         device: detectDevice(userAgent) as unknown as Prisma.InputJsonObject,
       };
 
       if (
-         payload.messagePattern === serviceConfig.get('user.patterns.signIn') &&
-         data.success &&
-         data.dataResult.origin.user
+         messagePattern === serviceConfig.get('user.patterns.signIn') &&
+         success &&
+         data.dataResult.origin?.data.user
       ) {
-         const { user } = data.dataResult.origin;
-
-         if (data.success && user) {
-            data.author = { id: user.id, name: user.name, username: user.username, email: user.email };
-         }
+         data.author = new UserRefEntity(data.dataResult.origin.user);
       }
 
       this.hideSecret(data.dataInput);

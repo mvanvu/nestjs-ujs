@@ -9,7 +9,7 @@ import {
    ResetPasswordDto,
 } from '../dto';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { AuthEntity, AuthTokenEntity, CRUDResult, MetaResult, UserEntity } from '@shared-library';
+import { AuthEntity, AuthTokenEntity, CRUDResult, DataMetaResult, UserEntity } from '@shared-library';
 import { serviceConfig } from '@metadata';
 const patterns = serviceConfig.get('user.patterns');
 
@@ -23,7 +23,7 @@ export class UserController {
    }
 
    @MessagePattern(patterns.signUp)
-   signUp(@Payload() data: UserSignUpDto): Promise<MetaResult<UserEntity>> {
+   signUp(@Payload() data: UserSignUpDto): Promise<DataMetaResult<UserEntity>> {
       return this.userService.signUp(data);
    }
 
@@ -53,7 +53,7 @@ export class UserController {
    }
 
    @MessagePattern(patterns.sendResetPasswordCode)
-   updateResetPasswordCode(@Payload() dto: SendResetPasswordCodeDto): Promise<false | MetaResult<UserEntity>> {
+   updateResetPasswordCode(@Payload() dto: SendResetPasswordCodeDto): Promise<false | DataMetaResult<UserEntity>> {
       return this.userService.updateResetPasswordCode(dto.email);
    }
 }

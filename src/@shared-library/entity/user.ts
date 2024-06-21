@@ -8,7 +8,6 @@ import { GroupEntity } from './user-group';
 import { USER_PERMISSION_ADMIN_SCOPE } from '@shared-library/constant/common';
 
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
-
 export class UserEntity extends BaseEntity {
    @Property()
    id: string;

@@ -33,8 +33,7 @@ model ActivityLog {
     dataResult     Json?
     ipAddress      String?
     userAgent      String?
-    deviceType     String?
-    deviceOS       Json?
+    device         Json?
     createdAt      DateTime @default(now())
     author         User?
 }

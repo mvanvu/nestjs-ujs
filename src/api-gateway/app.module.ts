@@ -1,18 +1,11 @@
-import { DynamicModule, Global, MiddlewareConsumer, Module, VersioningType } from '@nestjs/common';
+import { DynamicModule, Global, Module, VersioningType } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, DiscoveryModule, NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
 import { ValidationPipe, ExceptionFilter } from '@shared-library';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import {
-   BaseClientProxy,
-   EventEmitterLoader,
-   HttpCacheInterceptor,
-   HttpMiddleware,
-   UserAuthGuard,
-   UserRoleGuard,
-} from './@library';
+import { BaseClientProxy, EventEmitterLoader, HttpCacheInterceptor, UserAuthGuard, UserRoleGuard } from './@library';
 import { bootstrap, appConfig, serviceListNames, serviceConfig } from '@metadata';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -102,10 +95,6 @@ class MicroserviceModule {
    ],
 })
 export class AppModule {
-   configure(consumer: MiddlewareConsumer) {
-      consumer.apply(HttpMiddleware).forRoutes('*');
-   }
-
    static async bootstrap(): Promise<void> {
       const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
 
@@ -153,7 +142,6 @@ export class AppModule {
 
       // Bootstrap Metadata
       bootstrap(app);
-
       await app
          .listen(port, () => console.log(`Listening on port: ${port}`))
          .catch((e) => console.error('Init app failure:', e));

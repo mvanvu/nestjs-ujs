@@ -6,6 +6,7 @@ import { FileProvider } from '../provider/file.provider';
 import { serviceConfig } from '@metadata';
 import { FileEntity } from '@microservice/storage/entity';
 import { UploadDto } from '@microservice/storage/dto';
+import { EntityResult } from '@shared-library';
 
 const { name, permissions, patterns } = serviceConfig.get('storage');
 
@@ -26,7 +27,7 @@ export class StorageController {
    @UseInterceptors(FileInterceptor('file'))
    @ApiConsumes('multipart/form-data')
    @ApiEntityResponse(FileEntity, { summary: 'Upload a file' })
-   async upload(@Body() dto: UploadDto, @UploadedFile() file: Express.Multer.File): Promise<FileEntity> {
+   async upload(@Body() dto: UploadDto, @UploadedFile() file: Express.Multer.File): Promise<EntityResult<FileEntity>> {
       const data = await this.fileProvider.upload({ ...dto, file });
 
       return await this.storageClient.send(patterns.upload, data);

@@ -2,9 +2,7 @@ import { ClassConstructor, HttpRequest, ServiceOptions } from './common';
 import { IsEqual, ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
 import { type PaginationQueryDto } from './dto';
-import { type UserEntity } from '@shared-library/entity/user';
-import { type SystemConfigDto } from '@shared-library/dto/system-config';
-
+import { type UserRefEntity } from '@shared-library/entity/user';
 export type PrismaModels = Record<string, DMMF.Model>;
 
 export interface GetPrismaModels {
@@ -32,6 +30,8 @@ export type OrderDirection = 'asc' | 'desc';
 
 export type OrderBy = Record<string, OrderDirection> | Record<string, Record<string, OrderDirection>>;
 
+export type EntityResult<T> = { data: T };
+
 export type PaginationResult<T> = {
    data: T[];
    meta: {
@@ -43,15 +43,14 @@ export type PaginationResult<T> = {
 
 export type UpdateResult<T> = { data: T; meta: { diff: Record<string, { from: any; to: any }> } };
 
-export type MetaResult<T> = { data: T; meta: ObjectRecord };
+export type DataMetaResult<TData, TMeta = ObjectRecord> = { data: TData; meta: TMeta };
 
 export type CRUDResult<T> = T | PaginationResult<T> | UpdateResult<T>;
 
 export type MessageMeta = {
    query?: ObjectRecord;
-   user?: UserEntity;
+   user?: UserRefEntity;
    method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
-   systemConfig?: SystemConfigDto;
 };
 
 export type MessageData<TData = any, TMeta = MessageMeta | Registry<MessageMeta>> = {
@@ -59,12 +58,12 @@ export type MessageData<TData = any, TMeta = MessageMeta | Registry<MessageMeta>
    meta?: TMeta;
 };
 
-export type OnServiceResponse = {
+export type OnServiceResponse<TDataResponse = any> = {
    success: boolean;
    messagePattern: string;
    httpRequest: HttpRequest;
    requestData?: { data?: any; meta?: ObjectRecord };
-   responseData?: { data?: any; meta?: ObjectRecord };
+   responseData?: TDataResponse;
 };
 
 export type CRUDContext = 'read' | 'create' | 'update' | 'delete';
@@ -114,14 +113,13 @@ export type OnEntity<TEntity extends ObjectRecord, TContext extends CRUDContext>
    | ClassConstructor<TEntity>
    | ((record: TEntity, options: OnEntityOptions<TContext>) => any | Promise<any>);
 
-export type PaginationListOptions = {
-   itemsPerPage: number;
-};
-
 export type CRUDClient = {
-   read: <TResult>(id: string, optionsOveride?: ServiceOptions) => Promise<TResult>;
-   paginate: <TResult>(query?: PaginationQueryDto & ObjectRecord, optionsOveride?: ServiceOptions) => Promise<TResult>;
-   create: <TResult, TData>(data: TData, optionsOveride?: ServiceOptions) => Promise<TResult>;
-   update: <TResult, TData>(id: string, data: TData, optionsOveride?: ServiceOptions) => Promise<TResult>;
-   delete: <TResult>(id: string, optionsOveride?: ServiceOptions) => Promise<TResult>;
+   read: <TEntity>(id: string, optionsOveride?: ServiceOptions) => Promise<EntityResult<TEntity>>;
+   paginate: <TEntity>(
+      query?: PaginationQueryDto & ObjectRecord,
+      optionsOveride?: ServiceOptions,
+   ) => Promise<PaginationResult<TEntity>>;
+   create: <TEntity, TData>(data: TData, optionsOveride?: ServiceOptions) => Promise<EntityResult<TEntity>>;
+   update: <TEntity, TData>(id: string, data: TData, optionsOveride?: ServiceOptions) => Promise<EntityResult<TEntity>>;
+   delete: <TEntity>(id: string, optionsOveride?: ServiceOptions) => Promise<EntityResult<TEntity>>;
 };

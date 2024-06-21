@@ -14,7 +14,7 @@ export function Property<IsType extends IsValidType | ClassConstructor<any> | [C
             target[CLASS_PROPERTIES] = {};
          }
 
-         target[CLASS_PROPERTIES][propertyKey] = options;
+         target[CLASS_PROPERTIES][propertyKey] = options ?? null;
       },
    ];
 

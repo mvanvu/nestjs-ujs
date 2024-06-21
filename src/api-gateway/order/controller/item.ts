@@ -1,11 +1,5 @@
-import {
-   ApiEntityResponse,
-   ApiPaginationResponse,
-   BaseClientProxy,
-   EntityResponse,
-   PaginationResponse,
-} from '@gateway/@library';
-import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@shared-library';
+import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy } from '@gateway/@library';
+import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseMongoIdPipe } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -26,31 +20,31 @@ export class OrderItemController {
 
    @ApiPaginationResponse(ItemEntity, { summary: 'Get list pagination of order items' })
    @Get()
-   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<ItemEntity>> {
+   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResult<ItemEntity>> {
       return this.itemCRUD.paginate(query);
    }
 
    @ApiEntityResponse(ItemEntity, { summary: 'Get detail of the item' })
    @Get(':id')
-   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<ItemEntity>> {
+   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<ItemEntity>> {
       return this.itemCRUD.read(id);
    }
 
    @ApiEntityResponse(ItemEntity, { summary: 'Create a new item', statusCode: HttpStatus.CREATED })
    @Post()
-   create(@Body() data: CreateItemDto): Promise<EntityResponse<ItemEntity>> {
+   create(@Body() data: CreateItemDto): Promise<EntityResult<ItemEntity>> {
       return this.itemCRUD.create(data);
    }
 
    @Patch(':id')
    @ApiEntityResponse(ItemEntity, { summary: 'Update a item' })
-   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateItemDto): Promise<EntityResponse<ItemEntity>> {
+   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateItemDto): Promise<EntityResult<ItemEntity>> {
       return this.itemCRUD.update(id, data);
    }
 
    @ApiEntityResponse(ItemEntity, { summary: 'Delete a item' })
    @Delete(':id')
-   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<ItemEntity>> {
+   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<ItemEntity>> {
       return this.itemCRUD.delete(id);
    }
 }

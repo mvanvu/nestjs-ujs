@@ -1,4 +1,3 @@
-import { appConfig } from '@metadata';
 import { FieldsException, ThrowException } from '@shared-library/exception';
 import {
    OrderBy,
@@ -13,7 +12,6 @@ import {
    OnEntity,
    OnTransaction,
    CRUDContext,
-   PaginationListOptions,
    OnTransactionOptions,
    OnEntityOptions,
    OnBeforeExecute,
@@ -49,6 +47,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          orderFields?: string[];
          searchFields?: string[];
          filterFields?: string[];
+         defaultLimit?: number;
          maxLimit?: number;
       };
    };
@@ -111,15 +110,11 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       return this;
    }
 
-   async paginate<T>(
-      query?: ObjectRecord,
-      where?: Record<string, any>,
-      options?: PaginationListOptions,
-   ): Promise<PaginationResult<T>> {
+   async paginate<T>(query?: ObjectRecord): Promise<PaginationResult<T>> {
       const modelParams = {
          select: this.prismaSelect,
          include: this.prismaInclude,
-         where: where ?? {},
+         where: {} as ObjectRecord,
          orderBy: <OrderBy[]>[],
          take: undefined,
          skip: undefined,
@@ -360,7 +355,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       }
 
       // Take care pagination
-      const defaultLimit = options?.itemsPerPage ?? 25;
+      const defaultLimit = this.optionsCRUD?.list?.defaultLimit ?? 25;
       const maxLimit = this.optionsCRUD?.list?.maxLimit ?? 1000;
       let limit: number =
          query.limit === undefined || !query.limit.toString().match(/^[0-9]+$/)
@@ -374,32 +369,6 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       modelParams.take = limit;
       modelParams.skip = (page - 1) * limit;
       Object.assign(query, { page, limit, q });
-
-      // Query by fields scope
-      const scope = appConfig.get('queryScope');
-
-      if (scope && Is.string(query[scope]) && !Is.empty(query[scope])) {
-         const { fields } = this.prisma.models[this.model];
-         const selectedFields: string[] = query[scope]
-            .split(',')
-            .filter((field: string) => !!field && !!fields.find(({ name }) => name === field));
-
-         if (selectedFields.length) {
-            if (!Is.object(modelParams.select) || Is.emptyObject(modelParams.select)) {
-               modelParams.select = selectedFields.map((field) => ({ [field]: true }));
-            } else {
-               for (const field in <ObjectRecord>modelParams.select) {
-                  if (!selectedFields.includes(field)) {
-                     delete modelParams.select[field];
-                  }
-               }
-
-               for (const field of selectedFields) {
-                  Object.assign(modelParams.select, { [field]: true });
-               }
-            }
-         }
-      }
 
       // Prisma model
       const model = this.prisma[this.model];
@@ -670,9 +639,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       const dto = this.ctx.getData();
 
       if (method === 'GET') {
-         return Is.mongoId(dto)
-            ? this.read<TResult>(dto)
-            : this.paginate<TResult>(dto, { itemsPerPage: meta.get('systemConfig.itemsPerPage') });
+         return Is.mongoId(dto) ? this.read<TResult>(dto) : this.paginate<TResult>(dto);
       }
 
       if (method === 'DELETE' && Is.mongoId(dto)) {
@@ -705,7 +672,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       }
 
       if (method === 'POST' && Is.object(dto)) {
-         const data = this.createDTO ? await validateDTO(dto.data, this.createDTO) : dto.data;
+         const data = this.createDTO ? await validateDTO(dto, this.createDTO) : dto;
 
          if (userRef) {
             // Append some dynamic user data

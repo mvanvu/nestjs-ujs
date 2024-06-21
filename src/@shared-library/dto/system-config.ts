@@ -1,4 +1,3 @@
-import { BaseEntity } from '../entity/base';
 import { Property } from '../decorator/property';
 import { MailerTransporter } from '../type/common';
 
@@ -36,53 +35,13 @@ export class MailerConfigDto {
    smtp?: MailerSMTPTransporterDto;
 }
 
-export class LanguageConfigDto {
-   @Property({
-      validate: { is: 'boolean' },
-      defaultValue: false,
-      swagger: { description: 'Enable multilingual mode, defaults to false' },
-   })
-   multilingual: boolean;
-
-   @Property({
-      validate: { is: 'string' },
-      defaultValue: 'en-GB',
-      swagger: { description: 'The default of language, defaults to en-GB', example: 'en-GB' },
-   })
-   defaultLanguage: string;
-
-   @Property({
-      validate: { is: 'string', each: true },
-      defaultValue: ['en-GB', 'vi-VN'],
-      swagger: {
-         description: 'List of allowed language ISO codes',
-         example: ['en-GB', 'vi-VN'],
-      },
-   })
-   acceptLanguage: string[];
-}
-
-export class SystemConfigDto extends BaseEntity {
-   @Property({
-      optional: true,
-      validate: { is: LanguageConfigDto },
-      swagger: { type: LanguageConfigDto, description: 'Language config' },
-   })
-   language?: LanguageConfigDto;
-
+export class SystemConfigDto {
    @Property({
       optional: true,
       validate: { is: MailerConfigDto },
       swagger: { type: MailerConfigDto, description: 'Mailer config' },
    })
    mailer?: MailerConfigDto;
-
-   @Property({
-      validate: [{ is: 'uInt' }, { is: 'min', meta: 1 }],
-      optional: true,
-      swagger: { description: 'Pagination config, the number of items per page, defaults to 25' },
-   })
-   itemsPerPage?: number;
 
    @Property({
       validate: [{ is: 'uInt' }, { is: 'min', meta: 1 }],
