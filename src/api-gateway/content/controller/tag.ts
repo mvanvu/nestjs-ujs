@@ -1,12 +1,5 @@
-import {
-   ApiEntityResponse,
-   ApiPaginationResponse,
-   BaseClientProxy,
-   EntityResponse,
-   PaginationResponse,
-   Permission,
-} from '@gateway/@library';
-import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@shared-library';
+import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy, Permission } from '@gateway/@library';
+import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseMongoIdPipe } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -28,35 +21,35 @@ export class ContentTagController {
    @Permission({ key: permissions.tag.read, adminScope: true })
    @ApiPaginationResponse(TagEntity, { summary: 'Get list pagination of content tags' })
    @Get()
-   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<TagEntity>> {
+   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResult<TagEntity>> {
       return this.postCRUD.paginate(query);
    }
 
    @Permission({ key: permissions.tag.read, adminScope: true })
    @ApiEntityResponse(TagEntity, { summary: 'Get detail of the tag' })
    @Get(':id')
-   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<TagEntity>> {
+   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<TagEntity>> {
       return this.postCRUD.read(id);
    }
 
    @Permission({ key: permissions.tag.create, adminScope: true })
    @ApiEntityResponse(TagEntity, { summary: 'Create a new tag', statusCode: HttpStatus.CREATED })
    @Post()
-   create(@Body() data: CreateTagDto): Promise<EntityResponse<TagEntity>> {
+   create(@Body() data: CreateTagDto): Promise<EntityResult<TagEntity>> {
       return this.postCRUD.create(data);
    }
 
    @Permission({ key: permissions.tag.update, adminScope: true })
    @Patch(':id')
    @ApiEntityResponse(TagEntity, { summary: 'Update a tag' })
-   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateTagDto): Promise<EntityResponse<TagEntity>> {
+   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateTagDto): Promise<EntityResult<TagEntity>> {
       return this.postCRUD.update(id, data);
    }
 
    @Permission({ key: permissions.tag.delete, adminScope: true })
    @ApiEntityResponse(TagEntity, { summary: 'Delete a tag' })
    @Delete(':id')
-   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<TagEntity>> {
+   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<TagEntity>> {
       return this.postCRUD.delete(id);
    }
 }

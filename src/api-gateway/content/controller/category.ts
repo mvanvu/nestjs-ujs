@@ -1,12 +1,5 @@
-import {
-   ApiEntityResponse,
-   ApiPaginationResponse,
-   BaseClientProxy,
-   EntityResponse,
-   PaginationResponse,
-   Permission,
-} from '@gateway/@library';
-import { CRUDClient, PaginationQueryDto, ParseMongoIdPipe } from '@shared-library';
+import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy, Permission } from '@gateway/@library';
+import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseMongoIdPipe } from '@shared-library';
 import { CreateCategoryDto, UpdateCategoryDto } from '@microservice/content/dto';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
@@ -28,21 +21,21 @@ export class ContentCategoryController {
    @Permission({ key: permissions.category.read, adminScope: true })
    @ApiPaginationResponse(CategoryEntity, { summary: 'Get list pagination of content categories' })
    @Get()
-   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResponse<CategoryEntity>> {
+   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResult<CategoryEntity>> {
       return this.categoryCRUD.paginate(query);
    }
 
    @Permission({ key: permissions.category.read, adminScope: true })
    @ApiEntityResponse(CategoryEntity, { summary: 'Get detail of the category' })
    @Get(':id')
-   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<CategoryEntity>> {
+   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<CategoryEntity>> {
       return this.categoryCRUD.read(id);
    }
 
    @Permission({ key: permissions.category.create, adminScope: true })
    @ApiEntityResponse(CategoryEntity, { summary: 'Create a new category', statusCode: HttpStatus.CREATED })
    @Post()
-   create(@Body() data: CreateCategoryDto): Promise<EntityResponse<CategoryEntity>> {
+   create(@Body() data: CreateCategoryDto): Promise<EntityResult<CategoryEntity>> {
       return this.categoryCRUD.create(data);
    }
 
@@ -52,14 +45,14 @@ export class ContentCategoryController {
    update(
       @Param('id', ParseMongoIdPipe) id: string,
       @Body() data: UpdateCategoryDto,
-   ): Promise<EntityResponse<CategoryEntity>> {
+   ): Promise<EntityResult<CategoryEntity>> {
       return this.categoryCRUD.update(id, data);
    }
 
    @Permission({ key: permissions.category.delete, adminScope: true })
    @ApiEntityResponse(CategoryEntity, { summary: 'Delete a category' })
    @Delete(':id')
-   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResponse<CategoryEntity>> {
+   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<CategoryEntity>> {
       return this.categoryCRUD.delete(id);
    }
 }
