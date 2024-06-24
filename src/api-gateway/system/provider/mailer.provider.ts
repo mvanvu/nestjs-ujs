@@ -49,8 +49,13 @@ export class MailerProvider {
    sendVerifyAccountCode(
       payload: OnServiceResponse<DataMetaResult<UserEntity, { verifyCode: { activateAccount?: string } }>>,
    ): void {
+      if (!payload.success) {
+         return;
+      }
+
       const { data: user, meta } = payload.responseData;
-      if (user.email && meta.verifyCode?.activateAccount) {
+
+      if (user.email && meta?.verifyCode?.activateAccount) {
          const code = meta.verifyCode.activateAccount;
          const data: SendMailDto = {
             to: [user.email],
@@ -67,24 +72,30 @@ export class MailerProvider {
    }
 
    sendVerifyResetPasswordCode(
-      payload: OnServiceResponse<false | DataMetaResult<UserEntity, { verifyCode: string }>>,
+      payload: OnServiceResponse<DataMetaResult<UserEntity, { verifyCode: { resetPassword?: string } }>>,
    ): void {
-      const { responseData, success } = payload;
+      if (!payload.success) {
+         return;
+      }
 
-      if (success && responseData) {
-         const { data: user, meta } = responseData;
-         const code = meta.verifyCode;
-         const data: SendMailDto = {
-            to: [user.email],
-            subject: 'Reset your password',
-            body: this.parseBody(this.templates.resetPasswordBody, {
-               name: user.name || user.username || user.email,
-               url: `${serviceConfig.get('user.httpWebVerifyResetPwdUrl').replace(/\/+$/, '')}?code=${code}`,
-               code,
-            }),
-         };
+      const { data: user, meta } = payload.responseData;
 
-         this.systemProxy.emit(patterns.sendMail, data);
+      if (user?.email && meta?.verifyCode?.resetPassword) {
+         const code = meta.verifyCode.resetPassword;
+
+         if (code) {
+            const data: SendMailDto = {
+               to: [user.email],
+               subject: 'Reset your password',
+               body: this.parseBody(this.templates.resetPasswordBody, {
+                  name: user.name || user.username || user.email,
+                  url: `${serviceConfig.get('user.httpWebVerifyResetPwdUrl').replace(/\/+$/, '')}?code=${code}`,
+                  code,
+               }),
+            };
+
+            this.systemProxy.emit(patterns.sendMail, data);
+         }
       }
    }
 }

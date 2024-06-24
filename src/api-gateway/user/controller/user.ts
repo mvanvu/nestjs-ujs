@@ -86,9 +86,9 @@ export class UserController {
       statusCode: HttpStatus.OK,
    })
    async sendResetPassword(@Body() data: SendResetPasswordCodeDto): Promise<true> {
+      // Always returns true for security purpose
       await this.userProxy.send(patterns.sendResetPasswordCode, data);
 
-      // Always returns true for security perpose
       return true;
    }
 

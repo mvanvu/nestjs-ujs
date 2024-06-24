@@ -8,6 +8,8 @@ import { Observable, throwError } from 'rxjs';
 @Catch()
 export class ExceptionFilter implements NestExceptionFilter {
    catch(exception: any, host: ArgumentsHost): void | Observable<any> {
+      const isDevMode = !appConfig.is('nodeEnv', 'production');
+
       if (isGateway()) {
          const response = host.switchToHttp().getResponse<Response>();
          const exceptionResponse = Is.func(exception?.getResponse) ? exception.getResponse() : exception;
@@ -33,12 +35,16 @@ export class ExceptionFilter implements NestExceptionFilter {
             status = error.statusCode;
          }
 
-         if (!appConfig.is('nodeEnv', 'production')) {
+         if (isDevMode) {
             jsonRes.stack = exception.stack;
          }
 
          response.status(status).json(jsonRes);
       } else {
+         if (isDevMode) {
+            console.debug(`Microservice ${appConfig.get('appEnv')} executed ERROR: ${JSON.stringify(exception)}`);
+         }
+
          return throwError(() =>
             exception instanceof RpcException
                ? exception.getError()

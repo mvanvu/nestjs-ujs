@@ -1,12 +1,13 @@
 import { ServiceName } from '@metadata';
 import { ObjectRecord } from '@mvanvu/ujs';
+import { SystemConfigDto } from '@shared-library';
 import * as fs from 'fs';
 
 const dataConfig: ObjectRecord = {};
 const getSystemConfigPath = (serviceName: ServiceName) =>
    `${process.cwd()}/src/microservice/${serviceName}/system.config.json`;
 
-export const getSystemConfig = <T>(serviceName: ServiceName): T => {
+export const getSystemConfig = (serviceName: ServiceName): SystemConfigDto => {
    const systemConfigPath = getSystemConfigPath(serviceName);
 
    if (!dataConfig[serviceName]) {
@@ -15,7 +16,7 @@ export const getSystemConfig = <T>(serviceName: ServiceName): T => {
          : {};
    }
 
-   return dataConfig;
+   return dataConfig[serviceName];
 };
 
 export const updateSystemConfig = (serviceName: ServiceName, serviceConfigData: ObjectRecord): void => {
