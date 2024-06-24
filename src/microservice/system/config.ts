@@ -7,6 +7,7 @@ export default {
       saveConfig: 'system.saveConfig',
       getActivityLog: 'system.getActivityLog',
       writeActivityLog: 'system.writeActivityLog',
+      sendMail: 'system.sendMail',
    },
    permissions: {
       activityLog: {

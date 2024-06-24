@@ -42,5 +42,5 @@ export class ActivityLogDto {
    userAgent?: string;
 
    @Property({ optional: true, validate: { is: 'object' } })
-   device?: Prisma.InputJsonObject;
+   detectResult?: Prisma.InputJsonObject;
 }

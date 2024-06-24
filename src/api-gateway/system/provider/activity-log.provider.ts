@@ -1,4 +1,4 @@
-import { OnServiceResponse, UserRefEntity, detectDevice, eventConstant } from '@shared-library';
+import { OnServiceResponse, UserRefEntity, detectDevice, eventConstant, snackToCamelCase } from '@shared-library';
 import { injectProxy, serviceConfig } from '@metadata';
 import { Is, Util } from '@mvanvu/ujs';
 import { Inject, Injectable } from '@nestjs/common';
@@ -46,7 +46,7 @@ export class ActivityLogProvider {
          author: userRef,
          userAgent,
          ipAddress: httpRequest.ips.length ? httpRequest.ips[0] : httpRequest.ip,
-         device: detectDevice(userAgent) as unknown as Prisma.InputJsonObject,
+         detectResult: snackToCamelCase<Prisma.InputJsonObject>(detectDevice(userAgent)),
       };
 
       if (
@@ -61,7 +61,7 @@ export class ActivityLogProvider {
          delete data.dataInput.origin.meta.user;
       }
 
-      this.hideSecret([data.dataInput]);
+      this.hideSecret(data.dataInput);
       this.hideSecret(data.dataResult);
       this.clientProxy.emit(serviceConfig.get('system.patterns.writeActivityLog'), data);
    }

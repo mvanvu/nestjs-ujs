@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { SystemController } from './controller';
-import { ActivityLogProvider, PurgeCacheProvider, SystemConfigService } from './provider';
+import { ActivityLogProvider, MailerProvider, PurgeCacheProvider, SystemConfigService } from './provider';
 
 @Module({
    controllers: [SystemController],
-   providers: [ActivityLogProvider, PurgeCacheProvider, SystemConfigService],
+   providers: [ActivityLogProvider, PurgeCacheProvider, SystemConfigService, MailerProvider],
 })
 export class SystemModule {}

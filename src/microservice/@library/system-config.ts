@@ -12,7 +12,7 @@ export const getSystemConfig = <T>(serviceName: ServiceName): T => {
    if (!dataConfig[serviceName]) {
       dataConfig[serviceName] = fs.existsSync(systemConfigPath)
          ? JSON.parse(fs.readFileSync(systemConfigPath).toString())
-         : [];
+         : {};
    }
 
    return dataConfig;

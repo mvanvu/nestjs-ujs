@@ -25,7 +25,7 @@ export class ActivityLogEntity extends BaseEntity<ActivityLog> {
    deviceType?: string;
 
    @Property()
-   device?: DetectResult;
+   detectResult?: DetectResult;
 
    @Property()
    userAgent?: string;

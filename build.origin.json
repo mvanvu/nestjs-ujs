@@ -1,12 +1,12 @@
 {
    "api-gateway": {
-      "defaultList": ["user", "system", "mailer", "storage"],
+      "defaultList": ["system", "user"],
       "dependencies": {
          "exclude": ["argon2"]
       }
    },
    "microservice": {
-      "list": ["user", "system", "content", "mailer", "order", "storage"],
+      "list": ["user", "system", "content", "order", "storage"],
       "dependencies": {
          "exclude": [
             "helmet",

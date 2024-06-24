@@ -4,6 +4,7 @@ import { PrismaService } from './prisma.service';
 import { CRUDResult, SystemConfigDto } from '@shared-library';
 import { ActivityLogDto } from '../dto';
 import { ActivityLogEntity } from '../entity';
+import { updateSystemConfig } from '@microservice/@library';
 
 @Injectable()
 export class SystemService {
@@ -26,7 +27,10 @@ export class SystemService {
          update: { value },
       });
 
-      return registry.valueOf();
+      const systemConfig = registry.valueOf();
+      updateSystemConfig('system', systemConfig);
+
+      return systemConfig;
    }
 
    async getConfig(): Promise<SystemConfigDto> {

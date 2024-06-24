@@ -59,6 +59,7 @@ export class BaseClientProxy {
 
          if (options?.noEmitEvent !== true) {
             // Emit the response success event
+            eventPayload.responseData = response;
             this.emitResponseEvent(eventPayload);
          }
 
@@ -76,13 +77,11 @@ export class BaseClientProxy {
    }
 
    private emitResponseEvent(eventPayload: OnServiceResponse) {
-      process.nextTick(() => {
-         try {
-            this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
-         } catch (e) {
-            console.debug(e);
-         }
-      });
+      try {
+         this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
+      } catch (e) {
+         console.debug(e);
+      }
    }
 
    createCRUD(patternCRUD: string, options?: ServiceOptions): CRUDClient {

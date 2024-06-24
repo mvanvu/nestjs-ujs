@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { SMTPTransporter } from '../transporter';
 import { BaseService, getSystemConfig } from '@microservice/@library';
+import { SMTPTransporter } from './mailer-transporter';
 import { SendMailDto } from '../dto';
 import { MessageInfoEntity } from '../entity';
 
@@ -8,7 +8,7 @@ import { MessageInfoEntity } from '../entity';
 export class MailerService extends BaseService {
    get transporter(): SMTPTransporter {
       // Todo, add some tranporter
-      return new SMTPTransporter(getSystemConfig('mailer'));
+      return new SMTPTransporter(getSystemConfig('system'));
    }
 
    async send(dto: SendMailDto): Promise<MessageInfoEntity | false> {

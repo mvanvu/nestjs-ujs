@@ -1,13 +1,14 @@
 import { OnEvent } from '@gateway/@library';
-import { DataMetaResult, OnServiceResponse, SystemConfigDto, UserEntity, eventConstant } from '@shared-library';
+import { DataMetaResult, OnServiceResponse, UserEntity, eventConstant } from '@shared-library';
 import { injectProxy, serviceConfig } from '@metadata';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import * as fs from 'fs';
-import { SendMailDto } from '@microservice/mailer/dto';
+import { SendMailDto } from '@microservice/system/dto';
 
 export type MailerTemplate = { index: string; resetPasswordBody: string; verifyAccountBody: string };
-const mailerTmplPath = process.cwd() + '/src/api-gateway/mailer/template';
+const mailerTmplPath = process.cwd() + '/src/api-gateway/system/provider/mailer-template';
+const { name, patterns } = serviceConfig.get('system');
 
 @Injectable()
 export class MailerProvider {
@@ -17,8 +18,8 @@ export class MailerProvider {
       verifyAccountBody: fs.readFileSync(`${mailerTmplPath}/body/verify-account.html`).toString('utf8'),
    };
 
-   @Inject(injectProxy('mailer'))
-   private readonly mailerProxy: ClientProxy;
+   @Inject(injectProxy(name))
+   private readonly systemProxy: ClientProxy;
 
    @OnEvent(eventConstant.onServiceResponse)
    onServiceResponse(payload: OnServiceResponse): void {
@@ -27,9 +28,6 @@ export class MailerProvider {
       }
 
       switch (payload.messagePattern) {
-         case serviceConfig.get('system.patterns.saveConfig'):
-            return this.updateSystemConfig(payload);
-
          case serviceConfig.get('user.patterns.signUp'):
             return this.sendVerifyAccountCode(payload);
 
@@ -48,11 +46,12 @@ export class MailerProvider {
       return this.templates.index.replace('{{ body }}', innerBody);
    }
 
-   sendVerifyAccountCode(payload: OnServiceResponse<DataMetaResult<UserEntity, { verifyCode: string }>>): void {
+   sendVerifyAccountCode(
+      payload: OnServiceResponse<DataMetaResult<UserEntity, { verifyCode: { activateAccount?: string } }>>,
+   ): void {
       const { data: user, meta } = payload.responseData;
-
-      if (user.email && meta.verifyCode) {
-         const code = meta.verifyCode;
+      if (user.email && meta.verifyCode?.activateAccount) {
+         const code = meta.verifyCode.activateAccount;
          const data: SendMailDto = {
             to: [user.email],
             subject: 'Verify your account',
@@ -63,17 +62,17 @@ export class MailerProvider {
             }),
          };
 
-         this.mailerProxy.emit(serviceConfig.get('mailer.patterns.send'), data);
+         this.systemProxy.emit(patterns.sendMail, data);
       }
    }
 
    sendVerifyResetPasswordCode(
       payload: OnServiceResponse<false | DataMetaResult<UserEntity, { verifyCode: string }>>,
    ): void {
-      const response = payload.responseData;
+      const { responseData, success } = payload;
 
-      if (response) {
-         const { data: user, meta } = response;
+      if (success && responseData) {
+         const { data: user, meta } = responseData;
          const code = meta.verifyCode;
          const data: SendMailDto = {
             to: [user.email],
@@ -85,14 +84,7 @@ export class MailerProvider {
             }),
          };
 
-         this.mailerProxy.emit(serviceConfig.get('mailer.patterns.send'), data);
+         this.systemProxy.emit(patterns.sendMail, data);
       }
-   }
-
-   updateSystemConfig(payload: OnServiceResponse<DataMetaResult<SystemConfigDto>>): void {
-      this.mailerProxy.emit(
-         serviceConfig.get('mailer.patterns.storeMailerConfig'),
-         payload.responseData.data.mailer || {},
-      );
    }
 }
