@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Controller, Inject } from '@nestjs/common';
 import { SystemService } from '../provider';
 import { serviceConfig } from '@metadata';
 import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
@@ -7,7 +7,7 @@ import { ActivityLogDto } from '../dto';
 import { ActivityLogEntity } from '../entity';
 const patterns = serviceConfig.get('system.patterns');
 
-@Injectable()
+@Controller()
 export class SystemController {
    @Inject(SystemService) readonly systemService: SystemService;
 

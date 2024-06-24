@@ -11,11 +11,12 @@ export class PurgeCacheProvider {
    @OnEvent(eventConstant.onServiceResponse)
    async purgeHttpCaching({ httpRequest, messagePattern, responseData, success }: OnServiceResponse): Promise<void> {
       // Check to purge HTTP caching
-      if (httpRequest.method === 'GET' || !success) {
+      if (httpRequest.method === 'GET') {
          return;
       }
 
       try {
+         const activityLogsBaseKey = 'systems/activity-logs';
          const promises = [];
          const requestUrlWithoutParams = httpRequest.url.replace(/\/?\?.*$/g, '');
          const keys = await this.cacheManager.store.keys();
@@ -32,19 +33,30 @@ export class PurgeCacheProvider {
             return false;
          };
 
-         for (const key of keys) {
-            const [userId, cacheKey] = /^[0-9a-fA-F]{24}:/.test(key) ? key.split(':') : [null, key];
-            const cacheKeyWithoutSuffix = cacheKey.replace(/\/?\?.*$/g, '');
+         if (success) {
+            for (const key of keys) {
+               const [userId, cacheKey] = /^[0-9a-fA-F]{24}:/.test(key) ? key.split(':') : [null, key];
+               const cacheKeyWithoutSuffix = cacheKey.replace(/\/?\?.*$/g, '');
 
-            if (
-               (messagePattern.startsWith('user.') && responseData?.data?.id === userId) ||
-               cacheKey.startsWith(requestUrlWithoutParams) ||
-               requestUrlWithoutParams.startsWith(cacheKeyWithoutSuffix) ||
-               isRelatedCacheKey(cacheKey)
-            ) {
-               promises.push(
-                  this.cacheManager.del(key).then(() => console.log(`Purge HTTP caching success, key: ${key}`)),
-               );
+               if (
+                  (messagePattern.startsWith('user.') && responseData?.data?.id === userId) ||
+                  cacheKey.startsWith(requestUrlWithoutParams) ||
+                  requestUrlWithoutParams.startsWith(cacheKeyWithoutSuffix) ||
+                  isRelatedCacheKey(cacheKey) ||
+                  cacheKey.includes(activityLogsBaseKey)
+               ) {
+                  promises.push(
+                     this.cacheManager.del(key).then(() => console.log(`Purge HTTP caching successfully, key: ${key}`)),
+                  );
+               }
+            }
+         } else {
+            for (const key of keys) {
+               if (key.includes(activityLogsBaseKey)) {
+                  promises.push(
+                     this.cacheManager.del(key).then(() => console.log(`Purge HTTP caching successfully, key: ${key}`)),
+                  );
+               }
             }
          }
 

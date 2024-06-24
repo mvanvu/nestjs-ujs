@@ -3,7 +3,7 @@ import { APP_GUARD, APP_INTERCEPTOR, DiscoveryModule, NestFactory } from '@nestj
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
-import { ValidationPipe, ExceptionFilter } from '@shared-library';
+import { ValidationPipe, ExceptionFilter, TransformInterceptor } from '@shared-library';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { BaseClientProxy, EventEmitterLoader, HttpCacheInterceptor, UserAuthGuard, UserRoleGuard } from './@library';
 import { bootstrap, appConfig, serviceListNames, serviceConfig } from '@metadata';
@@ -125,6 +125,7 @@ export class AppModule {
 
       app.useGlobalFilters(new ExceptionFilter());
       app.useGlobalPipes(new ValidationPipe());
+      app.useGlobalInterceptors(new TransformInterceptor());
 
       if (!appConfig.is('appEnv', 'production')) {
          const swaggerConfig = new DocumentBuilder()

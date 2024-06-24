@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Controller, Inject } from '@nestjs/common';
 import { MailerService } from '../provider';
 import { EventPattern } from '@nestjs/microservices';
 import { serviceConfig } from '@metadata';
@@ -8,7 +8,7 @@ import { SystemConfigDto } from '@shared-library';
 import { updateSystemConfig } from '@microservice/@library';
 const patterns = serviceConfig.get('mailer.patterns');
 
-@Injectable()
+@Controller()
 export class MailerController {
    @Inject(MailerService) readonly mailerService: MailerService;
 

@@ -31,14 +31,13 @@ export class ActivityLogProvider {
    }
 
    @OnEvent(eventConstant.onServiceResponse)
-   onServiceResponse({ success, messagePattern, httpRequest, requestData, responseData }: OnServiceResponse): void {
+   async onServiceResponse({ success, messagePattern, httpRequest, requestData, responseData }: OnServiceResponse) {
       if (httpRequest.method === 'GET') {
          return;
       }
 
       const userAgent = httpRequest.headers['user-agent'] || '';
-      const { user } = httpRequest;
-      const userRef = user ? new UserRefEntity(user) : null;
+      const userRef = requestData?.meta?.user ? Util.clone(requestData.meta.user) : null;
       const data: ActivityLogDto = {
          success,
          messagePattern,
@@ -58,7 +57,11 @@ export class ActivityLogProvider {
          data.author = new UserRefEntity(data.dataResult.origin.user);
       }
 
-      this.hideSecret(data.dataInput);
+      if (data.dataInput.origin?.meta?.user) {
+         delete data.dataInput.origin.meta.user;
+      }
+
+      this.hideSecret([data.dataInput]);
       this.hideSecret(data.dataResult);
       this.clientProxy.emit(serviceConfig.get('system.patterns.writeActivityLog'), data);
    }

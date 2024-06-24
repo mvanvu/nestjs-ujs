@@ -1,9 +1,11 @@
-import { Inject } from '@nestjs/common';
+import { Controller, Inject } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { CRUDResult, GroupEntity } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { GroupService } from '../provider';
 const patterns = serviceConfig.get('user.patterns');
+
+@Controller()
 export class GroupController {
    @Inject(GroupService) readonly groupService: GroupService;
 

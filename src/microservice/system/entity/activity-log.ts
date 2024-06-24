@@ -10,7 +10,7 @@ export class ActivityLogEntity extends BaseEntity<ActivityLog> {
    success: boolean;
 
    @Property()
-   message: string;
+   messagePattern: string;
 
    @Property()
    dataInput?: any;

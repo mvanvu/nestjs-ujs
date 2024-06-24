@@ -41,7 +41,7 @@ export class BaseClientProxy {
       const { user } = this.req;
       const meta = Registry.from()
          .extends(options?.meta || {})
-         .extends({ method: this.req.method, user: user ? new UserRefEntity(user) : user });
+         .extends({ method: this.req.method, user: user ? user.toUserRefEntity() : user });
       const eventPayload: OnServiceResponse = {
          messagePattern,
          requestData: { data, meta: meta.valueOf() },
@@ -59,39 +59,30 @@ export class BaseClientProxy {
 
          if (options?.noEmitEvent !== true) {
             // Emit the response success event
-            eventPayload.responseData = response;
-            await this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
-         }
-
-         // Check to remove noneeded metadata
-         if (Is.object(response) && Is.object(response.meta)) {
-            const allowedMeta: string[] = ['totalCount', 'page', 'limit'];
-
-            for (const key in response.meta) {
-               if (!allowedMeta.includes(key)) {
-                  delete response.meta[key];
-               }
-            }
+            this.emitResponseEvent(eventPayload);
          }
 
          return response;
       } catch (e: any) {
-         if (!appConfig.is('nodeEnv', 'production')) {
-            console.debug(e);
-         }
-
          if (options?.noEmitEvent !== true) {
             // Emit the response failure
             eventPayload.success = false;
             eventPayload.responseData = e;
-
-            try {
-               await this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
-            } catch {}
+            this.emitResponseEvent(eventPayload);
          }
 
          throw e;
       }
+   }
+
+   private emitResponseEvent(eventPayload: OnServiceResponse) {
+      process.nextTick(() => {
+         try {
+            this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
+         } catch (e) {
+            console.debug(e);
+         }
+      });
    }
 
    createCRUD(patternCRUD: string, options?: ServiceOptions): CRUDClient {

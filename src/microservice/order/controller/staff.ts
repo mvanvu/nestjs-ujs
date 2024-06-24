@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Controller, Inject } from '@nestjs/common';
 import { StaffService } from '../provider';
 import { serviceConfig } from '@metadata';
 import { MessagePattern } from '@nestjs/microservices';
@@ -6,7 +6,7 @@ import { CRUDResult } from '@shared-library';
 import { StaffEntity } from '../entity';
 const patterns = serviceConfig.get('order.patterns');
 
-@Injectable()
+@Controller()
 export class StaffController {
    @Inject(StaffService) readonly staffService: StaffService;
 

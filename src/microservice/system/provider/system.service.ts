@@ -36,7 +36,10 @@ export class SystemService {
    }
 
    async writeActivityLog(data: ActivityLogDto): Promise<void> {
-      await this.prisma.activityLog.create({ data });
+      await this.prisma.activityLog.create({ data }).catch(console.debug);
+      console.log(
+         `Activity log created, message pattern: ${data.messagePattern}, success: ${data.success ? `true` : `false, error: ${JSON.stringify(data.dataResult.origin?.error ?? data.dataResult.origin)}`}`,
+      );
    }
 
    executeCRUD(): Promise<CRUDResult<ActivityLogEntity>> {

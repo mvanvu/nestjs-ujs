@@ -106,3 +106,10 @@ export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> |
 export type PermissionOptions = { key?: string; or?: string[]; and?: string[]; adminScope?: boolean } | string;
 
 export type MailerTransporter = 'SMTP';
+
+export type ApiFinalResponse = {
+   success?: boolean;
+   message?: string;
+   data?: any;
+   meta?: ObjectRecord;
+};

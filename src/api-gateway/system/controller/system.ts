@@ -15,7 +15,7 @@ export class SystemController {
    constructor(private readonly systemConfigService: SystemConfigService) {}
 
    @Post('config')
-   @Permission({ key: permissions.config.save })
+   @Permission({ key: permissions.config.save, adminScope: true })
    @ApiEntityResponse(SystemConfigDto, { statusCode: HttpStatus.OK })
    saveConfig(@Body() data: SystemConfigDto): Promise<EntityResult<SystemConfigDto>> {
       return this.systemConfigService.saveConfig(data);
@@ -23,15 +23,14 @@ export class SystemController {
 
    @Get('config')
    @HttpCache({ disabled: true })
-   @Permission({ key: permissions.config.get })
+   @Permission({ key: permissions.config.get, adminScope: true })
    @ApiEntityResponse(SystemConfigDto, { statusCode: HttpStatus.OK })
    getConfig(): Promise<EntityResult<SystemConfigDto>> {
       return this.systemConfigService.getConfig();
    }
 
    @Get('activity-logs')
-   @HttpCache({ disabled: true })
-   @Permission({ key: permissions.activityLog.get })
+   @Permission({ key: permissions.activityLog.get, adminScope: true })
    @ApiPaginationResponse(ActivityLogDto, { summary: 'Admin get list pagination of the activity logs' })
    activityLogsPaginate(@Query() query: PaginationQueryDto): Promise<PaginationResult<ActivityLogDto>> {
       return this.systemConfigService.activityLogsPaginate(query);

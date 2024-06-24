@@ -153,7 +153,7 @@ export class UserEntity extends BaseEntity {
    }
 
    toUserRefEntity(): UserRefEntity {
-      return new UserRefEntity(this);
+      return UserEntity.bindToClass(UserRefEntity, this);
    }
 }
 
