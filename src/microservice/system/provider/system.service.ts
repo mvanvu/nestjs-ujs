@@ -4,7 +4,7 @@ import { PrismaService } from './prisma.service';
 import { CRUDResult, SystemConfigDto } from '@shared-library';
 import { ActivityLogDto } from '../dto';
 import { ActivityLogEntity } from '../entity';
-import { updateSystemConfig } from '@microservice/@library';
+import { getSystemConfig, updateSystemConfig } from '@microservice/@library';
 
 @Injectable()
 export class SystemService {
@@ -27,16 +27,19 @@ export class SystemService {
          update: { value },
       });
 
-      const systemConfig = registry.valueOf();
-      updateSystemConfig('system', systemConfig);
-
-      return systemConfig;
+      return updateSystemConfig(registry.valueOf());
    }
 
    async getConfig(): Promise<SystemConfigDto> {
+      const systemConfig = getSystemConfig();
+
+      if (systemConfig) {
+         return systemConfig;
+      }
+
       const config = await this.prisma.config.findUnique({ where: { key: this.systemKey }, select: { value: true } });
 
-      return (config ? JSON.parse(config.value) : {}) as SystemConfigDto;
+      return updateSystemConfig(config ? JSON.parse(config.value) : {});
    }
 
    async writeActivityLog(data: ActivityLogDto): Promise<void> {

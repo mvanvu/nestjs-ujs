@@ -1,5 +1,5 @@
 import { DynamicModule, Global, Module, VersioningType } from '@nestjs/common';
-import { APP_GUARD, APP_INTERCEPTOR, DiscoveryModule, NestFactory } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, DiscoveryModule, NestFactory, REQUEST } from '@nestjs/core';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
@@ -12,6 +12,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { EventEmitter, Util } from '@mvanvu/ujs';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { Request } from 'express';
+import { Language } from '@shared-library/i18n';
 
 @Global()
 @Module({
@@ -23,8 +25,22 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
          provide: EventEmitter,
          useValue: new EventEmitter(),
       },
+      {
+         provide: Language,
+         useFactory: (req: Request) => {
+            let lang: string = (req.query?.lang || req.headers['x-language']) as string;
+            const acceptLanguage = appConfig.get('acceptLanguage');
+
+            if (!lang || !acceptLanguage.split(/\s*[,|]\s*/).includes(lang)) {
+               lang = appConfig.get('defaultLanguage', 'en-GB');
+            }
+
+            return new Language(lang);
+         },
+         inject: [REQUEST],
+      },
    ],
-   exports: [EventEmitter, BaseClientProxy],
+   exports: [EventEmitter, BaseClientProxy, Language],
 })
 class CoreModule {}
 

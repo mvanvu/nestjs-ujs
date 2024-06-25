@@ -3,16 +3,16 @@ import { BaseTransporter } from './base';
 import { SystemConfigDto } from '@shared-library';
 
 export class SMTPTransporter extends BaseTransporter {
-   constructor(config: SystemConfigDto['mailer']) {
+   constructor(mailerConfig: SystemConfigDto['mailer']) {
       super();
       this.transporter = nodemailer.createTransport({
          // pool: true,
-         host: config.smtp.host,
-         port: config.smtp.port, // 587
-         secure: config.smtp.port === 465, // Use true for port 465, false for all other ports
+         host: mailerConfig.smtp.host,
+         port: mailerConfig.smtp.port, // 587
+         secure: mailerConfig.smtp.port === 465, // Use true for port 465, false for all other ports
          auth: {
-            user: config.smtp.user,
-            pass: config.smtp.pass,
+            user: mailerConfig.smtp.user,
+            pass: mailerConfig.smtp.pass,
          },
       });
    }

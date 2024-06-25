@@ -1,25 +1,21 @@
-import { ServiceName } from '@metadata';
-import { ObjectRecord } from '@mvanvu/ujs';
+import { appConfig } from '@metadata';
 import { SystemConfigDto } from '@shared-library';
 import * as fs from 'fs';
 
-const dataConfig: ObjectRecord = {};
-const getSystemConfigPath = (serviceName: ServiceName) =>
-   `${process.cwd()}/src/microservice/${serviceName}/system.config.json`;
+let dataConfig: SystemConfigDto = null;
+const systemConfigPath = `${process.cwd()}/src/microservice/${appConfig.get('appEnv')}/system.config.json`;
 
-export const getSystemConfig = (serviceName: ServiceName): SystemConfigDto => {
-   const systemConfigPath = getSystemConfigPath(serviceName);
-
-   if (!dataConfig[serviceName]) {
-      dataConfig[serviceName] = fs.existsSync(systemConfigPath)
-         ? JSON.parse(fs.readFileSync(systemConfigPath).toString())
-         : {};
+export const getSystemConfig = (): SystemConfigDto => {
+   if (!dataConfig) {
+      dataConfig = fs.existsSync(systemConfigPath) ? JSON.parse(fs.readFileSync(systemConfigPath).toString()) : {};
    }
 
-   return dataConfig[serviceName];
+   return dataConfig;
 };
 
-export const updateSystemConfig = (serviceName: ServiceName, serviceConfigData: ObjectRecord): void => {
-   fs.writeFileSync(getSystemConfigPath(serviceName), JSON.stringify(serviceConfigData, null, 2));
-   dataConfig[serviceName] = serviceConfigData;
+export const updateSystemConfig = (serviceConfigData: SystemConfigDto): SystemConfigDto => {
+   dataConfig = serviceConfigData;
+   fs.writeFileSync(systemConfigPath, JSON.stringify(dataConfig, null, 2));
+
+   return dataConfig;
 };

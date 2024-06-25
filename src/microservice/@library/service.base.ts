@@ -2,6 +2,7 @@ import { MessageMeta, UserEntity } from '@shared-library';
 import { Registry } from '@mvanvu/ujs';
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { CONTEXT, RequestContext } from '@nestjs/microservices';
+import * as i18n from '@shared-library/i18n';
 
 @Injectable({ scope: Scope.REQUEST })
 export class BaseService {
@@ -13,6 +14,10 @@ export class BaseService {
 
    get user(): UserEntity | undefined {
       return this.meta.get('user');
+   }
+
+   get language(): i18n.Language {
+      return new i18n.Language(this.meta.get('query.lang'));
    }
 
    static parseMeta(ctx: RequestContext): Registry<MessageMeta> {

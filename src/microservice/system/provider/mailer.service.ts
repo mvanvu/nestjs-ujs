@@ -1,30 +1,23 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { getSystemConfig, updateSystemConfig } from '@microservice/@library';
 import { SMTPTransporter } from './mailer-transporter';
 import { SendMailDto } from '../dto';
 import { MessageInfoEntity } from '../entity';
-import { Is } from '@mvanvu/ujs';
 import { SystemService } from './system.service';
+import { SystemConfigDto } from '@shared-library';
 
 @Injectable()
 export class MailerService {
    @Inject(SystemService) private readonly systemService: SystemService;
 
-   async initMailerConfig() {
-      const systemConfig = getSystemConfig('system');
-
-      if (Is.emptyObject(systemConfig)) {
-         updateSystemConfig('system', await this.systemService.getConfig());
-      }
-   }
-
-   get transporter(): SMTPTransporter {
+   getTransporter(mailerConfig: SystemConfigDto['mailer']): SMTPTransporter {
       // Todo, add some tranporter
-      return new SMTPTransporter(getSystemConfig('system').mailer);
+      return new SMTPTransporter(mailerConfig);
    }
 
    async send(dto: SendMailDto): Promise<MessageInfoEntity | false> {
-      const result = await this.initMailerConfig().then(() => this.transporter.send(dto));
+      const result = await this.systemService
+         .getConfig()
+         .then((systemConfig) => this.getTransporter(systemConfig.mailer).send(dto));
 
       return result ? new MessageInfoEntity(result) : false;
    }

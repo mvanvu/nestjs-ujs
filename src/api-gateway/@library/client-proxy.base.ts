@@ -15,10 +15,13 @@ import {
 import { lastValueFrom, timeout } from 'rxjs';
 import { REQUEST } from '@nestjs/core';
 import { ServiceName, appConfig, clientProxy, serviceConfig } from '@metadata';
+import { Language } from '@shared-library/i18n';
 
 @Injectable()
 export class BaseClientProxy {
    @Inject(REQUEST) private req: HttpRequest;
+
+   @Inject(Language) private language: Language;
 
    @Inject(EventEmitter) private eventEmitter: EventEmitter;
 
@@ -27,6 +30,7 @@ export class BaseClientProxy {
    createClient(serviceName: ServiceName): BaseClientProxy {
       const instance = new BaseClientProxy();
       instance.req = this.req;
+      instance.language = this.language;
       instance.eventEmitter = this.eventEmitter;
       instance.clientProxy = clientProxy(serviceName);
 
@@ -40,8 +44,14 @@ export class BaseClientProxy {
 
       const { user } = this.req;
       const meta = Registry.from()
-         .extends(options?.meta || {})
-         .extends({ method: this.req.method, user: user ? user.toUserRefEntity() : user });
+         .extends({ query: this.req.query })
+         .extends(options?.meta ?? {})
+         .extends({
+            method: this.req.method,
+            user: user ? user.toUserRefEntity() : user,
+            query: { lang: this.language.code },
+         });
+
       const eventPayload: OnServiceResponse = {
          messagePattern,
          requestData: { data, meta: meta.valueOf() },
@@ -59,8 +69,19 @@ export class BaseClientProxy {
 
          if (options?.noEmitEvent !== true) {
             // Emit the response success event
-            eventPayload.responseData = response;
+            eventPayload.responseData = Util.clone(response);
             this.emitResponseEvent(eventPayload);
+         }
+
+         // Check to remove noneeded metadata
+         if (Is.object(response?.meta)) {
+            const allowedMeta: string[] = ['totalCount', 'page', 'limit'];
+
+            for (const key in response.meta) {
+               if (!allowedMeta.includes(key)) {
+                  delete response.meta[key];
+               }
+            }
          }
 
          return response;
@@ -77,34 +98,32 @@ export class BaseClientProxy {
    }
 
    private emitResponseEvent(eventPayload: OnServiceResponse) {
-      try {
-         this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload);
-      } catch (e) {
-         console.debug(e);
-      }
+      process.nextTick(() =>
+         this.eventEmitter.emitAsync(eventConstant.onServiceResponse, eventPayload).catch(console.debug),
+      );
    }
 
    createCRUD(patternCRUD: string, options?: ServiceOptions): CRUDClient {
       return {
-         read: <TEntity>(id: string, optionsOveride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
-            this.send(patternCRUD, id, optionsOveride ?? options),
+         read: <TEntity>(id: string, optionsOverride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
+            this.send(patternCRUD, id, optionsOverride ?? options),
 
          paginate: <TEntity>(
             query?: PaginationQueryDto,
-            optionsOveride?: ServiceOptions,
-         ): Promise<PaginationResult<TEntity>> => this.send(patternCRUD, query, optionsOveride ?? options),
+            optionsOverride?: ServiceOptions,
+         ): Promise<PaginationResult<TEntity>> => this.send(patternCRUD, query, optionsOverride ?? options),
 
-         create: <TEntity, TData>(data: TData, optionsOveride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
-            this.send(patternCRUD, data, optionsOveride ?? options),
+         create: <TEntity, TData>(data: TData, optionsOverride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
+            this.send(patternCRUD, data, optionsOverride ?? options),
 
          update: <TEntity, TData>(
             id: string,
             data: TData,
-            optionsOveride?: ServiceOptions,
-         ): Promise<EntityResult<TEntity>> => this.send(patternCRUD, { id, data }, optionsOveride ?? options),
+            optionsOverride?: ServiceOptions,
+         ): Promise<EntityResult<TEntity>> => this.send(patternCRUD, { id, data }, optionsOverride ?? options),
 
-         delete: <TEntity>(id: string, optionsOveride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
-            this.send(patternCRUD, id, optionsOveride ?? options),
+         delete: <TEntity>(id: string, optionsOverride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
+            this.send(patternCRUD, id, optionsOverride ?? options),
       };
    }
 

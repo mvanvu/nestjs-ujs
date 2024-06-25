@@ -6,6 +6,7 @@ import { PermissionOptions } from '../type/common';
 import { IPickType } from './mapped-type';
 import { GroupEntity } from './user-group';
 import { USER_PERMISSION_ADMIN_SCOPE } from '@shared-library/constant/common';
+import { appConfig } from '@metadata';
 
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
 export class UserEntity extends BaseEntity {
@@ -70,18 +71,21 @@ export class UserEntity extends BaseEntity {
    }
 
    get isRoot(): boolean {
-      let isUserRoot: boolean = false;
-      const rootUID = process.env.ROOT_UID || '';
+      const rootUIDs = appConfig.get('rootUid').split(/\s*,+\s*/);
 
-      if (rootUID) {
-         if (Is.email(rootUID)) {
-            isUserRoot = this.email === rootUID;
-         } else {
-            isUserRoot = this.id === rootUID || (this.username && this.username === rootUID);
+      if (rootUIDs.length) {
+         for (const rootUid of rootUIDs) {
+            if (
+               (Is.email(rootUid) && this.email === rootUid) ||
+               this.id === rootUid ||
+               (this.username && this.username === rootUid)
+            ) {
+               return true;
+            }
          }
       }
 
-      return isUserRoot;
+      return false;
    }
 
    authorise(permission?: PermissionOptions): boolean {

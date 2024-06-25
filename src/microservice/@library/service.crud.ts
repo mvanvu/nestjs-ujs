@@ -325,11 +325,11 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
                });
 
                if (inValues.length) {
-                  orWhere.push({ [fieldName]: { in: inValues, mode: 'sensitivity' } });
+                  orWhere.push({ [fieldName]: { in: inValues } });
                }
 
                if (notInValues.length) {
-                  orWhere.push({ [fieldName]: { notIn: notInValues, mode: 'sensitivity' } });
+                  orWhere.push({ [fieldName]: { notIn: notInValues } });
                }
 
                modelParams.where.AND.push(orWhere.length > 1 ? { OR: orWhere } : orWhere[0]);
@@ -351,7 +351,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       }
 
       if (this.optionsCRUD?.softDelete === true && !hasFilterByStatus) {
-         modelParams.where['status'] = { not: availableStatuses.Trashed, mode: 'sensitivity' };
+         modelParams.where['status'] = { not: availableStatuses.Trashed };
       }
 
       // Take care pagination

@@ -16,17 +16,6 @@ export class TransformInterceptor implements NestInterceptor {
 
             if (isGateway()) {
                finalResponse.success = true;
-
-               // Check to remove noneeded metadata
-               if (Is.object(response?.meta)) {
-                  const allowedMeta: string[] = ['totalCount', 'page', 'limit'];
-
-                  for (const key in response.meta) {
-                     if (!allowedMeta.includes(key)) {
-                        delete response.meta[key];
-                     }
-                  }
-               }
             }
 
             return finalResponse;

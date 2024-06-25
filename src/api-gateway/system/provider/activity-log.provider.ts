@@ -1,4 +1,11 @@
-import { OnServiceResponse, UserRefEntity, detectDevice, eventConstant, snackToCamelCase } from '@shared-library';
+import {
+   OnServiceResponse,
+   BaseEntity,
+   UserRefEntity,
+   detectDevice,
+   eventConstant,
+   snackToCamelCase,
+} from '@shared-library';
 import { injectProxy, serviceConfig } from '@metadata';
 import { Is, Util } from '@mvanvu/ujs';
 import { Inject, Injectable } from '@nestjs/common';
@@ -54,7 +61,7 @@ export class ActivityLogProvider {
          success &&
          data.dataResult.origin?.data.user
       ) {
-         data.author = new UserRefEntity(data.dataResult.origin.user);
+         data.author = BaseEntity.bindToClass(UserRefEntity, data.dataResult.origin.data.user);
       }
 
       if (data.dataInput.origin?.meta?.user) {
