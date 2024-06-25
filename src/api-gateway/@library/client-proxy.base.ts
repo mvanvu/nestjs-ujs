@@ -15,7 +15,7 @@ import {
 import { lastValueFrom, timeout } from 'rxjs';
 import { REQUEST } from '@nestjs/core';
 import { ServiceName, appConfig, clientProxy, serviceConfig } from '@metadata';
-import { Language } from '@shared-library/i18n';
+import { Language } from '@shared-library';
 
 @Injectable()
 export class BaseClientProxy {

@@ -3,6 +3,7 @@ export * from './decorator';
 export * from './dto';
 export * from './entity';
 export * from './exception';
+export * from './i18n';
 export * from './interceptor';
 export * from './pipe';
 export * from './type';

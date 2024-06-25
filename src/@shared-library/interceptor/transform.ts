@@ -11,8 +11,8 @@ export class TransformInterceptor implements NestInterceptor {
       return next.handle().pipe(
          map((response) => {
             const finalResponse: ApiFinalResponse = Is.object(response, { suitable: false, rules: { meta: 'object' } })
-               ? { data: response?.data ?? null, meta: response.meta }
-               : { data: response?.data ?? response ?? null };
+               ? { data: response?.data ?? null, meta: response.meta, message: response?.message ?? null }
+               : { data: response?.data ?? response ?? null, message: response?.message ?? null };
 
             if (isGateway()) {
                finalResponse.success = true;

@@ -17,10 +17,12 @@ import {
    OnBeforeExecute,
    OnBeforeExecuteOptions,
    CRUDExecuteContext,
+   MessageMeta,
+   EntityResult,
 } from '@shared-library';
 import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { BaseService } from './service.base';
+import { parseContextMeta } from './service.base';
 import { RequestContext } from '@nestjs/microservices';
 
 @Injectable()
@@ -34,6 +36,8 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    private createDTO?: ClassConstructor<any>;
 
    private updateDTO?: ClassConstructor<any>;
+
+   protected readonly meta: Registry<MessageMeta>;
 
    private events: {
       onBeforeExecute?: OnBeforeExecute<any, any, any>;
@@ -58,6 +62,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       private readonly ctx: RequestContext,
    ) {
       this.logger = new Logger(this.constructor.name);
+      this.meta = parseContextMeta(this.ctx);
    }
 
    select<T extends ObjectRecord>(select?: T): this {
@@ -382,7 +387,11 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          data = await Promise.all(items.map((item: T) => this.callOnEntity(item, 'read', true)));
       }
 
-      return { data, meta: { totalCount, page, limit } };
+      const message = this.meta.get('language').t(`RESULT_FOUND_${totalCount > 1 ? 'N' : totalCount > 0 ? '1' : '0'}`, {
+         count: totalCount,
+      });
+
+      return { message, data, meta: { totalCount, page, limit } };
    }
 
    private async callOnEntity<T, TContext extends CRUDContext>(
@@ -398,7 +407,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       return Is.class(this.events.onEntity) ? result : item;
    }
 
-   async read<T>(id: string, where?: Record<string, any>): Promise<T> {
+   async read<T>(id: string, where?: Record<string, any>): Promise<EntityResult<T>> {
       where = { ...(where ?? {}), id };
 
       if (this.optionsCRUD?.softDelete === true && where['status'] === undefined) {
@@ -410,12 +419,16 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          select: this.prismaSelect,
          include: this.prismaInclude,
       });
+      const language = this.meta.get('language');
 
       if (!record) {
-         ThrowException(`Record with ID(${id}) not found`, HttpStatus.NOT_FOUND);
+         ThrowException(language.t('ITEM_ID_NOT_FOUND', { id }), HttpStatus.NOT_FOUND);
       }
 
-      return this.events.onEntity ? await this.callOnEntity(record, 'read') : record;
+      return {
+         data: this.events.onEntity ? await this.callOnEntity(record, 'read') : record,
+         message: language._('RESULT_FOUND_1'),
+      };
    }
 
    async validate<TData extends ObjectRecord>(dto: TData, id?: string): Promise<void> {
@@ -479,7 +492,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       fieldsException.validate();
    }
 
-   async create<TResult, TData extends ObjectRecord>(data: TData): Promise<TResult> {
+   async create<TResult, TData extends ObjectRecord>(data: TData): Promise<EntityResult<TResult>> {
       if (Is.callable(this.events.onBeforeExecute)) {
          // Trigger an event before handle
          await Util.callAsync(this, this.events.onBeforeExecute, <OnBeforeExecuteOptions<undefined, TData, 'create'>>{
@@ -515,6 +528,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
 
    async update<TResult, TData extends ObjectRecord>(id: string, data: TData): Promise<UpdateResult<TResult>> {
       const model = this.prisma[this.model];
+      const language = this.meta.get('language');
       let oldRecord = await model['findFirst']({
          where: { id },
          select: this.prismaSelect,
@@ -522,7 +536,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       });
 
       if (!oldRecord) {
-         ThrowException(`The record with ID(${id}) doesn't exists`);
+         ThrowException(language.t('ITEM_ID_NOT_FOUND', { id }), HttpStatus.NOT_FOUND);
       }
 
       const { onEntity } = this.events;
@@ -584,6 +598,8 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    }
 
    async delete<TResult>(id: string): Promise<TResult> {
+      const language = this.meta.get('language');
+
       let record = await this.prisma[this.model]['findFirst']({
          where: { id },
          select: this.prismaSelect,
@@ -591,7 +607,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       });
 
       if (!record) {
-         ThrowException(`Record with ID(${id}) not found`);
+         ThrowException(language.t('ITEM_ID_NOT_FOUND', { id }), HttpStatus.NOT_FOUND);
       }
 
       if (this.events.onEntity) {
@@ -634,7 +650,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    }
 
    async execute<TResult>(): Promise<CRUDResult<TResult>> {
-      const meta = BaseService.parseMeta(this.ctx);
+      const meta = this.meta;
       const method = meta.get('method');
       const dto = this.ctx.getData();
 
@@ -643,7 +659,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       }
 
       if (method === 'DELETE' && Is.mongoId(dto)) {
-         return this.delete<TResult>(dto);
+         return this.delete(dto);
       }
 
       const user = meta.get('user');

@@ -3,6 +3,7 @@ import { IsEqual, ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
 import { type PaginationQueryDto } from './dto';
 import { type UserRefEntity } from '@shared-library/entity/user';
+import { type Language } from '@shared-library/i18n';
 export type PrismaModels = Record<string, DMMF.Model>;
 
 export interface GetPrismaModels {
@@ -30,9 +31,10 @@ export type OrderDirection = 'asc' | 'desc';
 
 export type OrderBy = Record<string, OrderDirection> | Record<string, Record<string, OrderDirection>>;
 
-export type EntityResult<T> = { data: T };
+export type EntityResult<T> = { message?: string; data: T };
 
 export type PaginationResult<T> = {
+   message?: string;
    data: T[];
    meta: {
       totalCount: number;
@@ -45,11 +47,12 @@ export type UpdateResult<T> = { data: T; meta: { diff: Record<string, { from: an
 
 export type DataMetaResult<TData, TMeta = ObjectRecord> = { data: TData; meta: TMeta };
 
-export type CRUDResult<T> = T | PaginationResult<T> | UpdateResult<T>;
+export type CRUDResult<T> = PaginationResult<T> | EntityResult<T> | UpdateResult<T>;
 
 export type MessageMeta = {
    query?: ObjectRecord;
    user?: UserRefEntity;
+   language: Language;
    method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
 };
 

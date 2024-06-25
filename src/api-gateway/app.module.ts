@@ -13,7 +13,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { EventEmitter, Util } from '@mvanvu/ujs';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { Request } from 'express';
-import { Language } from '@shared-library/i18n';
+import { Language } from '@shared-library';
 
 @Global()
 @Module({
