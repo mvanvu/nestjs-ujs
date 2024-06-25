@@ -43,7 +43,7 @@ export type PaginationResult<T> = {
    };
 };
 
-export type UpdateResult<T> = { data: T; meta: { diff: Record<string, { from: any; to: any }> } };
+export type UpdateResult<T> = { data: T; meta: { diff: Record<string, { from: any; to: any }> }; message?: string };
 
 export type DataMetaResult<TData, TMeta = ObjectRecord> = { data: TData; meta: TMeta };
 

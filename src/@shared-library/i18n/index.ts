@@ -13,16 +13,14 @@ export class Language {
       this.registry = Registry.from(i18n[code.replace(/[^a-zA-Z]/g, '')]);
    }
 
-   _(path: LangPath): string {
-      return this.registry.get<string>(path, path);
-   }
-
-   t<TPath extends LangPath>(path: TPath, data: ObjectRecord): string {
+   _<TPath extends LangPath>(path: TPath, data?: ObjectRecord): string {
       let value = this.registry.get<string>(path, path);
 
-      for (const k in data) {
-         while (value.includes(`%${k}%`)) {
-            value = value.replace(`%${k}%`, data[k]);
+      if (data) {
+         for (const k in data) {
+            while (value.includes(`%${k}%`)) {
+               value = value.replace(`%${k}%`, data[k]);
+            }
          }
       }
 

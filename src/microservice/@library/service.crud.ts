@@ -387,7 +387,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          data = await Promise.all(items.map((item: T) => this.callOnEntity(item, 'read', true)));
       }
 
-      const message = this.meta.get('language').t(`RESULT_FOUND_${totalCount > 1 ? 'N' : totalCount > 0 ? '1' : '0'}`, {
+      const message = this.meta.get('language')._(`RESULT_FOUND_${totalCount > 1 ? 'N' : totalCount > 0 ? '1' : '0'}`, {
          count: totalCount,
       });
 
@@ -422,7 +422,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       const language = this.meta.get('language');
 
       if (!record) {
-         ThrowException(language.t('ITEM_ID_NOT_FOUND', { id }), HttpStatus.NOT_FOUND);
+         ThrowException(language._('ITEM_ID_NOT_FOUND', { id }), HttpStatus.NOT_FOUND);
       }
 
       return {
@@ -523,7 +523,10 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          return item;
       });
 
-      return this.events.onEntity ? await this.callOnEntity(record, 'create') : record;
+      return {
+         data: this.events.onEntity ? await this.callOnEntity(record, 'create') : record,
+         message: this.meta.get('language')._('ITEM_CREATED'),
+      };
    }
 
    async update<TResult, TData extends ObjectRecord>(id: string, data: TData): Promise<UpdateResult<TResult>> {
@@ -536,7 +539,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       });
 
       if (!oldRecord) {
-         ThrowException(language.t('ITEM_ID_NOT_FOUND', { id }), HttpStatus.NOT_FOUND);
+         ThrowException(language._('ITEM_ID_NOT_FOUND', { id }), HttpStatus.NOT_FOUND);
       }
 
       const { onEntity } = this.events;
@@ -594,10 +597,10 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          }
       }
 
-      return { data: <TResult>record, meta: { diff } };
+      return { data: <TResult>record, meta: { diff }, message: language._('ITEM_UPDATED') };
    }
 
-   async delete<TResult>(id: string): Promise<TResult> {
+   async delete<TResult>(id: string): Promise<EntityResult<TResult>> {
       const language = this.meta.get('language');
 
       let record = await this.prisma[this.model]['findFirst']({
@@ -607,7 +610,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       });
 
       if (!record) {
-         ThrowException(language.t('ITEM_ID_NOT_FOUND', { id }), HttpStatus.NOT_FOUND);
+         ThrowException(language._('ITEM_ID_NOT_FOUND', { id }), HttpStatus.NOT_FOUND);
       }
 
       if (this.events.onEntity) {
@@ -646,7 +649,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          }
       });
 
-      return record;
+      return { data: record, message: language._('ITEM_DELETED') };
    }
 
    async execute<TResult>(): Promise<CRUDResult<TResult>> {
@@ -659,7 +662,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       }
 
       if (method === 'DELETE' && Is.mongoId(dto)) {
-         return this.delete(dto);
+         return this.delete<TResult>(dto);
       }
 
       const user = meta.get('user');
