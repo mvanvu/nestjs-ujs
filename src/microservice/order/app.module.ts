@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { createMicroserviceApp } from '../@library';
+import { createMetaProvider, createMicroserviceApp } from '../@library';
 import { serviceConfig } from '@metadata';
 import { CategoryService, ItemService, PrismaService, RestaurantService, StaffService, TableService } from './provider';
 import {
@@ -11,7 +11,15 @@ import {
 } from './controller';
 @Module({
    controllers: [CategoryController, ItemController, RestaurantController, StaffController, TableController],
-   providers: [PrismaService, CategoryService, ItemService, RestaurantService, StaffService, TableService],
+   providers: [
+      createMetaProvider(),
+      PrismaService,
+      CategoryService,
+      ItemService,
+      RestaurantService,
+      StaffService,
+      TableService,
+   ],
 })
 export class AppModule {
    static bootstrap(): Promise<void> {

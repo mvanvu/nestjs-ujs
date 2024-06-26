@@ -12,8 +12,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { EventEmitter, Util } from '@mvanvu/ujs';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { Request } from 'express';
 import { Language } from '@shared-library';
+import { Request } from 'express';
 
 @Global()
 @Module({
@@ -29,6 +29,7 @@ import { Language } from '@shared-library';
          provide: Language,
          useFactory: (req: Request) => {
             let lang: string = (req.query?.lang || req.headers['x-language']) as string;
+
             const acceptLanguage = appConfig.get('acceptLanguage');
 
             if (!lang || !acceptLanguage.split(/\s*[,|]\s*/).includes(lang)) {

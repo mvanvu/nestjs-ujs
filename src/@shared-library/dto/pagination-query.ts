@@ -1,3 +1,4 @@
+import { i18n } from '../i18n';
 import { Property } from '../decorator/property';
 
 export class PaginationQueryDto {
@@ -34,7 +35,10 @@ export class PaginationQueryDto {
    @Property({
       transform: { fromType: 'string', toType: 'trim' },
       optional: true,
-      swagger: { description: 'Language code' },
+      swagger: {
+         description: 'Language code',
+         enum: Object.keys(i18n).map((code) => `${code.substring(0, 2)}-${code.substring(2)}`),
+      },
    })
    lang?: string;
 }

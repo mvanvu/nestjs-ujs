@@ -1,7 +1,7 @@
 import { ThrowException } from './throw';
 import { Is } from '@mvanvu/ujs';
 
-export type FieldsError = Record<string, Array<string | number>>;
+export type FieldsError = Record<string, Array<{ code: string | number; message?: string }>>;
 
 export class FieldsException {
    static readonly ALREADY_EXISTS = 'ALREADY_EXISTS';
@@ -11,13 +11,13 @@ export class FieldsException {
 
    private fieldsError: FieldsError = {};
 
-   add(name: string, code: string | number): this {
+   add(name: string, code: string | number, message?: string): this {
       if (!Array.isArray(this.fieldsError[name])) {
          this.fieldsError[name] = [];
       }
 
-      if (!this.fieldsError[name].includes(code)) {
-         this.fieldsError[name].push(code);
+      if (!this.fieldsError[name].find((e) => e.code === code)) {
+         this.fieldsError[name].push({ code, message });
       }
 
       return this;

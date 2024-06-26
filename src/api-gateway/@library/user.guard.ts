@@ -45,7 +45,7 @@ export class UserAuthGuard implements CanActivate {
             const cacheKey = `${userId}:users/verify-token`;
             let user: UserEntity = await this.cacheManager.get(cacheKey);
 
-            if (!user || 1) {
+            if (!user) {
                const response = await lastValueFrom<DataMetaResult<UserEntity>>(
                   app
                      .get<ClientProxy>(injectProxy('user'))

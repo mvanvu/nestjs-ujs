@@ -1,11 +1,10 @@
-import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy } from '@gateway/@library';
+import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy, User } from '@gateway/@library';
 import {
    CRUDClient,
    EntityResult,
    PaginationResult,
    ParseMongoIdPipe,
    ThrowException,
-   User,
    UserEntity,
 } from '@shared-library';
 import { CreateTableDto, UpdateTableDto, OrderPaginationQueryDto } from '@microservice/order/dto';

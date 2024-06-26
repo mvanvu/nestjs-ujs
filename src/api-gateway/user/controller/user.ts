@@ -3,13 +3,14 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
    PaginationQueryDto,
    ParseMongoIdPipe,
-   User,
    CRUDClient,
    AuthTokenEntity,
    UserEntity,
    AuthEntity,
    EntityResult,
    PaginationResult,
+   ThrowException,
+   Language,
 } from '@shared-library';
 import {
    CreateUserDto,
@@ -27,6 +28,7 @@ import {
    Public,
    Permission,
    HttpCache,
+   User,
 } from '@gateway/@library';
 import { serviceConfig } from '@metadata';
 
@@ -37,12 +39,14 @@ const { name, permissions, patterns } = serviceConfig.get('user');
 export class UserController {
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 
+   @Inject(Language) private readonly language: Language;
+
    get userProxy(): BaseClientProxy {
       return this.proxy.createClient(name);
    }
 
    get userCRUD(): CRUDClient {
-      return this.userProxy.createCRUD(patterns.userCRUD);
+      return this.userProxy.createCRUD(patterns.userCRUD, { entityResponse: UserEntity });
    }
 
    @Public()
@@ -135,7 +139,38 @@ export class UserController {
    @Permission({ key: permissions.user.update, adminScope: true })
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin update the user account' })
-   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateUserDto): Promise<EntityResult<UserEntity>> {
+   async update(
+      @Param('id', ParseMongoIdPipe) id: string,
+      @Body() data: UpdateUserDto,
+      @User() author: UserEntity,
+   ): Promise<EntityResult<UserEntity>> {
+      // Verify permission
+      const { data: user } = await this.userCRUD.read<UserEntity>(id);
+      const isSelf = author.id === user.id;
+
+      if (isSelf && data.status) {
+         ThrowException(this.language._('USER_UPDATE_SELF_STATUS_DENIED'), HttpStatus.FORBIDDEN);
+      }
+
+      if (data.groupId && isSelf && !author.isRoot) {
+         ThrowException(this.language._('USER_UPDATE_SELF_GROUP_DENIED'), HttpStatus.FORBIDDEN);
+      }
+
+      // Check the current user is the author or editor of the target user, then will can update
+      const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
+
+      if (!isGranter && !(isSelf && author.isRoot)) {
+         const compare = author.compare(user, permissions.user.update);
+
+         if (compare === 0) {
+            ThrowException(this.language._('USER_UPDATE_SAME_PERMIT_DENIED'), HttpStatus.FORBIDDEN);
+         }
+
+         if (compare === -1) {
+            ThrowException(this.language._('USER_UPDATE_GREATER_PERMIT_DENIED'), HttpStatus.FORBIDDEN);
+         }
+      }
+
       return this.userCRUD.update(id, data);
    }
 
@@ -143,7 +178,33 @@ export class UserController {
    @Permission({ key: permissions.user.delete, adminScope: true })
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin delete an user account' })
-   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<UserEntity>> {
+   async delete(
+      @Param('id', ParseMongoIdPipe) id: string,
+      @User() author: UserEntity,
+   ): Promise<EntityResult<UserEntity>> {
+      // Verify permission
+      const { data: user } = await this.userCRUD.read<UserEntity>(id);
+      const isSelf = author.id === user.id;
+
+      if (isSelf) {
+         ThrowException(this.language._('USER_DELETE_SELF_DENIED'));
+      }
+
+      // Check the current user is the author or editor of the target user, then will can delete
+      const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
+
+      if (!isGranter) {
+         const compare = author.compare(user, permissions.user.delete);
+
+         if (compare === 0) {
+            ThrowException(this.language._('USER_DELETE_SAME_PERMIT_DENIED'), HttpStatus.FORBIDDEN);
+         }
+
+         if (compare === -1) {
+            ThrowException(this.language._('USER_DELETE_GREATER_PERMIT_DENIED'), HttpStatus.FORBIDDEN);
+         }
+      }
+
       return this.userCRUD.delete(id);
    }
 

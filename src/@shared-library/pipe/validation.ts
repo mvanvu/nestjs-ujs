@@ -6,7 +6,7 @@ import { ThrowException } from '../exception/throw';
 import { RpcException } from '@nestjs/microservices';
 
 export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstructor<any>, whiteList?: boolean) {
-   if (!Is.object(data) || !Is.class(DTOClassRef)) {
+   if (!Is.object(data) || !Is.flatObject(data) || !Is.class(DTOClassRef)) {
       return data;
    }
 

@@ -47,6 +47,7 @@ export type ServiceOptions = {
    timeOut?: number;
    noEmitEvent?: boolean;
    meta?: ObjectRecord;
+   entityResponse?: ClassConstructor<any>;
 };
 
 export type IRouteOptions = {

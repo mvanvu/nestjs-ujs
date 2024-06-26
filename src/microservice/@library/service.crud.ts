@@ -17,13 +17,11 @@ import {
    OnBeforeExecute,
    OnBeforeExecuteOptions,
    CRUDExecuteContext,
-   MessageMeta,
    EntityResult,
+   MessageMetaProvider,
 } from '@shared-library';
 import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { parseContextMeta } from './service.base';
-import { RequestContext } from '@nestjs/microservices';
 
 @Injectable()
 export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
@@ -36,8 +34,6 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    private createDTO?: ClassConstructor<any>;
 
    private updateDTO?: ClassConstructor<any>;
-
-   protected readonly meta: Registry<MessageMeta>;
 
    private events: {
       onBeforeExecute?: OnBeforeExecute<any, any, any>;
@@ -59,10 +55,9 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    constructor(
       private readonly prisma: TPrismaService,
       private readonly model: string,
-      private readonly ctx: RequestContext,
+      private readonly meta: MessageMetaProvider,
    ) {
       this.logger = new Logger(this.constructor.name);
-      this.meta = parseContextMeta(this.ctx);
    }
 
    select<T extends ObjectRecord>(select?: T): this {
@@ -432,6 +427,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    }
 
    async validate<TData extends ObjectRecord>(dto: TData, id?: string): Promise<void> {
+      const language = this.meta.get('language');
       const modelName = Util.uFirst(this.model as string);
       const entityModel = this.prisma[this.model];
       const model = this.prisma.models[modelName];
@@ -445,7 +441,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
 
       if (Registry.from<any>(dto).omit(['createdBy', 'updatedBy', 'createdAt', 'updatedAt']).isEmpty()) {
          // Nothing to update, throw an exception
-         ThrowException(`No data to ${id ? 'update' : 'create'}`);
+         ThrowException(language._('EMPTY_DATA_WARN'));
       }
 
       // Validate some requirements
@@ -459,7 +455,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          const isNothing = Is.nothing(value);
 
          if (!id && field.isRequired && isNothing && !field.relationName && !field.hasDefaultValue) {
-            fieldsException.add(name, FieldsException.REQUIRED);
+            fieldsException.add(name, FieldsException.REQUIRED, language._('FIELD_REQUIRED', { field: name }));
          }
 
          if (field.isUnique && !isNothing) {
@@ -478,7 +474,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
                   select: { id: true },
                }).then((record: { id: string }) => {
                   if (!!record) {
-                     fieldsException.add(name, FieldsException.UNIQUE_CONSTRAINT);
+                     fieldsException.add(name, FieldsException.UNIQUE_CONSTRAINT, language._('UNIQUE_CONSTRAINT_WARN'));
                   }
                }),
             );
@@ -655,7 +651,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    async execute<TResult>(): Promise<CRUDResult<TResult>> {
       const meta = this.meta;
       const method = meta.get('method');
-      const dto = this.ctx.getData();
+      const dto = meta.get('ctx').getData();
 
       if (method === 'GET') {
          return Is.mongoId(dto) ? this.read<TResult>(dto) : this.paginate<TResult>(dto);
@@ -665,16 +661,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          return this.delete<TResult>(dto);
       }
 
-      const user = meta.get('user');
-      const userRef = user
-         ? {
-              id: user.id,
-              name: user.name,
-              username: user.username,
-              email: user.email,
-              avatarUrl: user.avatarUrl,
-           }
-         : null;
+      const userRef = meta.get('user', null);
 
       if (method === 'PATCH' && Is.object(dto, { rules: { id: 'mongoId', data: 'object' } })) {
          const DTOClassRef: ClassConstructor<any> =

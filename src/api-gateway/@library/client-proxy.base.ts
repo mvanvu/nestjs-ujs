@@ -45,12 +45,12 @@ export class BaseClientProxy {
       const { user } = this.req;
       const meta = Registry.from()
          .extends({ query: this.req.query })
-         .extends(options?.meta ?? {})
          .extends({
             method: this.req.method,
             user: user ? user.toUserRefEntity() : user,
             query: { lang: this.language.code },
-         });
+         })
+         .extends(options?.meta ?? {});
 
       const eventPayload: OnServiceResponse = {
          messagePattern,
@@ -66,6 +66,15 @@ export class BaseClientProxy {
                .send(messagePattern, record)
                .pipe(timeout(options?.timeOut ?? appConfig.get('apiGateway.requestTimeout'))),
          );
+
+         // Check to convert entity response
+         if (options?.entityResponse && Is.objectOrArray(response.data)) {
+            if (Is.array(response.data, { rules: 'object' })) {
+               response.data = response.data.map((datum: object) => new options.entityResponse(datum));
+            } else if (Is.object(response.data)) {
+               response.data = new options.entityResponse(response.data);
+            }
+         }
 
          if (options?.noEmitEvent !== true) {
             // Emit the response success event
@@ -106,7 +115,7 @@ export class BaseClientProxy {
    createCRUD(patternCRUD: string, options?: ServiceOptions): CRUDClient {
       return {
          read: <TEntity>(id: string, optionsOverride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
-            this.send(patternCRUD, id, optionsOverride ?? options),
+            this.send(patternCRUD, id, { ...(options ?? {}), ...(optionsOverride ?? {}), meta: { method: 'GET' } }),
 
          paginate: <TEntity>(
             query?: PaginationQueryDto,
@@ -114,16 +123,21 @@ export class BaseClientProxy {
          ): Promise<PaginationResult<TEntity>> => this.send(patternCRUD, query, optionsOverride ?? options),
 
          create: <TEntity, TData>(data: TData, optionsOverride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
-            this.send(patternCRUD, data, optionsOverride ?? options),
+            this.send(patternCRUD, data, { ...(options ?? {}), ...(optionsOverride ?? {}), meta: { method: 'POST' } }),
 
          update: <TEntity, TData>(
             id: string,
             data: TData,
             optionsOverride?: ServiceOptions,
-         ): Promise<EntityResult<TEntity>> => this.send(patternCRUD, { id, data }, optionsOverride ?? options),
+         ): Promise<EntityResult<TEntity>> =>
+            this.send(
+               patternCRUD,
+               { id, data },
+               { ...(options ?? {}), ...(optionsOverride ?? {}), meta: { method: 'PATCH' } },
+            ),
 
          delete: <TEntity>(id: string, optionsOverride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
-            this.send(patternCRUD, id, optionsOverride ?? options),
+            this.send(patternCRUD, id, { ...(options ?? {}), ...(optionsOverride ?? {}), meta: { method: 'DELETE' } }),
       };
    }
 

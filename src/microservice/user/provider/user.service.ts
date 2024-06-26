@@ -229,63 +229,21 @@ export class UserService extends BaseService {
          .include(this.userInclude)
          .validateDTOPipe(CreateUserDto, UpdateUserDto)
          .beforeExecute<UserEntity, UpdateUserDto, CRUDExecuteContext>(async ({ data, record: user, context }) => {
-            if (context === 'create') {
-               await this.validateUserDto(data);
-            } else if (context === 'update') {
-               if (data.email || data.username || data.groupId) {
-                  await this.validateUserDto(data, user.id);
-               }
+            if (!['create', 'update'].includes(context)) {
+               return;
+            }
 
-               // Verify permission
-               const author = this.user;
-               const isSelf = author.id === user.id;
+            switch (context) {
+               case 'create':
+                  await this.validateUserDto(data);
+                  break;
 
-               if (isSelf && data.status) {
-                  ThrowException(`You can't update yourself status`);
-               }
-
-               if (data.groupId && isSelf && !author.isRoot) {
-                  ThrowException(`You can't update your group because you aren't a root user`);
-               }
-
-               // Check the current user is the author or editor of the target user, then will can update
-               const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
-
-               if (!isGranter && !(isSelf && author.isRoot)) {
-                  const compare = author.compare(user, serviceConfig.get('user.permissions.user.update'));
-
-                  if (compare === 0) {
-                     ThrowException(`You can't update the user who has the same permission with you`);
+               case 'update':
+                  if (data.email || data.username || data.groupId) {
+                     await this.validateUserDto(data, user.id);
                   }
 
-                  if (compare === -1) {
-                     ThrowException(`You can't update the user who has the greater permissions than you`);
-                  }
-               }
-            } else if (context === 'delete') {
-               // Verify permission
-               const author = new UserEntity(this.meta.get('user'));
-               const isSelf = author.id === user.id;
-
-               if (isSelf) {
-                  return;
-                  // ThrowException(`You can't delete yourself`);
-               }
-
-               // Check the current user is the author or editor of the target user, then will can delete
-               const isGranter = user.createdBy === author.id || user.updatedBy === author.id;
-
-               if (!isGranter) {
-                  const compare = author.compare(user, serviceConfig.get('user.permissions.user.delete'));
-
-                  if (compare === 0) {
-                     ThrowException(`You can't delete the user who has the same permission with you`);
-                  }
-
-                  if (compare === -1) {
-                     ThrowException(`You can't delete the user who has the greater permissions than you`);
-                  }
-               }
+                  break;
             }
 
             if (data.password) {

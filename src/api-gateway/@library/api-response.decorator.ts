@@ -1,6 +1,7 @@
 import { EntityResponse, PaginationMeta, PaginationResponse } from './api-response.entity';
 import { HttpCode, HttpStatus, Type, applyDecorators } from '@nestjs/common';
-import { ApiExtraModels, ApiOperation, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { ApiExtraModels, ApiOperation, ApiQuery, ApiResponse, getSchemaPath } from '@nestjs/swagger';
+import { i18n } from '@shared-library';
 
 export type ApiResponseOptions = { statusCode?: HttpStatus; summary?: string };
 
@@ -27,6 +28,14 @@ export const ApiEntityResponse = <TEntity extends Type<any>>(entity: TEntity, op
    if (options?.summary) {
       decorators.push(ApiOperation({ summary: options.summary }));
    }
+
+   decorators.push(
+      ApiQuery({
+         name: 'lang',
+         required: false,
+         enum: Object.keys(i18n).map((code) => `${code.substring(0, 2)}-${code.substring(2)}`),
+      }),
+   );
 
    return applyDecorators(...decorators);
 };

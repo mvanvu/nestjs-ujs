@@ -1,9 +1,10 @@
 import { ClassConstructor, HttpRequest, ServiceOptions } from './common';
 import { IsEqual, ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
-import { type PaginationQueryDto } from './dto';
+import { type PaginationQueryDto } from '../dto/pagination-query';
 import { type UserRefEntity } from '@shared-library/entity/user';
 import { type Language } from '@shared-library/i18n';
+import { RequestContext } from '@nestjs/microservices';
 export type PrismaModels = Record<string, DMMF.Model>;
 
 export interface GetPrismaModels {
@@ -54,7 +55,10 @@ export type MessageMeta = {
    user?: UserRefEntity;
    language: Language;
    method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+   ctx: RequestContext;
 };
+
+export class MessageMetaProvider extends Registry<MessageMeta> {}
 
 export type MessageData<TData = any, TMeta = MessageMeta | Registry<MessageMeta>> = {
    data?: TData;

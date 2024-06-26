@@ -10,4 +10,16 @@ export default {
    ITEM_CREATED: 'Tạo mới thành công',
    ITEM_UPDATED: 'Cập nhật thành công',
    ITEM_DELETED: 'Xoá thành công',
+   EMPTY_DATA_WARN: 'Dữ liệu bắt buộc không thể rỗng',
+   UNIQUE_CONSTRAINT_WARN: 'Giá trị đã tồn tại, vui lòng sử dụng giá trị khác',
+   FIELD_REQUIRED: 'Trường %field% là bắt buộc, không thể rỗng',
+
+   // User
+   USER_UPDATE_SELF_STATUS_DENIED: 'Không thể cập nhận trạng thái cho chính mình',
+   USER_UPDATE_SELF_GROUP_DENIED: 'Chỉ có ROOT user mới có thể cập nhật nhóm cho chính mình',
+   USER_UPDATE_SAME_PERMIT_DENIED: 'Không thể cập nhật cho người dùng ngang quyền với mình',
+   USER_UPDATE_GREATER_PERMIT_DENIED: 'Không thể cập nhật cho người dùng có quyền cao hơn mình',
+   USER_DELETE_SELF_DENIED: 'Không thể xoá chính mình',
+   USER_DELETE_SAME_PERMIT_DENIED: 'Không thể xoá người dùng ngang quyền với mình',
+   USER_DELETE_GREATER_PERMIT_DENIED: 'Không thể xoá người dùng có quyền cao hơn mình',
 };

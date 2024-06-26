@@ -10,4 +10,16 @@ export default {
    ITEM_CREATED: 'Item created',
    ITEM_UPDATED: 'Item updated',
    ITEM_DELETED: 'Item deleted',
+   EMPTY_DATA_WARN: `Data can't be empty`,
+   UNIQUE_CONSTRAINT_WARN: 'The value is duplicate, please choose another',
+   FIELD_REQUIRED: 'The field %field% is required',
+
+   // User
+   USER_UPDATE_SELF_STATUS_DENIED: `You can't update yourself status`,
+   USER_UPDATE_SELF_GROUP_DENIED: `You can't update your group because you aren't a root user`,
+   USER_UPDATE_SAME_PERMIT_DENIED: `You can't update the user who has the same permission with you`,
+   USER_UPDATE_GREATER_PERMIT_DENIED: `You can't update the user who has the greater permissions than you`,
+   USER_DELETE_SELF_DENIED: `You can't delete yourself`,
+   USER_DELETE_SAME_PERMIT_DENIED: `You can't delete the user who has the same permission with you`,
+   USER_DELETE_GREATER_PERMIT_DENIED: `You can't delete the user who has the greater permissions than you`,
 };

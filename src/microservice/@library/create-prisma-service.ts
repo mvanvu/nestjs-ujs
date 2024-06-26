@@ -30,7 +30,7 @@ export function CreatePrismaService<
             ThrowException(`The model(${model}) doesn't exists`, HttpStatus.NOT_IMPLEMENTED);
          }
 
-         return new CRUDService(this, <string>model, this['ctx']);
+         return new CRUDService(this, <string>model, this['meta']);
       }
    }
 
