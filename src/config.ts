@@ -1,7 +1,4 @@
 import { Registry } from '@mvanvu/ujs';
-import * as dotenv from 'dotenv';
-import * as dotenvExpand from 'dotenv-expand';
-dotenvExpand.expand(dotenv.config());
 const envConfig = Registry.from(process.env);
 const appConfigData = {
    nodeEnv: envConfig.get<'development' | 'production' | 'test'>('NODE_ENV'),

@@ -26,11 +26,9 @@
          "@gateway": ["src/api-gateway"],
          "@gateway/*": ["src/api-gateway/*"],
          "@microservice": ["src/microservice"],
-         "@microservice/*": ["src/microservice/*"],
-         "@": ["src"],
-         "@/*": ["src/*"]
+         "@microservice/*": ["src/microservice/*"]
       }
    },
-   "include": ["script/**/*.ts", "src/**/*.ts"],
+   "include": ["script/**/*.ts", "src/**/*.ts", "test/**/*.ts"],
    "exclude": ["node_modules", "**/node_modules/*", "build", "dist"]
 }

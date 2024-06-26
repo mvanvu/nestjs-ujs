@@ -17,7 +17,8 @@
             "googleapis",
             "node-device-detector",
             "@nestjs/throttler",
-            "nodemailer"
+            "nodemailer",
+            "pactum"
          ],
          "include": ["user:argon2", "mailer:nodemailer"]
       }

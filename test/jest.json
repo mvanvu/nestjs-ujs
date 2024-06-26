@@ -1,0 +1,16 @@
+{
+   "moduleFileExtensions": ["js", "json", "ts"],
+   "rootDir": ".",
+   "testEnvironment": "node",
+   "testRegex": "^.+\\.spec\\.ts$",
+   "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+   },
+   "moduleNameMapper": {
+      "@metadata": ["<rootDir>/src/metadata"],
+      "^@shared-library(\\/.*)?$": ["<rootDir>/src/@shared-library$1"],
+      "^@gateway(\\/.*)?$": ["<rootDir>/src/api-gateway$1"],
+      "^@microservice(\\/.*)?$": ["<rootDir>/src/microservice$1"]
+
+   }
+}

@@ -161,7 +161,7 @@ export class AppModule {
       // Bootstrap Metadata
       bootstrap(app);
       await app
-         .listen(port, () => console.log(`Listening on port: ${port}`))
+         .listen(port, () => console.log(`Listening on port: ${port}, NODE_ENV=${appConfig.get('nodeEnv')}`))
          .catch((e) => console.error('Init app failure:', e));
    }
 }

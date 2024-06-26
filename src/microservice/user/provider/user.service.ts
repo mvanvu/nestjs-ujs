@@ -107,11 +107,17 @@ export class UserService extends BaseService {
 
    async signIn(data: UserSignInDto): Promise<AuthEntity> {
       const { username, password } = data;
+      const fieldsException = new FieldsException();
 
       if (Is.empty(username)) {
-         ThrowException('Invalid credentials');
+         fieldsException.add('username', FieldsException.REQUIRED).validate();
       }
 
+      if (Is.empty(password)) {
+         fieldsException.add('password', FieldsException.REQUIRED).validate();
+      }
+
+      fieldsException.validate();
       const OR: Prisma.UserWhereInput['OR'] = [{ username: { equals: username, mode: 'insensitive' } }];
 
       if (Is.email(username)) {

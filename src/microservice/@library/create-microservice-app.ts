@@ -35,6 +35,6 @@ export async function createMicroserviceApp(
    bootstrap(app);
    await app
       .listen()
-      .then(() => console.log(`The ${serviceName} microservice is listening`))
+      .then(() => console.log(`The ${serviceName} microservice is listening, NODE_ENV=${appConfig.get('nodeEnv')}`))
       .catch((e) => console.debug(`The ${serviceName} microservice listens ERR`, e));
 }
