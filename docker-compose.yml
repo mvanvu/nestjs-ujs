@@ -32,6 +32,8 @@ services:
          - .env
       volumes:
          - mongo-primary:/data/db
+         - ./docker/mongodb-dump.sh:/mongodb-dump.sh
+         - ./docker/db-dump:/db-dump
       ports:
          - ${MONGODB_PRIMARY_PORT}:${MONGODB_PRIMARY_PORT}
       expose:
