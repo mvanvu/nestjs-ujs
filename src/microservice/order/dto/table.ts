@@ -1,25 +1,17 @@
 import { AvailableStatus } from '.prisma/order';
-import { IPartialType, Property } from '@shared-library';
+import { IPartialType, IsIn, IsMongoId, IsNumber, IsString } from '@shared-library';
 
 export class CreateTableDto {
-   @Property({ validate: { is: 'mongoId' } })
+   @IsMongoId()
    restaurantId: string;
 
-   @Property({
-      optional: true,
-      validate: { is: 'inArray', meta: Object.values(AvailableStatus) },
-      swagger: { enum: AvailableStatus },
-   })
+   @IsIn(Object.values(AvailableStatus), { optional: true })
    status?: AvailableStatus;
 
-   @Property({ validate: [{ is: 'uInt' }, { is: 'min', meta: 1 }] })
+   @IsNumber({ unsigned: true, min: 1 })
    number: number;
 
-   @Property({
-      optional: true,
-      validate: [{ is: 'string' }, { is: 'empty', not: true }],
-      transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
-   })
+   @IsString({ optional: true, notEmpty: true })
    area?: string;
 }
 

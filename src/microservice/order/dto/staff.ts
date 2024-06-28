@@ -1,35 +1,23 @@
 import { StaffStatus } from '.prisma/order';
-import { IPartialType, Property } from '@shared-library';
+import { IPartialType, IsIn, IsMongoId, IsString } from '@shared-library';
 
 export class CreateStaffDto {
-   @Property({ validate: { is: 'mongoId' } })
+   @IsMongoId()
    restaurantId: string;
 
-   @Property({
-      optional: true,
-      validate: { is: 'inArray', meta: Object.values(StaffStatus) },
-      swagger: { enum: StaffStatus },
-   })
+   @IsIn(Object.values(StaffStatus), { optional: true })
    status?: StaffStatus;
 
-   @Property({
-      optional: true,
-      validate: [{ is: 'string' }, { is: 'empty', not: true }],
-      transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
-   })
+   @IsString({ optional: true, notEmpty: true })
    name: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, transform: { fromType: 'string', toType: 'trim' } })
+   @IsString({ optional: true, url: true })
    imageUrl?: string;
 
-   @Property({
-      optional: true,
-      validate: { is: 'string' },
-      transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
-   })
+   @IsString({ optional: true })
    phoneNumber?: string;
 
-   @Property({ optional: true, validate: { is: 'email' } })
+   @IsString({ optional: true, email: true })
    email?: string;
 }
 

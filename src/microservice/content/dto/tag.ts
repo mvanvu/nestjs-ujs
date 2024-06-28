@@ -1,19 +1,11 @@
-import { Property, IPartialType } from '@shared-library';
+import { IPartialType, IsIn, IsString } from '@shared-library';
 import { AvailableStatus } from '.prisma/content';
 
 export class CreateTagDto {
-   @Property({
-      optional: true,
-      validate: { is: 'inArray', meta: Object.values(AvailableStatus) },
-      swagger: { enum: AvailableStatus },
-   })
+   @IsIn(Object.values(AvailableStatus), { optional: true })
    status?: AvailableStatus;
 
-   @Property({
-      optional: true,
-      validate: [{ is: 'string' }, { is: 'empty', not: true }],
-      transform: { fromType: 'string', toType: 'trim' },
-   })
+   @IsString({ notEmpty: true })
    name: string;
 }
 

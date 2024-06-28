@@ -1,32 +1,24 @@
-import { Property, IPartialType } from '@shared-library';
+import { IPartialType, IsIn, IsMongoId, IsString, IsDTO } from '@shared-library';
 import { MetadataDto } from './metadata';
 import { AvailableStatus } from '.prisma/content';
 
 export class CreatePostDto {
-   @Property({
-      optional: true,
-      validate: { is: 'inArray', meta: Object.values(AvailableStatus) },
-      swagger: { enum: AvailableStatus },
-   })
+   @IsIn(Object.values(AvailableStatus), { optional: true })
    status?: AvailableStatus;
 
-   @Property({ optional: true, validate: { is: 'mongoId' } })
+   @IsMongoId({ optional: true })
    categoryId?: string;
 
-   @Property({
-      optional: true,
-      validate: [{ is: 'string' }, { is: 'empty', not: true }],
-      transform: { fromType: 'string', toType: 'trim' },
-   })
+   @IsString({ notEmpty: true })
    name: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, transform: { fromType: 'string', toType: 'trim' } })
+   @IsString({ optional: true })
    description?: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, transform: { fromType: 'string', toType: 'trim' } })
+   @IsString({ optional: true, url: true })
    imageUrl?: string;
 
-   @Property({ optional: true, validate: { is: MetadataDto }, swagger: { type: MetadataDto } })
+   @IsDTO(MetadataDto, { optional: true })
    metadata?: MetadataDto;
 }
 

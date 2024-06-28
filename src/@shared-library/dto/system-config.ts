@@ -1,51 +1,42 @@
-import { Property } from '../decorator/property';
+import { IsDTO, IsIn, IsNumber, IsString } from '../decorator/validator';
 import { MailerTransporter } from '../type/common';
 
 const transporters: MailerTransporter[] = ['SMTP'];
 
 export class MailerSMTPTransporterDto {
-   @Property({ validate: [{ is: 'string' }, { is: 'empty', not: true }] })
+   @IsString({ notEmpty: true })
    host: string;
 
-   @Property({ validate: [{ is: 'uInt' }] })
+   @IsNumber({ unsigned: true })
    port: number;
 
-   @Property({ validate: [{ is: 'string' }, { is: 'empty', not: true }] })
+   @IsString({ notEmpty: true })
    user: string;
 
-   @Property({ validate: [{ is: 'string' }, { is: 'empty', not: true }] })
+   @IsString({ notEmpty: true })
    pass: string;
 }
 
 export class MailerConfigDto {
-   @Property({ validate: { is: 'email' } })
+   @IsString({ email: true })
    appMail: string;
 
-   @Property({
-      validate: { is: 'inArray', meta: transporters },
-      swagger: { description: 'The mailer transporter', enum: transporters },
-   })
+   @IsIn(transporters, { swagger: { description: 'The mailer transporter', enum: transporters } })
    transporter: MailerTransporter;
 
-   @Property({
-      optional: true,
-      validate: { is: MailerSMTPTransporterDto },
-      swagger: { description: 'Config for the SMTP transporter' },
-   })
+   @IsDTO(MailerSMTPTransporterDto, { optional: true, swagger: { description: 'Config for the SMTP transporter' } })
    smtp?: MailerSMTPTransporterDto;
 }
 
 export class SystemConfigDto {
-   @Property({
-      optional: true,
-      validate: { is: MailerConfigDto },
-      swagger: { type: MailerConfigDto, description: 'Mailer config' },
-   })
+   @IsDTO(MailerConfigDto, { optional: true, swagger: { description: 'Mailer config' } })
    mailer?: MailerConfigDto;
 
-   @Property({
-      validate: [{ is: 'uInt' }, { is: 'min', meta: 1 }],
+   @IsNumber({
       optional: true,
+      integer: true,
+      unsigned: true,
+      min: 1,
       swagger: { description: 'The activity logs will be removed after this days number since the created date' },
    })
    removeActivityLogsAfterDays?: number;

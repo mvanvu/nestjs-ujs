@@ -1,44 +1,24 @@
 import { i18n } from '../i18n';
-import { Property } from '../decorator/property';
+import { IsIn, IsString, StringToType } from '../decorator/validator';
+
+const langCodes = Object.keys(i18n).map((code) => `${code.substring(0, 2)}-${code.substring(2)}`);
 
 export class PaginationQueryDto {
-   @Property({
-      transform: { fromType: 'string', toType: 'trim' },
-      optional: true,
-      swagger: { description: 'The search query' },
-   })
+   @IsString({ optional: true, swagger: { description: 'The search query' } })
    q?: string;
 
-   @Property({
-      transform: { fromType: 'string', toType: 'toNumber' },
-      validate: { is: 'uInt' },
-      optional: true,
-      swagger: { description: 'The page of the pagination' },
-   })
+   @StringToType('uInt', { optional: true, swagger: { description: 'The number of items on one row' } })
    page?: number;
 
-   @Property({
-      transform: { fromType: 'string', toType: 'toNumber' },
-      validate: { is: 'uInt' },
-      optional: true,
-      swagger: { description: 'The number of items on one row' },
-   })
+   @StringToType('uInt', { optional: true, swagger: { description: 'The number of items on one row' } })
    limit?: number;
 
-   @Property({
-      transform: { fromType: 'string', toType: 'trim' },
-      optional: true,
-      swagger: { description: 'Order by' },
-   })
+   @IsString({ optional: true, swagger: { description: 'Order by' } })
    order?: string;
 
-   @Property({
-      transform: { fromType: 'string', toType: 'trim' },
+   @IsIn(langCodes, {
       optional: true,
-      swagger: {
-         description: 'Language code',
-         enum: Object.keys(i18n).map((code) => `${code.substring(0, 2)}-${code.substring(2)}`),
-      },
+      swagger: { description: 'Language code', enum: langCodes },
    })
    lang?: string;
 }

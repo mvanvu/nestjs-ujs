@@ -1,46 +1,42 @@
 import { Prisma } from '.prisma/system';
-import { Property } from '@shared-library';
+import { IsBoolean, IsDTO, IsJsonObject, IsMongoId, IsString } from '@shared-library';
 
 export class ActivityLogAuthor {
-   @Property({ validate: { is: 'mongoId' } })
+   @IsMongoId()
    id: string;
 
-   @Property({ optional: true, validate: { is: 'string' } })
+   @IsString({ optional: true })
    name?: string;
 
-   @Property({ optional: true, validate: { is: 'string' } })
+   @IsString({ optional: true })
    username?: string;
 
-   @Property({ optional: true, validate: { is: 'email' } })
+   @IsString({ optional: true, email: true })
    email?: string;
 }
 
 export class ActivityLogDto {
-   @Property({ validate: { is: 'boolean' } })
+   @IsBoolean()
    success: boolean;
 
-   @Property({ validate: [{ is: 'string' }, { is: 'empty', not: true }] })
+   @IsString({ notEmpty: true })
    messagePattern: string;
 
-   @Property({
-      optional: true,
-      validate: { is: 'object' },
-      swagger: { disabled: true },
-   })
+   @IsJsonObject({ optional: true, swagger: { disabled: true } })
    dataInput?: { origin: any };
 
-   @Property({ optional: true, validate: { is: 'object' } })
+   @IsJsonObject({ optional: true, swagger: { disabled: true } })
    dataResult?: { origin: any };
 
-   @Property({ optional: true, validate: { is: ActivityLogAuthor } })
+   @IsDTO(ActivityLogAuthor, { optional: true })
    author?: ActivityLogAuthor;
 
-   @Property({ optional: true, validate: { is: 'string' } })
+   @IsString({ optional: true })
    ipAddress?: string;
 
-   @Property({ optional: true, validate: { is: 'string' } })
+   @IsString({ optional: true })
    userAgent?: string;
 
-   @Property({ optional: true, validate: { is: 'object' } })
+   @IsJsonObject({ optional: true, swagger: { disabled: true } })
    detectResult?: Prisma.InputJsonObject;
 }

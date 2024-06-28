@@ -1,18 +1,11 @@
 import { AvailableStatus } from '.prisma/order';
-import { IPartialType, Property } from '@shared-library';
+import { IPartialType, IsIn, IsString } from '@shared-library';
 
 export class CreateCategoryDto {
-   @Property({
-      optional: true,
-      validate: { is: 'inArray', meta: Object.values(AvailableStatus) },
-      swagger: { enum: AvailableStatus },
-   })
+   @IsIn(Object.values(AvailableStatus), { optional: true })
    status?: AvailableStatus;
 
-   @Property({
-      validate: [{ is: 'string' }, { is: 'empty', not: true }],
-      transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
-   })
+   @IsString({ notEmpty: true })
    name: string;
 }
 

@@ -1,44 +1,34 @@
 import { AvailableStatus } from '.prisma/order';
-import { IPartialType, Property } from '@shared-library';
+import { IPartialType, IsDTO, IsIn, IsMongoId, IsNumber, IsString } from '@shared-library';
 
 export class ItemToppingDto {
-   @Property({
-      validate: [{ is: 'string' }, { is: 'empty', not: true }],
-      transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
-   })
+   @IsString({ notEmpty: true })
    name: string;
 
-   @Property({ validate: { is: 'uInt' } })
+   @IsNumber({ unsigned: true })
    price: number;
 }
 
 export class CreateItemDto {
-   @Property({ validate: { is: 'mongoId' } })
+   @IsMongoId()
    restaurantId: string;
 
-   @Property({ validate: { is: 'mongoId' } })
+   @IsMongoId()
    categoryId: string;
 
-   @Property({
-      optional: true,
-      validate: { is: 'inArray', meta: Object.values(AvailableStatus) },
-      swagger: { enum: AvailableStatus },
-   })
+   @IsIn(Object.values(AvailableStatus))
    status?: AvailableStatus;
 
-   @Property({
-      validate: [{ is: 'string' }, { is: 'empty', not: true }],
-      transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
-   })
+   @IsString({ notEmpty: true })
    name: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, transform: { fromType: 'string', toType: 'trim' } })
+   @IsString({ optional: true, url: true })
    imageUrl?: string;
 
-   @Property({ validate: { is: 'uInt' } })
+   @IsNumber({ unsigned: true })
    basePrice: number;
 
-   @Property({ optional: true, validate: { is: [ItemToppingDto] }, swagger: { type: [ItemToppingDto] } })
+   @IsDTO(ItemToppingDto, { optional: true, each: 'unique' })
    toppings?: ItemToppingDto[];
 }
 

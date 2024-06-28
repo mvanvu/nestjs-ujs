@@ -1,27 +1,14 @@
-import { Property } from '@shared-library';
+import { IsArray, IsString } from '@shared-library';
 export class SendMailDto {
-   @Property({
-      transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
-      validate: [{ is: 'string' }, { is: 'empty', not: true }],
-      optional: true,
-   })
+   @IsString({ optional: true, notEmpty: true })
    from?: string;
 
-   @Property({
-      transform: { fromType: 'array', toType: ['toArrayUnique'] },
-      validate: [{ is: 'array' }, { is: 'empty', not: true }],
-   })
+   @IsArray({ notEmpty: true, unique: true })
    to: string[];
 
-   @Property({
-      transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
-      validate: [{ is: 'string' }, { is: 'empty', not: true }],
-   })
+   @IsString({ notEmpty: true })
    subject: string;
 
-   @Property({
-      transform: { fromType: 'string', toType: ['toSafeHtml', 'trim'] },
-      validate: [{ is: 'string' }, { is: 'empty', not: true }],
-   })
+   @IsString({ notEmpty: true, safeHtml: true })
    body: string;
 }

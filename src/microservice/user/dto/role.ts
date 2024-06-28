@@ -1,35 +1,18 @@
-import { IPartialType, Property } from '@shared-library';
+import { IPartialType, IsIn, IsString } from '@shared-library';
 import { $Enums } from '.prisma/user';
 import { permissionKeys } from '@metadata';
 
 export class CreateRoleDto {
-   @Property({
-      transform: { fromType: 'string', toType: 'trim' },
-      validate: [{ is: 'string' }, { is: 'empty', not: true }],
-      swagger: { description: 'The name of the role' },
-   })
+   @IsString({ notEmpty: true, swagger: { description: 'The name of the role' } })
    name: string;
 
-   @Property({
-      optional: true,
-      transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
-      validate: { is: 'string' },
-      swagger: { description: 'The description of the role' },
-   })
+   @IsString({ optional: true, swagger: { description: 'The description of the role' } })
    description?: string;
 
-   @Property({
-      optional: true,
-      validate: { is: 'inArray', meta: Object.values($Enums.AvailableStatus) },
-      swagger: { description: 'The status of the role', enum: $Enums.AvailableStatus },
-   })
+   @IsIn(Object.values($Enums.AvailableStatus), { optional: true, swagger: { description: 'The status of the role' } })
    status?: $Enums.AvailableStatus;
 
-   @Property({
-      optional: true,
-      validate: [{ is: 'arrayUnique' }, { is: 'inArray', each: true, meta: permissionKeys }],
-      swagger: { description: 'The permissions of the role' },
-   })
+   @IsIn(permissionKeys, { optional: true, each: 'unique', swagger: { description: 'The permissions of the role' } })
    permissions?: string[];
 }
 

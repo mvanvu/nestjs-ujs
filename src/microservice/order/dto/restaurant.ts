@@ -1,51 +1,32 @@
 import { AvailableStatus } from '.prisma/content';
-import { IPartialType, Property, UserRefEntity } from '@shared-library';
+import { IPartialType, IsIn, IsMongoId, IsString, Property, UserRefEntity } from '@shared-library';
 
 export class CreateRestaurantDto {
-   @Property({ validate: { is: 'mongoId' } })
+   @IsMongoId()
    ownerId: string;
 
    @Property({ swagger: { readOnly: true } })
    owner: UserRefEntity;
 
-   @Property({
-      optional: true,
-      validate: { is: 'inArray', meta: Object.values(AvailableStatus) },
-      swagger: { enum: AvailableStatus },
-   })
+   @IsIn(Object.values(AvailableStatus), { optional: true })
    status?: AvailableStatus;
 
-   @Property({
-      validate: [{ is: 'string' }, { is: 'empty', not: true }],
-      transform: { fromType: 'string', toType: 'trim' },
-   })
+   @IsString({ notEmpty: true })
    name: string;
 
-   @Property({
-      optional: true,
-      validate: { is: 'string' },
-      transform: { fromType: 'string', toType: ['toSafeHtml', 'trim'] },
-   })
+   @IsString({ optional: true, safeHtml: true })
    description?: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, transform: { fromType: 'string', toType: 'trim' } })
+   @IsString({ optional: true, url: true })
    imageUrl?: string;
 
-   @Property({
-      optional: true,
-      validate: { is: 'string' },
-      transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
-   })
+   @IsString({ optional: true })
    address?: string;
 
-   @Property({
-      optional: true,
-      validate: { is: 'string' },
-      transform: { fromType: 'string', toType: ['toStripTags', 'trim'] },
-   })
+   @IsString({ optional: true })
    phoneNumber?: string;
 
-   @Property({ optional: true, validate: { is: 'email' } })
+   @IsString({ optional: true, email: true })
    email?: string;
 }
 

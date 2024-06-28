@@ -85,6 +85,15 @@ export type TransformOptions = {
    fromType?: IsValidType | IsValidType[];
 };
 
+export type SwaggerOptions = {
+   disabled?: boolean;
+   description?: string;
+   type?: Type<unknown> | Function | [Function] | string | Record<string, any>;
+   enum?: any[] | Record<string, any>;
+   example?: any;
+   readOnly?: boolean;
+};
+
 export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> | [ClassConstructor<any>]> = {
    validate?:
       | ValidationOptions<ClassConstructor<any>>
@@ -94,14 +103,7 @@ export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> |
    transform?: TransformOptions;
    optional?: boolean;
    defaultValue?: any;
-   swagger?: {
-      disabled?: boolean;
-      description?: string;
-      type?: Type<unknown> | Function | [Function] | string | Record<string, any>;
-      enum?: any[] | Record<string, any>;
-      example?: any;
-      readOnly?: boolean;
-   };
+   swagger?: SwaggerOptions;
 };
 
 export type PermissionOptions = { key?: string; or?: string[]; and?: string[]; adminScope?: boolean } | string;

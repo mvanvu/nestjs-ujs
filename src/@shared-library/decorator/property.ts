@@ -1,4 +1,4 @@
-import { ClassConstructor, PropertyOptions } from '../type';
+import { ClassConstructor, PropertyOptions } from '../type/common';
 import { CLASS_PROPERTIES } from '../constant';
 import { IsValidType } from '@mvanvu/ujs';
 import { applyDecorators } from '@nestjs/common';

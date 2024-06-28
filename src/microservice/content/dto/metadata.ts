@@ -1,21 +1,21 @@
-import { Property } from '@shared-library';
+import { IsString } from '@shared-library';
 
 export class MetadataDto {
-   @Property({ optional: true, validate: { is: 'string' }, transform: { fromType: 'string', toType: 'trim' } })
+   @IsString({ optional: true })
    title?: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, transform: { fromType: 'string', toType: 'trim' } })
+   @IsString({ optional: true })
    description?: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, transform: { fromType: 'string', toType: 'trim' } })
+   @IsString({ optional: true, url: true })
    image?: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, transform: { fromType: 'string', toType: 'trim' } })
+   @IsString({ optional: true })
    author?: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, transform: { fromType: 'string', toType: 'trim' } })
+   @IsString({ optional: true })
    robot?: string;
 
-   @Property({ optional: true, validate: { is: 'string' }, transform: { fromType: 'string', toType: 'trim' } })
+   @IsString({ optional: true })
    index?: string;
 }
