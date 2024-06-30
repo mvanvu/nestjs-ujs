@@ -50,11 +50,13 @@ export type DataMetaResult<TData, TMeta = ObjectRecord> = { data: TData; meta: T
 
 export type CRUDResult<T> = PaginationResult<T> | EntityResult<T> | UpdateResult<T>;
 
+export type CRUDMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
+
 export type MessageMeta = {
    query?: ObjectRecord;
    user?: UserRefEntity;
    language: Language;
-   method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+   method: CRUDMethod;
    ctx: RequestContext;
 };
 

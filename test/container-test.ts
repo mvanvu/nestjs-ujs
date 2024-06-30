@@ -8,15 +8,16 @@ export class ContainerTest {
       describe(describeTitle, () => describeCallback(new ContainerTest()));
    }
 
-   async signIn(username: string, password: string): Promise<AuthEntity> {
-      return await spec()
+   signIn(username: string, password: string): Promise<AuthEntity> {
+      return spec()
          .post('/users/signin')
          .withBody({ username, password })
          .expectStatus(HttpStatus.OK)
+         .stores('rootAccessToken', 'data.tokens.access')
          .returns('data');
    }
 
-   async signInWithRoot(): Promise<AuthEntity> {
-      return await this.signIn('rainy.mi', 'MyStr0ngPassWord!');
+   signInWithRoot(): Promise<AuthEntity> {
+      return this.signIn('rainy.mi', 'MyStr0ngPassWord!');
    }
 }

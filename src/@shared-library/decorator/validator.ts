@@ -1,3 +1,4 @@
+import { applyDecorators } from '@nestjs/common';
 import { PropertyOptions, SwaggerOptions, TransformType } from '../type/common';
 import { Property } from './property';
 import { ClassConstructor, Is, IsValidType, Transform, Util } from '@mvanvu/ujs';
@@ -91,7 +92,7 @@ export function IsString(options?: {
       validates.push({ is: 'arrayUnique' });
    }
 
-   return Property(propsOptions);
+   return applyDecorators(Property(propsOptions));
 }
 
 export function StringToType(
@@ -123,7 +124,7 @@ export function StringToType(
       validates.push({ is: 'max', meta: options.max });
    }
 
-   return Property(propsOptions);
+   return applyDecorators(Property(propsOptions));
 }
 
 export function IsNumber(options?: {
@@ -165,7 +166,7 @@ export function IsNumber(options?: {
       validates.push({ is: 'arrayUnique' });
    }
 
-   return Property(propsOptions);
+   return applyDecorators(Property(propsOptions));
 }
 
 export function IsBoolean(options?: { each?: boolean; optional?: boolean; swagger?: SwaggerOptions }) {
@@ -189,7 +190,7 @@ export function IsPrimitive(options?: { each?: Each; optional?: boolean; swagger
       validates.push({ is: 'arrayUnique' });
    }
 
-   return Property(propsOptions);
+   return applyDecorators(Property(propsOptions));
 }
 
 export function IsStrongPassword(options?: {
@@ -228,7 +229,7 @@ export function IsStrongPassword(options?: {
       validates.push({ is: 'arrayUnique' });
    }
 
-   return Property(propsOptions);
+   return applyDecorators(Property(propsOptions));
 }
 
 export function IsJsonObject(options?: { each?: Each; optional?: boolean; swagger?: SwaggerOptions }) {
@@ -244,7 +245,7 @@ export function IsJsonObject(options?: { each?: Each; optional?: boolean; swagge
       validates.push({ is: 'arrayUnique' });
    }
 
-   return Property(propsOptions);
+   return applyDecorators(Property(propsOptions));
 }
 
 export function IsEquals(equalsTo: string, options?: { each?: Each; optional?: boolean; swagger?: SwaggerOptions }) {
@@ -260,7 +261,7 @@ export function IsEquals(equalsTo: string, options?: { each?: Each; optional?: b
       validates.push({ is: 'arrayUnique' });
    }
 
-   return Property(propsOptions);
+   return applyDecorators(Property(propsOptions));
 }
 
 export function IsIn(array: any[], options?: { each?: Each; optional?: boolean; swagger?: SwaggerOptions }) {
@@ -276,7 +277,7 @@ export function IsIn(array: any[], options?: { each?: Each; optional?: boolean; 
       validates.push({ is: 'arrayUnique' });
    }
 
-   return Property(propsOptions);
+   return applyDecorators(Property(propsOptions));
 }
 
 export function IsDTO(
@@ -295,7 +296,7 @@ export function IsDTO(
       validates.push({ is: 'arrayUnique' });
    }
 
-   return Property(propsOptions);
+   return applyDecorators(Property(propsOptions));
 }
 
 export function IsMongoId(options?: { each?: Each; optional?: boolean; swagger?: SwaggerOptions }) {
@@ -311,7 +312,7 @@ export function IsMongoId(options?: { each?: Each; optional?: boolean; swagger?:
       validates.push({ is: 'arrayUnique' });
    }
 
-   return Property(propsOptions);
+   return applyDecorators(Property(propsOptions));
 }
 
 export function IsArray(options?: {
@@ -341,5 +342,5 @@ export function IsArray(options?: {
       validates.push({ is: 'arrayUnique' });
    }
 
-   return Property(propsOptions);
+   return applyDecorators(Property(propsOptions));
 }

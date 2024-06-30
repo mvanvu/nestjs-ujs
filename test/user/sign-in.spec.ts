@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { spec } from 'pactum';
-import { ContainerTest } from 'test/container-test';
+import { ContainerTest } from '../container-test';
 const url = '/users/signin';
 
 ContainerTest.run('Auth sign-in', (c: ContainerTest) => {

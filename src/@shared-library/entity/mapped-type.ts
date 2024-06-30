@@ -1,10 +1,10 @@
 import { ObjectRecord, Util } from '@mvanvu/ujs';
 import { Type } from '@nestjs/common';
 import { ClassConstructor } from '../type';
-import { CLASS_PROPERTIES } from '../constant';
+import { CLASS_PROPERTIES, INIT_PARENT_PROPERTIES } from '../constant';
 import { OmitType, PartialType, PickType } from '@nestjs/swagger';
 
-function collectAllProperties(ClassRef: ClassConstructor<any>): ObjectRecord {
+export function collectAllProperties(ClassRef: ClassConstructor<any>): ObjectRecord {
    const props: ObjectRecord = {};
    let parentClass = ClassRef;
 
@@ -29,6 +29,7 @@ function setClassProperties(
    properties: ObjectRecord,
    options: { includeKeys?: string[]; excludeKeys?: string[]; optional?: boolean },
 ): void {
+   ClassRef.prototype[INIT_PARENT_PROPERTIES] = true;
    ClassRef.prototype[CLASS_PROPERTIES] = {};
 
    if (options.includeKeys?.length) {

@@ -4,7 +4,7 @@ import { PrismaService } from './prisma.service';
 import { Prisma, UserStatus, VerifyCode } from '.prisma/user';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is, JWTError } from '@mvanvu/ujs';
-import { serviceConfig } from '@metadata';
+import { appConfig, serviceConfig } from '@metadata';
 import { BaseService, CRUDService } from '@microservice/@library';
 import {
    FieldsException,
@@ -228,7 +228,7 @@ export class UserService extends BaseService {
       return this.prisma
          .createCRUDService('User')
          .options({
-            softDelete: true,
+            softDelete: !appConfig.is('nodeEnv', 'test'),
             list: { searchFields: ['name', 'username', 'email'], filterFields: ['username', 'email'] },
          })
          .entityResponse(UserEntity)

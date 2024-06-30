@@ -1,9 +1,10 @@
 import { ArgumentMetadata, HttpException, Injectable, PipeTransform } from '@nestjs/common';
 import { EqualsRulesOptions, Is, IsValidType, ObjectRecord, Transform, Util } from '@mvanvu/ujs';
 import { ClassConstructor, PropertyOptions, ValidationCode, ValidationOptions } from '../type/common';
-import { CLASS_PROPERTIES } from '../constant';
+import { CLASS_PROPERTIES, INIT_PARENT_PROPERTIES } from '../constant';
 import { ThrowException } from '../exception/throw';
 import { RpcException } from '@nestjs/microservices';
+import { collectAllProperties } from '@shared-library/entity/mapped-type';
 
 export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstructor<any>, whiteList?: boolean) {
    if (!Is.object(data) || !Is.flatObject(data) || !Is.class(DTOClassRef)) {
@@ -12,8 +13,10 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
 
    const error: Record<string, Array<string | number | ObjectRecord>> = {};
    const propertyOptions: Record<string, PropertyOptions<IsValidType>> | undefined =
-      DTOClassRef.prototype[CLASS_PROPERTIES];
-   const props: string[] = Object.keys(DTOClassRef.prototype[CLASS_PROPERTIES] || {});
+      DTOClassRef[INIT_PARENT_PROPERTIES] === true
+         ? DTOClassRef.prototype[CLASS_PROPERTIES] || {}
+         : collectAllProperties(DTOClassRef);
+   const props: string[] = Object.keys(propertyOptions);
 
    // Cleanup data
    const notAcceptedProps: string[] = [];
