@@ -1,24 +1,21 @@
 import { i18n } from '../i18n';
-import { IsIn, IsString, StringToType } from '../decorator/validator';
+import { EnumSchema, NumberSchema, StringSchema } from '../decorator/schema';
 
 const langCodes = Object.keys(i18n).map((code) => `${code.substring(0, 2)}-${code.substring(2)}`);
 
 export class PaginationQueryDto {
-   @IsString({ optional: true, swagger: { description: 'The search query' } })
+   @StringSchema({ optional: true })
    q?: string;
 
-   @StringToType('uInt', { optional: true, swagger: { description: 'The current page' } })
+   @NumberSchema({ optional: true, fromString: true, integer: true, min: 1 })
    page?: number;
 
-   @StringToType('uInt', { optional: true, swagger: { description: 'The number of items on one row' } })
+   @NumberSchema({ optional: true, fromString: true, integer: true, min: 1 })
    limit?: number;
 
-   @IsString({ optional: true, swagger: { description: 'Order by' } })
+   @StringSchema({ optional: true })
    order?: string;
 
-   @IsIn(langCodes, {
-      optional: true,
-      swagger: { description: 'Language code', enum: langCodes },
-   })
+   @EnumSchema(langCodes, { optional: true })
    lang?: string;
 }

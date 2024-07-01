@@ -1,46 +1,46 @@
 import { Is } from '@mvanvu/ujs';
 import { UserStatus } from '.prisma/user';
-import { Property } from '../decorator/property';
 import { BaseEntity } from './base';
 import { PermissionOptions } from '../type/common';
 import { IPickType } from './mapped-type';
 import { GroupEntity } from './user-group';
 import { USER_PERMISSION_ADMIN_SCOPE } from '@shared-library/constant/common';
 import { appConfig } from '@metadata';
+import { EnumSchema, ObjectSchema, StringSchema } from '@shared-library/decorator';
 
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
 export class UserEntity extends BaseEntity {
-   @Property()
+   @StringSchema()
    id: string;
 
-   @Property({ swagger: { enum: UserStatus } })
+   @EnumSchema(Object.values(UserStatus))
    status: UserStatus;
 
-   @Property()
+   @StringSchema()
    name?: string;
 
-   @Property()
+   @StringSchema()
    username?: string;
 
-   @Property()
+   @StringSchema()
    avatarUrl?: string;
 
-   @Property()
+   @StringSchema({ format: 'email' })
    email: string;
 
-   @Property({ swagger: { type: UserGroupEntity } })
+   @ObjectSchema(UserGroupEntity)
    group?: UserGroupEntity;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    createdAt: Date;
 
-   @Property()
+   @StringSchema()
    createdBy: string;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    updatedAt: Date;
 
-   @Property()
+   @StringSchema()
    updatedBy: string;
 
    private _permissions: string[];
@@ -162,18 +162,18 @@ export class UserEntity extends BaseEntity {
 }
 
 export class AuthTokenEntity {
-   @Property()
+   @StringSchema()
    access: string;
 
-   @Property()
+   @StringSchema()
    refresh: string;
 }
 
 export class AuthEntity extends BaseEntity {
-   @Property()
+   @ObjectSchema(UserEntity)
    user: UserEntity;
 
-   @Property({ swagger: { type: AuthTokenEntity } })
+   @ObjectSchema(AuthTokenEntity)
    tokens: AuthTokenEntity;
 }
 

@@ -1,26 +1,26 @@
 import { $Enums } from '.prisma/user';
-import { Property } from '../decorator/property';
+import { EnumSchema, StringSchema } from '../decorator/schema';
 import { BaseEntity } from './base';
 
 export class RoleEntity extends BaseEntity {
-   @Property()
+   @StringSchema()
    id: string;
 
-   @Property({ swagger: { type: $Enums.AvailableStatus, enum: $Enums.AvailableStatus } })
+   @EnumSchema(Object.values($Enums.AvailableStatus))
    status: $Enums.AvailableStatus;
 
-   @Property()
+   @StringSchema()
    name: string;
 
-   @Property()
+   @StringSchema()
    description: string;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    createdAt?: Date;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    updatedAt?: Date;
 
-   @Property()
+   @StringSchema({ each: true })
    permissions: string[];
 }

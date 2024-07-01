@@ -1,43 +1,37 @@
-import { IsDTO, IsIn, IsNumber, IsString } from '../decorator/validator';
+import { EnumSchema, NumberSchema, ObjectSchema, StringSchema } from '@shared-library/decorator';
 import { MailerTransporter } from '../type/common';
 
 const transporters: MailerTransporter[] = ['SMTP'];
 
 export class MailerSMTPTransporterDto {
-   @IsString({ notEmpty: true })
+   @StringSchema({ notEmpty: true })
    host: string;
 
-   @IsNumber({ unsigned: true })
+   @NumberSchema({ min: 0 })
    port: number;
 
-   @IsString({ notEmpty: true })
+   @StringSchema({ notEmpty: true })
    user: string;
 
-   @IsString({ notEmpty: true })
+   @StringSchema({ notEmpty: true })
    pass: string;
 }
 
 export class MailerConfigDto {
-   @IsString({ email: true })
+   @StringSchema({ format: 'email' })
    appMail: string;
 
-   @IsIn(transporters, { swagger: { description: 'The mailer transporter', enum: transporters } })
+   @EnumSchema(transporters)
    transporter: MailerTransporter;
 
-   @IsDTO(MailerSMTPTransporterDto, { optional: true, swagger: { description: 'Config for the SMTP transporter' } })
+   @ObjectSchema(MailerSMTPTransporterDto, { optional: true })
    smtp?: MailerSMTPTransporterDto;
 }
 
 export class SystemConfigDto {
-   @IsDTO(MailerConfigDto, { optional: true, swagger: { description: 'Mailer config' } })
+   @ObjectSchema(MailerConfigDto, { optional: true })
    mailer?: MailerConfigDto;
 
-   @IsNumber({
-      optional: true,
-      integer: true,
-      unsigned: true,
-      min: 1,
-      swagger: { description: 'The activity logs will be removed after this days number since the created date' },
-   })
+   @NumberSchema({ optional: true, integer: true, min: 1 })
    removeActivityLogsAfterDays?: number;
 }
