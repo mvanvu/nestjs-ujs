@@ -16,6 +16,7 @@ export function IsString(options?: {
    url?: boolean;
    creditCard?: boolean;
    date?: boolean;
+   ipV4?: boolean;
    regex?: RegExp;
    safeHtml?: boolean;
    raw?: boolean;
@@ -67,6 +68,8 @@ export function IsString(options?: {
    // Validate as URL string
    else if (options?.url) {
       validates.push({ is: 'url', each });
+   } else if (options?.ipV4) {
+      validates.push({ is: 'ipV4', each });
    } else {
       validates.push({ is: 'string', each });
    }
@@ -170,11 +173,13 @@ export function IsNumber(options?: {
 }
 
 export function IsBoolean(options?: { each?: boolean; optional?: boolean; swagger?: SwaggerOptions }) {
-   return Property({
-      validate: { is: 'boolean', each: !!options?.each },
-      optional: options?.optional === true,
-      swagger: options?.swagger,
-   });
+   return applyDecorators(
+      Property({
+         validate: { is: 'boolean', each: !!options?.each },
+         optional: options?.optional === true,
+         swagger: options?.swagger,
+      }),
+   );
 }
 
 export function IsPrimitive(options?: { each?: Each; optional?: boolean; swagger?: SwaggerOptions }) {

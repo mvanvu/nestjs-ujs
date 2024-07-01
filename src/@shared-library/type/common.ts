@@ -95,6 +95,7 @@ export type SwaggerOptions = {
 };
 
 export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> | [ClassConstructor<any>]> = {
+   schema?: any;
    validate?:
       | ValidationOptions<ClassConstructor<any>>
       | [ValidationOptions<ClassConstructor<any>>]

@@ -7,7 +7,7 @@ export class PaginationQueryDto {
    @IsString({ optional: true, swagger: { description: 'The search query' } })
    q?: string;
 
-   @StringToType('uInt', { optional: true, swagger: { description: 'The number of items on one row' } })
+   @StringToType('uInt', { optional: true, swagger: { description: 'The current page' } })
    page?: number;
 
    @StringToType('uInt', { optional: true, swagger: { description: 'The number of items on one row' } })
