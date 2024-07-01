@@ -1,12 +1,9 @@
 import { applyDecorators } from '@nestjs/common';
 import { Property } from './property';
+import { ClassConstructor } from '@mvanvu/ujs';
 
-type SchemaType = 'string' | 'number' | 'integer' | 'object' | 'array' | 'boolean' | 'null';
+type SchemaType = 'string' | 'number' | 'integer' | 'boolean';
 
-export function Schema(type: SchemaType | SchemaType[]) {
+export function Schema(type: SchemaType | ClassConstructor<any> | [ClassConstructor<any>], nullable?: boolean) {
    return applyDecorators(Property({ schema: { type } }));
-}
-
-export function String() {
-   return applyDecorators(Property({ schema: { type: 'string' } }));
 }
