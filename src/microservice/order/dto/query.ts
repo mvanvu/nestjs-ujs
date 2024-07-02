@@ -1,9 +1,9 @@
-import { IsMongoId, PaginationQueryDto, Property } from '@shared-library';
+import { PaginationQueryDto, StringSchema } from '@shared-library';
 
 export class OrderPaginationQueryDto extends PaginationQueryDto {
-   @IsMongoId({ optional: true })
+   @StringSchema({ optional: true, format: 'mongoId' })
    restaurantId?: string;
 
-   @Property({ swagger: { disabled: true } })
+   @StringSchema({ format: 'mongoId', swagger: false })
    ownerId?: string;
 }

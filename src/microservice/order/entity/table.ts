@@ -1,35 +1,35 @@
 import { AvailableStatus, TableStatus } from '.prisma/order';
 import { RestaurantRefEntity } from './restaurant';
-import { BaseEntity, Property, UserRefEntity } from '@shared-library';
+import { BaseEntity, EnumSchema, NumberSchema, ObjectSchema, StringSchema, UserRefEntity } from '@shared-library';
 
 export class TableEntity extends BaseEntity {
-   @Property()
+   @StringSchema()
    id: string;
 
-   @Property({ swagger: { type: RestaurantRefEntity } })
+   @ObjectSchema(RestaurantRefEntity)
    restaurant: RestaurantRefEntity;
 
-   @Property({ swagger: { enum: Object.values(AvailableStatus) } })
+   @EnumSchema(Object.values(AvailableStatus))
    status: AvailableStatus;
 
-   @Property({ swagger: { enum: Object.values(TableStatus) } })
+   @EnumSchema(Object.values(TableStatus))
    activityStatus?: TableStatus;
 
-   @Property()
+   @NumberSchema({ integer: true, min: 1 })
    number: number;
 
-   @Property()
+   @StringSchema({ optional: true })
    area?: string;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity, { optional: true })
    author?: UserRefEntity;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity, { optional: true })
    editor?: UserRefEntity;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    createdAt: Date;
 
-   @Property()
-   updatedAt?: Date;
+   @StringSchema({ format: 'date-time' })
+   updatedAt: Date;
 }

@@ -1,25 +1,25 @@
 import { AvailableStatus } from '.prisma/content';
-import { Property, BaseEntity, UserRefEntity } from '@shared-library';
+import { BaseEntity, UserRefEntity, StringSchema, EnumSchema, ObjectSchema } from '@shared-library';
 
 export class TagEntity extends BaseEntity {
-   @Property()
+   @StringSchema()
    id: string;
 
-   @Property({ swagger: { enum: Object.values(AvailableStatus) } })
+   @EnumSchema(Object.values(AvailableStatus))
    status: AvailableStatus;
 
-   @Property()
+   @StringSchema()
    name: string;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity, { optional: true })
    author?: UserRefEntity;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity, { optional: true })
    editor?: UserRefEntity;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    createdAt: Date;
 
-   @Property()
-   updatedAt?: Date;
+   @StringSchema({ format: 'date-time' })
+   updatedAt: Date;
 }

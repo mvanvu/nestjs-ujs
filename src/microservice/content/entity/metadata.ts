@@ -1,21 +1,21 @@
-import { Property, BaseEntity } from '@shared-library';
+import { BaseEntity, StringSchema } from '@shared-library';
 
 export class MetadataEntity extends BaseEntity {
-   @Property()
+   @StringSchema({ optional: true })
    title?: string;
 
-   @Property()
+   @StringSchema({ optional: true })
    description?: string;
 
-   @Property()
+   @StringSchema({ optional: true, format: 'url' })
    image?: string;
 
-   @Property()
+   @StringSchema({ optional: true })
    author?: string;
 
-   @Property()
+   @StringSchema({ optional: true })
    robot?: string;
 
-   @Property()
+   @StringSchema({ optional: true })
    index?: string;
 }

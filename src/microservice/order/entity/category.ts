@@ -1,33 +1,33 @@
 import { AvailableStatus } from '.prisma/order';
-import { BaseEntity, Property, UserRefEntity } from '@shared-library';
+import { BaseEntity, EnumSchema, ObjectSchema, StringSchema, UserRefEntity } from '@shared-library';
 
 export class CategoryEntity extends BaseEntity {
-   @Property()
+   @StringSchema()
    id: string;
 
-   @Property({ swagger: { enum: Object.values(AvailableStatus) } })
+   @EnumSchema(Object.values(AvailableStatus))
    status: AvailableStatus;
 
-   @Property()
+   @StringSchema()
    name: string;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity)
    author?: UserRefEntity;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity)
    editor?: UserRefEntity;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    createdAt: Date;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    updatedAt?: Date;
 }
 
 export class CategoryRef extends BaseEntity {
-   @Property()
+   @StringSchema()
    id: string;
 
-   @Property()
+   @StringSchema()
    name: string;
 }

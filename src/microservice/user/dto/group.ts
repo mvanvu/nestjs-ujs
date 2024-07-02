@@ -1,20 +1,20 @@
-import { IPartialType, IsIn, IsMongoId, IsString } from '@shared-library';
+import { EnumSchema, IPartialType, StringSchema } from '@shared-library';
 import { $Enums } from '.prisma/user';
 
 export class CreateGroupDto {
-   @IsString({ notEmpty: true, swagger: { description: 'The name of the group' } })
+   @StringSchema({ notEmpty: true })
    name: string;
 
-   @IsString({ optional: true, swagger: { description: 'The description of the group' } })
+   @StringSchema({ optional: true })
    description?: string;
 
-   @IsIn(Object.values($Enums.AvailableStatus), { optional: true, swagger: { description: 'The status of the group' } })
+   @EnumSchema(Object.values($Enums.AvailableStatus), { optional: true })
    status?: $Enums.AvailableStatus;
 
-   @IsMongoId({ each: 'unique', optional: true, swagger: { description: 'The children of the group' } })
+   @StringSchema({ format: 'mongoId', each: 'unique', optional: true })
    groups?: string[];
 
-   @IsMongoId({ each: 'unique', optional: true, swagger: { description: 'The roles of the group' } })
+   @StringSchema({ format: 'mongoId', each: 'unique', optional: true })
    roles?: string[];
 }
 

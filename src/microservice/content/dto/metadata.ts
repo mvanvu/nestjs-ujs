@@ -1,21 +1,21 @@
-import { IsString } from '@shared-library';
+import { StringSchema } from '@shared-library';
 
 export class MetadataDto {
-   @IsString({ optional: true })
+   @StringSchema({ optional: true })
    title?: string;
 
-   @IsString({ optional: true })
+   @StringSchema({ optional: true })
    description?: string;
 
-   @IsString({ optional: true, url: true })
+   @StringSchema({ optional: true, format: 'url' })
    image?: string;
 
-   @IsString({ optional: true })
+   @StringSchema({ optional: true })
    author?: string;
 
-   @IsString({ optional: true })
+   @StringSchema({ optional: true })
    robot?: string;
 
-   @IsString({ optional: true })
+   @StringSchema({ optional: true })
    index?: string;
 }

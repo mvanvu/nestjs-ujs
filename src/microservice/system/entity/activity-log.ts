@@ -1,39 +1,39 @@
-import { User, ActivityLog } from '.prisma/system';
-import { BaseEntity, Property } from '@shared-library';
+import { ActivityLog } from '.prisma/system';
+import { BaseEntity, BooleanSchema, JsonSchema, ObjectSchema, StringSchema, UserRefEntity } from '@shared-library';
 import { DetectResult } from 'node-device-detector';
 
 export class ActivityLogEntity extends BaseEntity<ActivityLog> {
-   @Property()
+   @StringSchema()
    id: string;
 
-   @Property()
+   @BooleanSchema()
    success: boolean;
 
-   @Property()
+   @StringSchema()
    messagePattern: string;
 
-   @Property()
-   dataInput?: any;
+   @JsonSchema({ optional: true })
+   dataInput?: object;
 
-   @Property()
-   dataResult?: any;
+   @JsonSchema({ optional: true })
+   dataResult?: object;
 
-   @Property()
+   @StringSchema()
    ipAddress?: string;
 
-   @Property()
+   @StringSchema()
    deviceType?: string;
 
-   @Property()
+   @JsonSchema()
    detectResult?: DetectResult;
 
-   @Property()
+   @StringSchema()
    userAgent?: string;
 
-   @Property()
-   author?: User;
+   @ObjectSchema(UserRefEntity)
+   author?: UserRefEntity;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    createdAt: Date;
 
    constructor(entity?: ActivityLog) {

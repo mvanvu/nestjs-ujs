@@ -1,18 +1,18 @@
-import { IPartialType, IsIn, IsString } from '@shared-library';
+import { EnumSchema, IPartialType, StringSchema } from '@shared-library';
 import { $Enums } from '.prisma/user';
 import { permissionKeys } from '@metadata';
 
 export class CreateRoleDto {
-   @IsString({ notEmpty: true, swagger: { description: 'The name of the role' } })
+   @StringSchema({ notEmpty: true })
    name: string;
 
-   @IsString({ optional: true, swagger: { description: 'The description of the role' } })
+   @StringSchema({ optional: true })
    description?: string;
 
-   @IsIn(Object.values($Enums.AvailableStatus), { optional: true, swagger: { description: 'The status of the role' } })
+   @EnumSchema(Object.values($Enums.AvailableStatus), { optional: true })
    status?: $Enums.AvailableStatus;
 
-   @IsIn(permissionKeys, { optional: true, each: 'unique', swagger: { description: 'The permissions of the role' } })
+   @EnumSchema(permissionKeys, { optional: true, each: 'unique' })
    permissions?: string[];
 }
 

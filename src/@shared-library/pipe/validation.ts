@@ -49,17 +49,25 @@ export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstruc
    for (const prop of props) {
       let val: any = data[prop];
       const propOptions = propertyOptions[prop];
+      const isUndefined = Is.undefined(val);
+      const isOptional = propOptions?.optional === true;
+      const isNullable = propOptions?.nullable === true;
 
-      if (!propOptions || (propOptions.optional === true && Is.nothing(val))) {
+      if (!propOptions || (isOptional && isUndefined) || (val === null && isNullable)) {
          continue;
       }
 
       // Check has default value
-      if (propOptions.optional !== true && Is.nothing(val) && !Is.undefined(propOptions.defaultValue)) {
+      if (!isOptional && isUndefined && !Is.undefined(propOptions.defaultValue)) {
          val = propOptions.defaultValue;
       }
 
-      if (propOptions?.validate) {
+      // Check not-nullable
+      if (val === null && !isNullable) {
+         error[prop].push({ code: 'IS_NOT_NULL' });
+      }
+
+      if (propOptions.validate) {
          for (const validateOption of Is.array(propOptions.validate) ? propOptions.validate : [propOptions.validate]) {
             let isValid: boolean = true;
             let errorCode: ValidationCode;

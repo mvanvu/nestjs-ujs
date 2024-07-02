@@ -1,14 +1,15 @@
-import { IsArray, IsString } from '@shared-library';
+import { StringSchema } from '@shared-library';
+
 export class SendMailDto {
-   @IsString({ optional: true, notEmpty: true })
+   @StringSchema({ optional: true, notEmpty: true })
    from?: string;
 
-   @IsArray({ notEmpty: true, unique: true })
+   @StringSchema({ notEmpty: true, each: 'unique', format: 'email' })
    to: string[];
 
-   @IsString({ notEmpty: true })
+   @StringSchema({ notEmpty: true })
    subject: string;
 
-   @IsString({ notEmpty: true, safeHtml: true })
+   @StringSchema({ notEmpty: true, transform: 'safeHtml' })
    body: string;
 }

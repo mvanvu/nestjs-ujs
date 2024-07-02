@@ -1,32 +1,32 @@
 import { AvailableStatus } from '.prisma/content';
-import { IPartialType, IsIn, IsMongoId, IsString, Property, UserRefEntity } from '@shared-library';
+import { EnumSchema, IPartialType, ObjectSchema, StringSchema, UserRefEntity } from '@shared-library';
 
 export class CreateRestaurantDto {
-   @IsMongoId()
+   @StringSchema({ format: 'mongoId' })
    ownerId: string;
 
-   @Property({ swagger: { readOnly: true } })
+   @ObjectSchema(UserRefEntity, { swagger: { readOnly: true } })
    owner: UserRefEntity;
 
-   @IsIn(Object.values(AvailableStatus), { optional: true })
+   @EnumSchema(Object.values(AvailableStatus), { optional: true })
    status?: AvailableStatus;
 
-   @IsString({ notEmpty: true })
+   @StringSchema({ notEmpty: true })
    name: string;
 
-   @IsString({ optional: true, safeHtml: true })
+   @StringSchema({ optional: true, transform: 'safeHtml' })
    description?: string;
 
-   @IsString({ optional: true, url: true })
+   @StringSchema({ optional: true, format: 'url' })
    imageUrl?: string;
 
-   @IsString({ optional: true })
+   @StringSchema({ optional: true })
    address?: string;
 
-   @IsString({ optional: true })
+   @StringSchema({ optional: true })
    phoneNumber?: string;
 
-   @IsString({ optional: true, email: true })
+   @StringSchema({ optional: true, format: 'email' })
    email?: string;
 }
 

@@ -1,42 +1,42 @@
 import { AvailableStatus } from '.prisma/content';
-import { Property, UserRefEntity, BaseEntity } from '@shared-library';
+import { UserRefEntity, BaseEntity, StringSchema, EnumSchema, ObjectSchema } from '@shared-library';
 import { CategoryRef } from './category';
 import { MetadataEntity } from './metadata';
 
 export class PostEntity extends BaseEntity {
-   @Property()
+   @StringSchema()
    id: string;
 
-   @Property({ swagger: { enum: Object.values(AvailableStatus) } })
+   @EnumSchema(Object.values(AvailableStatus))
    status: AvailableStatus;
 
-   @Property()
+   @StringSchema()
    name: string;
 
-   @Property()
+   @StringSchema()
    path: string;
 
-   @Property()
+   @StringSchema({ optional: true })
    description?: string;
 
-   @Property()
+   @StringSchema({ optional: true, format: 'url' })
    imageUrl?: string;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity, { optional: true })
    author?: UserRefEntity;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity, { optional: true })
    editor?: UserRefEntity;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    createdAt: Date;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    updatedAt?: Date;
 
-   @Property({ swagger: { type: CategoryRef } })
+   @ObjectSchema(CategoryRef, { optional: true })
    category?: CategoryRef;
 
-   @Property({ swagger: { type: MetadataEntity } })
+   @ObjectSchema(MetadataEntity, { optional: true })
    metadata?: MetadataEntity;
 }

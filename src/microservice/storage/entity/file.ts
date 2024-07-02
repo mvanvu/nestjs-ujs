@@ -1,31 +1,31 @@
-import { BaseEntity, Property } from '@shared-library';
+import { BaseEntity, BooleanSchema, EnumSchema, NumberSchema, StringSchema } from '@shared-library';
 import { $Enums } from '.prisma/storage';
 
 export class FileEntity extends BaseEntity {
-   @Property()
+   @StringSchema()
    id: string;
 
-   @Property()
+   @StringSchema()
    name: string;
 
-   @Property()
+   @NumberSchema({ min: 0, integer: true })
    size: number;
 
-   @Property()
+   @BooleanSchema()
    isPublic: boolean;
 
-   @Property({ swagger: { type: $Enums.FileType, enum: $Enums.FileType } })
+   @EnumSchema(Object.values($Enums.FileType))
    type: $Enums.FileType;
 
-   @Property()
+   @StringSchema()
    mime: string;
 
-   @Property({ swagger: { type: $Enums.Provider, enum: $Enums.Provider } })
+   @EnumSchema(Object.values($Enums.Provider))
    provider: $Enums.Provider;
 
-   @Property()
+   @StringSchema()
    providerId: string;
 
-   @Property()
+   @StringSchema()
    url: string;
 }

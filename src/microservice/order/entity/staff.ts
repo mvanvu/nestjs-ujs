@@ -1,31 +1,31 @@
 import { StaffStatus } from '.prisma/order';
-import { BaseEntity, Property, UserRefEntity } from '@shared-library';
+import { BaseEntity, EnumSchema, ObjectSchema, StringSchema, UserRefEntity } from '@shared-library';
 
 export class StaffEntity extends BaseEntity {
-   @Property()
+   @StringSchema()
    id: string;
 
-   @Property({ swagger: { enum: Object.values(StaffStatus) } })
+   @EnumSchema(Object.values(StaffStatus))
    status: StaffStatus;
 
-   @Property()
+   @StringSchema()
    name: string;
 
-   @Property()
+   @StringSchema({ optional: true })
    phoneNumber?: string;
 
-   @Property()
+   @StringSchema({ optional: true })
    email?: string;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity, { optional: true })
    author?: UserRefEntity;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity, { optional: true })
    editor?: UserRefEntity;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    createdAt: Date;
 
-   @Property()
-   updatedAt?: Date;
+   @StringSchema({ format: 'date-time' })
+   updatedAt: Date;
 }

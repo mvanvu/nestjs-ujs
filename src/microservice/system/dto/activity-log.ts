@@ -1,42 +1,42 @@
 import { Prisma } from '.prisma/system';
-import { IsBoolean, IsDTO, IsJsonObject, IsMongoId, IsString } from '@shared-library';
+import { BooleanSchema, JsonSchema, ObjectSchema, StringSchema } from '@shared-library';
 
 export class ActivityLogAuthor {
-   @IsMongoId()
+   @StringSchema({ format: 'mongoId' })
    id: string;
 
-   @IsString({ optional: true })
+   @StringSchema({ optional: true })
    name?: string;
 
-   @IsString({ optional: true })
+   @StringSchema({ optional: true })
    username?: string;
 
-   @IsString({ optional: true, email: true })
+   @StringSchema({ optional: true, format: 'mongoId' })
    email?: string;
 }
 
 export class ActivityLogDto {
-   @IsBoolean()
+   @BooleanSchema()
    success: boolean;
 
-   @IsString({ notEmpty: true })
+   @StringSchema({ notEmpty: true })
    messagePattern: string;
 
-   @IsJsonObject({ optional: true, swagger: { disabled: true } })
+   @JsonSchema({ optional: true, swagger: false })
    dataInput?: { origin: any };
 
-   @IsJsonObject({ optional: true, swagger: { disabled: true } })
+   @JsonSchema({ optional: true, swagger: false })
    dataResult?: { origin: any };
 
-   @IsDTO(ActivityLogAuthor, { optional: true })
+   @ObjectSchema(ActivityLogAuthor, { optional: true })
    author?: ActivityLogAuthor;
 
-   @IsString({ optional: true })
+   @StringSchema({ optional: true })
    ipAddress?: string;
 
-   @IsString({ optional: true })
+   @StringSchema({ optional: true })
    userAgent?: string;
 
-   @IsJsonObject({ optional: true, swagger: { disabled: true } })
+   @JsonSchema({ optional: true, swagger: false })
    detectResult?: Prisma.InputJsonObject;
 }

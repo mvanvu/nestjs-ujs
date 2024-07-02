@@ -1,15 +1,15 @@
-import { IOmitType, IsIn, Property, StringToType } from '@shared-library';
+import { BooleanSchema, EnumSchema, IOmitType, PropertySchema } from '@shared-library';
 import { $Enums } from '.prisma/storage';
 import { FileEntity } from '../entity';
 
 export class UploadDto {
-   @StringToType('boolean', { swagger: { description: 'Is this file is public?' } })
+   @BooleanSchema({ fromString: true })
    isPublic: boolean;
 
-   @IsIn(Object.values($Enums.FileType), { swagger: { description: 'The type of file' } })
+   @EnumSchema(Object.values($Enums.FileType))
    fileType: $Enums.FileType;
 
-   @Property({ swagger: { description: 'The binary file', type: 'file' } })
+   @PropertySchema({ swagger: { type: 'file' } })
    file: Express.Multer.File;
 }
 

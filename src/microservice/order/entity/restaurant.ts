@@ -1,41 +1,41 @@
 import { AvailableStatus } from '.prisma/content';
-import { BaseEntity, IPickType, Property, UserRefEntity } from '@shared-library';
+import { BaseEntity, EnumSchema, IPickType, ObjectSchema, StringSchema, UserRefEntity } from '@shared-library';
 
 export class RestaurantEntity extends BaseEntity {
-   @Property()
+   @StringSchema()
    id: string;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity)
    owner: UserRefEntity;
 
-   @Property({ swagger: { enum: Object.values(AvailableStatus) } })
+   @EnumSchema(Object.values(AvailableStatus))
    status: AvailableStatus;
 
-   @Property()
+   @StringSchema()
    name: string;
 
-   @Property()
+   @StringSchema({ optional: true })
    description?: string;
 
-   @Property()
+   @StringSchema({ optional: true })
    address?: string;
 
-   @Property()
+   @StringSchema({ optional: true })
    phoneNumber?: string;
 
-   @Property()
+   @StringSchema({ optional: true, format: 'email' })
    email?: string;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity)
    author?: UserRefEntity;
 
-   @Property({ swagger: { type: UserRefEntity } })
+   @ObjectSchema(UserRefEntity)
    editor?: UserRefEntity;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    createdAt: Date;
 
-   @Property()
+   @StringSchema({ format: 'date-time' })
    updatedAt?: Date;
 }
 

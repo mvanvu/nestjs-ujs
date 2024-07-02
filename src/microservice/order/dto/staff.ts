@@ -1,23 +1,23 @@
 import { StaffStatus } from '.prisma/order';
-import { IPartialType, IsIn, IsMongoId, IsString } from '@shared-library';
+import { EnumSchema, IPartialType, StringSchema } from '@shared-library';
 
 export class CreateStaffDto {
-   @IsMongoId()
+   @StringSchema({ format: 'mongoId' })
    restaurantId: string;
 
-   @IsIn(Object.values(StaffStatus), { optional: true })
+   @EnumSchema(Object.values(StaffStatus), { optional: true })
    status?: StaffStatus;
 
-   @IsString({ optional: true, notEmpty: true })
+   @StringSchema({ optional: true, notEmpty: true })
    name: string;
 
-   @IsString({ optional: true, url: true })
+   @StringSchema({ optional: true, format: 'url' })
    imageUrl?: string;
 
-   @IsString({ optional: true })
+   @StringSchema({ optional: true })
    phoneNumber?: string;
 
-   @IsString({ optional: true, email: true })
+   @StringSchema({ optional: true, format: 'email' })
    email?: string;
 }
 

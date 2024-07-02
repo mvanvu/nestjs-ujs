@@ -1,11 +1,11 @@
-import { IPartialType, IsIn, IsString } from '@shared-library';
+import { EnumSchema, IPartialType, StringSchema } from '@shared-library';
 import { AvailableStatus } from '.prisma/content';
 
 export class CreateTagDto {
-   @IsIn(Object.values(AvailableStatus), { optional: true })
+   @EnumSchema(Object.values(AvailableStatus), { optional: true })
    status?: AvailableStatus;
 
-   @IsString({ notEmpty: true })
+   @StringSchema({ notEmpty: true })
    name: string;
 }
 

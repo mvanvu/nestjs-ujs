@@ -1,34 +1,34 @@
 import { AvailableStatus } from '.prisma/order';
-import { IPartialType, IsDTO, IsIn, IsMongoId, IsNumber, IsString } from '@shared-library';
+import { EnumSchema, IPartialType, NumberSchema, ObjectSchema, StringSchema } from '@shared-library';
 
 export class ItemToppingDto {
-   @IsString({ notEmpty: true })
+   @StringSchema({ notEmpty: true })
    name: string;
 
-   @IsNumber({ unsigned: true })
+   @NumberSchema({ min: 0, integer: true })
    price: number;
 }
 
 export class CreateItemDto {
-   @IsMongoId()
+   @StringSchema({ format: 'mongoId' })
    restaurantId: string;
 
-   @IsMongoId()
+   @StringSchema({ format: 'mongoId' })
    categoryId: string;
 
-   @IsIn(Object.values(AvailableStatus))
+   @EnumSchema(Object.values(AvailableStatus))
    status?: AvailableStatus;
 
-   @IsString({ notEmpty: true })
+   @StringSchema({ notEmpty: true })
    name: string;
 
-   @IsString({ optional: true, url: true })
+   @StringSchema({ optional: true, format: 'url' })
    imageUrl?: string;
 
-   @IsNumber({ unsigned: true })
+   @NumberSchema({ min: 0, integer: true })
    basePrice: number;
 
-   @IsDTO(ItemToppingDto, { optional: true, each: 'unique' })
+   @ObjectSchema(ItemToppingDto, { optional: true, each: 'unique' })
    toppings?: ItemToppingDto[];
 }
 

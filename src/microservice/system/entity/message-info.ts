@@ -1,19 +1,19 @@
-import { BaseEntity, Property } from '@shared-library';
+import { BaseEntity, StringSchema } from '@shared-library';
 import Mail from 'nodemailer/lib/mailer';
 
 export class MessageInfoEntity extends BaseEntity {
-   @Property()
+   @StringSchema()
    messageId: string;
 
-   @Property({ swagger: { type: [String] } })
+   @StringSchema({ each: 'unique' })
    accepted: Array<string | Mail.Address>;
 
-   @Property({ swagger: { type: [String] } })
+   @StringSchema({ each: 'unique' })
    rejected: Array<string | Mail.Address>;
 
-   @Property({ swagger: { type: [String] } })
+   @StringSchema({ each: 'unique' })
    pending: Array<string | Mail.Address>;
 
-   @Property()
+   @StringSchema()
    response: string;
 }
