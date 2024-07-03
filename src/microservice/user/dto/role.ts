@@ -3,7 +3,7 @@ import { $Enums } from '.prisma/user';
 import { permissionKeys } from '@metadata';
 
 export class CreateRoleDto {
-   @StringSchema({ notEmpty: true })
+   @StringSchema({ empty: false })
    name: string;
 
    @StringSchema({ optional: true })

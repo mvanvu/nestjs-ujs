@@ -1,4 +1,4 @@
-import { EnumSchema, IPartialType, ObjectSchema, StringSchema } from '@shared-library';
+import { EnumSchema, IPartialType, ClassSchema, StringSchema } from '@shared-library';
 import { MetadataDto } from './metadata';
 import { AvailableStatus } from '.prisma/content';
 
@@ -9,7 +9,7 @@ export class CreatePostDto {
    @StringSchema({ optional: true })
    categoryId?: string;
 
-   @StringSchema({ notEmpty: true })
+   @StringSchema({ empty: false })
    name: string;
 
    @StringSchema({ optional: true })
@@ -18,7 +18,7 @@ export class CreatePostDto {
    @StringSchema({ optional: true, format: 'url' })
    imageUrl?: string;
 
-   @ObjectSchema(MetadataDto, { optional: true })
+   @ClassSchema(MetadataDto, { optional: true })
    metadata?: MetadataDto;
 }
 

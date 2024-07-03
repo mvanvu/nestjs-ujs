@@ -1,9 +1,9 @@
-import { BooleanSchema, EnumSchema, IOmitType, PropertySchema } from '@shared-library';
+import { EnumSchema, IOmitType, PropertySchema, StringSchema } from '@shared-library';
 import { $Enums } from '.prisma/storage';
 import { FileEntity } from '../entity';
 
 export class UploadDto {
-   @BooleanSchema({ fromString: true })
+   @StringSchema({ format: 'boolean', transform: 'format' })
    isPublic: boolean;
 
    @EnumSchema(Object.values($Enums.FileType))

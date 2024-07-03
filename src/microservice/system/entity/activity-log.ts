@@ -1,5 +1,5 @@
 import { ActivityLog } from '.prisma/system';
-import { BaseEntity, BooleanSchema, JsonSchema, ObjectSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { BaseEntity, BooleanSchema, JsonSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
 import { DetectResult } from 'node-device-detector';
 
 export class ActivityLogEntity extends BaseEntity<ActivityLog> {
@@ -30,7 +30,7 @@ export class ActivityLogEntity extends BaseEntity<ActivityLog> {
    @StringSchema()
    userAgent?: string;
 
-   @ObjectSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity)
    author?: UserRefEntity;
 
    @StringSchema({ format: 'date-time' })

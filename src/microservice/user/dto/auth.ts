@@ -29,7 +29,7 @@ export class UserSignUpDto {
 export class UserSignInDto extends IPickType(UserSignUpDto, ['username', 'password']) {}
 
 export class AuthTokenDto {
-   @StringSchema({ notEmpty: true })
+   @StringSchema({ empty: false })
    token: string;
 }
 

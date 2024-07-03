@@ -6,7 +6,7 @@ import { IPickType } from './mapped-type';
 import { GroupEntity } from './user-group';
 import { USER_PERMISSION_ADMIN_SCOPE } from '@shared-library/constant/common';
 import { appConfig } from '@metadata';
-import { EnumSchema, ObjectSchema, StringSchema } from '@shared-library/decorator';
+import { EnumSchema, ClassSchema, StringSchema } from '@shared-library/decorator';
 
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
 export class UserEntity extends BaseEntity {
@@ -28,7 +28,7 @@ export class UserEntity extends BaseEntity {
    @StringSchema({ format: 'email' })
    email: string;
 
-   @ObjectSchema(UserGroupEntity)
+   @ClassSchema(UserGroupEntity)
    group?: UserGroupEntity;
 
    @StringSchema({ format: 'date-time' })
@@ -170,10 +170,10 @@ export class AuthTokenEntity {
 }
 
 export class AuthEntity extends BaseEntity {
-   @ObjectSchema(UserEntity)
+   @ClassSchema(UserEntity)
    user: UserEntity;
 
-   @ObjectSchema(AuthTokenEntity)
+   @ClassSchema(AuthTokenEntity)
    tokens: AuthTokenEntity;
 }
 

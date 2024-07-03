@@ -1,43 +1,55 @@
-import { ClassConstructor, IsValidType } from '@mvanvu/ujs';
+import { ClassConstructor, IsBaseOptions, IsStringOptions, IsStrongPasswordOptions } from '@mvanvu/ujs';
 import { SwaggerOptions } from './common';
 
-export type Each = boolean | 'unique';
-export interface BaseSchemaOptions {
-   each?: Each;
+export interface BaseSchemaOptions extends IsBaseOptions {
    optional?: boolean;
    nullable?: boolean;
    swagger?: SwaggerOptions;
+   code?: string;
+   message?: string;
 }
 
-export interface StringSchemaOptions extends BaseSchemaOptions {
-   format?: 'email' | 'url' | 'ipV4' | 'creditCard' | 'date-time' | 'mongoId' | RegExp;
-   transform?: 'safeHtml' | 'trim' | false;
-   equalsTo?: string;
-   minLength?: number;
-   maxLength?: number;
-   notEmpty?: boolean;
+export interface StringSchemaOptions extends BaseSchemaOptions, Omit<IsStringOptions, 'notEmpty'> {
+   transform?: 'safeHtml' | 'format' | false;
+   empty?: 'skip' | false;
 }
 
 export interface NumberSchemaOptions extends BaseSchemaOptions {
    integer?: boolean;
    min?: number;
    max?: number;
-   fromString?: boolean;
 }
 
-export interface BooleanSchemaOptions extends BaseSchemaOptions {
-   fromString?: boolean;
+export interface BooleanSchemaOptions extends BaseSchemaOptions {}
+
+export interface ClassSchemaOptions extends BaseSchemaOptions {
+   ref: ClassConstructor<any>;
 }
 
-export interface PasswordSchemaOptions extends BaseSchemaOptions {
-   noSpaces: boolean;
-   minLength?: number;
-   maxLength?: number;
-   minLower?: number;
-   minUpper?: number;
-   minNumber?: number;
-   minSpecialChars?: number;
+export interface EnumSchemaOptions extends Omit<BaseSchemaOptions, 'nullable'> {
+   ref: any[];
+}
+
+export interface PasswordSchemaOptions extends BaseSchemaOptions, IsStrongPasswordOptions {
    equalsTo?: string;
 }
 
-export type IsSchemaType = IsValidType | ClassConstructor<any>;
+export interface JsonSchemaOptions extends BaseSchemaOptions {}
+
+export type ValidSchema = 'string' | 'number' | 'boolean' | 'enum' | 'password' | 'json' | 'class' | 'prop';
+
+export type PropertySchemaOptions<T extends ValidSchema> = T extends 'string'
+   ? StringSchemaOptions
+   : T extends 'number'
+     ? NumberSchemaOptions
+     : T extends 'boolean'
+       ? BooleanSchemaOptions
+       : T extends 'class'
+         ? ClassSchemaOptions
+         : T extends 'enum'
+           ? EnumSchemaOptions
+           : T extends 'password'
+             ? PasswordSchemaOptions
+             : T extends 'json'
+               ? JsonSchemaOptions
+               : BaseSchemaOptions;

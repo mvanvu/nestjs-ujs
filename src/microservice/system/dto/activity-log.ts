@@ -1,5 +1,5 @@
 import { Prisma } from '.prisma/system';
-import { BooleanSchema, JsonSchema, ObjectSchema, StringSchema } from '@shared-library';
+import { BooleanSchema, JsonSchema, ClassSchema, StringSchema } from '@shared-library';
 
 export class ActivityLogAuthor {
    @StringSchema({ format: 'mongoId' })
@@ -19,7 +19,7 @@ export class ActivityLogDto {
    @BooleanSchema()
    success: boolean;
 
-   @StringSchema({ notEmpty: true })
+   @StringSchema({ empty: false })
    messagePattern: string;
 
    @JsonSchema({ optional: true, swagger: false })
@@ -28,7 +28,7 @@ export class ActivityLogDto {
    @JsonSchema({ optional: true, swagger: false })
    dataResult?: { origin: any };
 
-   @ObjectSchema(ActivityLogAuthor, { optional: true })
+   @ClassSchema(ActivityLogAuthor, { optional: true })
    author?: ActivityLogAuthor;
 
    @StringSchema({ optional: true })

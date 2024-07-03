@@ -1,6 +1,6 @@
 import { AvailableStatus } from '.prisma/content';
 import { CategoryRef } from './category';
-import { BaseEntity, EnumSchema, NumberSchema, ObjectSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { BaseEntity, EnumSchema, NumberSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
 
 export class ToppingEntity extends BaseEntity {
    @StringSchema()
@@ -26,10 +26,10 @@ export class ItemEntity extends BaseEntity {
    @NumberSchema({ min: 0, integer: true })
    basePrice: number;
 
-   @ObjectSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity)
    author?: UserRefEntity;
 
-   @ObjectSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity)
    editor?: UserRefEntity;
 
    @StringSchema({ format: 'date-time' })
@@ -38,9 +38,9 @@ export class ItemEntity extends BaseEntity {
    @StringSchema({ format: 'date-time' })
    updatedAt?: Date;
 
-   @ObjectSchema(CategoryRef, { optional: true })
+   @ClassSchema(CategoryRef, { optional: true })
    category?: CategoryRef;
 
-   @ObjectSchema(ToppingEntity, { optional: true })
+   @ClassSchema(ToppingEntity, { optional: true })
    topping?: ToppingEntity;
 }

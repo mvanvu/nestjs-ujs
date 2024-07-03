@@ -1,5 +1,5 @@
 import { AvailableStatus } from '.prisma/order';
-import { BaseEntity, EnumSchema, ObjectSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { BaseEntity, EnumSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
 
 export class CategoryEntity extends BaseEntity {
    @StringSchema()
@@ -11,10 +11,10 @@ export class CategoryEntity extends BaseEntity {
    @StringSchema()
    name: string;
 
-   @ObjectSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity)
    author?: UserRefEntity;
 
-   @ObjectSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity)
    editor?: UserRefEntity;
 
    @StringSchema({ format: 'date-time' })

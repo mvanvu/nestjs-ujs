@@ -11,7 +11,7 @@ export class CreateTableDto {
    @NumberSchema({ min: 1 })
    number: number;
 
-   @StringSchema({ optional: true, notEmpty: true })
+   @StringSchema({ optional: true, empty: false })
    area?: string;
 }
 

@@ -1,5 +1,5 @@
 import { AvailableStatus } from '.prisma/content';
-import { BaseEntity, UserRefEntity, StringSchema, EnumSchema, ObjectSchema } from '@shared-library';
+import { BaseEntity, UserRefEntity, StringSchema, EnumSchema, ClassSchema } from '@shared-library';
 import { MetadataEntity } from './metadata';
 
 export class CategoryRef extends BaseEntity {
@@ -29,10 +29,10 @@ export class CategoryEntity extends BaseEntity {
    @StringSchema({ optional: true })
    description?: string;
 
-   @ObjectSchema(UserRefEntity, { optional: true })
+   @ClassSchema(UserRefEntity, { optional: true })
    author?: UserRefEntity;
 
-   @ObjectSchema(UserRefEntity, { optional: true })
+   @ClassSchema(UserRefEntity, { optional: true })
    editor?: UserRefEntity;
 
    @StringSchema({ format: 'date-time' })
@@ -41,9 +41,9 @@ export class CategoryEntity extends BaseEntity {
    @StringSchema({ format: 'date-time' })
    updatedAt?: Date;
 
-   @ObjectSchema(CategoryRef, { optional: true })
+   @ClassSchema(CategoryRef, { optional: true })
    parent?: CategoryRef;
 
-   @ObjectSchema(MetadataEntity, { optional: true })
+   @ClassSchema(MetadataEntity, { optional: true })
    metadata?: MetadataEntity;
 }

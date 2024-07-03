@@ -1,11 +1,11 @@
 import { AvailableStatus } from '.prisma/content';
-import { BaseEntity, EnumSchema, IPickType, ObjectSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { BaseEntity, EnumSchema, IPickType, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
 
 export class RestaurantEntity extends BaseEntity {
    @StringSchema()
    id: string;
 
-   @ObjectSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity)
    owner: UserRefEntity;
 
    @EnumSchema(Object.values(AvailableStatus))
@@ -26,10 +26,10 @@ export class RestaurantEntity extends BaseEntity {
    @StringSchema({ optional: true, format: 'email' })
    email?: string;
 
-   @ObjectSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity)
    author?: UserRefEntity;
 
-   @ObjectSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity)
    editor?: UserRefEntity;
 
    @StringSchema({ format: 'date-time' })

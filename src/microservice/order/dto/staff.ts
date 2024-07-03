@@ -8,7 +8,7 @@ export class CreateStaffDto {
    @EnumSchema(Object.values(StaffStatus), { optional: true })
    status?: StaffStatus;
 
-   @StringSchema({ optional: true, notEmpty: true })
+   @StringSchema({ optional: true, empty: false })
    name: string;
 
    @StringSchema({ optional: true, format: 'url' })

@@ -1,4 +1,4 @@
-import { IsValidOptions, IsValidType, ObjectRecord, Transform } from '@mvanvu/ujs';
+import { ObjectRecord } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { Type, VersionValue } from '@nestjs/common/interfaces';
 import { type UserEntity } from '../entity/user';
@@ -70,21 +70,6 @@ export type EntityConstructor<T> = new (...args: any[]) => T;
 
 export type ValidationCode = string | number | ObjectRecord;
 
-export type ValidationOptions<TIs> = {
-   is: TIs;
-   each?: boolean;
-   not?: boolean;
-   meta?: IsValidOptions<TIs>['meta'];
-   code?: ValidationCode;
-};
-
-export type TransformType<T = keyof typeof Transform> = T extends 'clean' | 'cleanIfType' | 'prototype' ? never : T;
-
-export type TransformOptions = {
-   toType: TransformType | TransformType[];
-   fromType?: IsValidType | IsValidType[];
-};
-
 export type SwaggerOptions =
    | {
         description?: string;
@@ -94,20 +79,6 @@ export type SwaggerOptions =
         readOnly?: boolean;
      }
    | false;
-
-export type PropertyOptions<IsType extends IsValidType | ClassConstructor<any> | [ClassConstructor<any>]> = {
-   schema?: any;
-   validate?:
-      | ValidationOptions<ClassConstructor<any>>
-      | [ValidationOptions<ClassConstructor<any>>]
-      | ValidationOptions<IsType>
-      | Array<ValidationOptions<IsType>>;
-   transform?: TransformOptions;
-   optional?: boolean;
-   nullable?: boolean;
-   defaultValue?: any;
-   swagger?: SwaggerOptions;
-};
 
 export type PermissionOptions = { key?: string; or?: string[]; and?: string[]; adminScope?: boolean } | string;
 

@@ -1,15 +1,15 @@
 import { StringSchema } from '@shared-library';
 
 export class SendMailDto {
-   @StringSchema({ optional: true, notEmpty: true })
+   @StringSchema({ optional: true, empty: false })
    from?: string;
 
-   @StringSchema({ notEmpty: true, each: 'unique', format: 'email' })
+   @StringSchema({ empty: false, each: 'unique', format: 'email' })
    to: string[];
 
-   @StringSchema({ notEmpty: true })
+   @StringSchema({ empty: false })
    subject: string;
 
-   @StringSchema({ notEmpty: true, transform: 'safeHtml' })
+   @StringSchema({ empty: false, transform: 'safeHtml' })
    body: string;
 }

@@ -1,5 +1,5 @@
 import { i18n } from '../i18n';
-import { EnumSchema, NumberSchema, StringSchema } from '../decorator/schema';
+import { EnumSchema, StringSchema } from '../decorator/schema';
 
 const langCodes = Object.keys(i18n).map((code) => `${code.substring(0, 2)}-${code.substring(2)}`);
 
@@ -7,10 +7,10 @@ export class PaginationQueryDto {
    @StringSchema({ optional: true })
    q?: string;
 
-   @NumberSchema({ optional: true, fromString: true, integer: true, min: 1 })
+   @StringSchema({ optional: true, format: 'unsignedInteger', empty: 'skip' })
    page?: number;
 
-   @NumberSchema({ optional: true, fromString: true, integer: true, min: 1 })
+   @StringSchema({ optional: true, format: 'unsignedInteger', empty: 'skip' })
    limit?: number;
 
    @StringSchema({ optional: true })

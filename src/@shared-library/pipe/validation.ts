@@ -1,200 +1,263 @@
-import { ArgumentMetadata, HttpException, Injectable, PipeTransform } from '@nestjs/common';
-import { EqualsRulesOptions, Is, IsValidType, ObjectRecord, Transform, Util } from '@mvanvu/ujs';
-import { ClassConstructor, PropertyOptions, ValidationCode, ValidationOptions } from '../type/common';
+import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { Is, Transform } from '@mvanvu/ujs';
+import { ClassConstructor } from '../type/common';
 import { CLASS_PROPERTIES, INIT_PARENT_PROPERTIES } from '../constant';
 import { ThrowException } from '../exception/throw';
-import { RpcException } from '@nestjs/microservices';
 import { collectAllProperties } from '@shared-library/entity/mapped-type';
+import {
+   BaseSchemaOptions,
+   BooleanSchemaOptions,
+   ClassSchemaOptions,
+   EnumSchemaOptions,
+   JsonSchemaOptions,
+   NumberSchemaOptions,
+   PasswordSchemaOptions,
+   StringSchemaOptions,
+   ValidSchema,
+} from '@shared-library/type/schema';
 
-export async function validateDTO(data: ObjectRecord, DTOClassRef: ClassConstructor<any>, whiteList?: boolean) {
-   if (!Is.object(data) || !Is.flatObject(data) || !Is.class(DTOClassRef)) {
-      return data;
-   }
+export async function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, whiteList?: boolean) {
+   const errors: { [key: string]: { code: string; message?: string; meta?: any }[] } = {};
+   const appendError = (pathKey: string, code: string, message?: string, meta?: any) => {
+      if (!errors[pathKey]) {
+         errors[pathKey] = [];
+      }
 
-   const error: Record<string, Array<string | number | ObjectRecord>> = {};
-   const propertyOptions: Record<string, PropertyOptions<IsValidType>> | undefined =
-      DTOClassRef[INIT_PARENT_PROPERTIES] === true
-         ? DTOClassRef.prototype[CLASS_PROPERTIES] || {}
-         : collectAllProperties(DTOClassRef);
-   const props: string[] = Object.keys(propertyOptions);
+      errors[pathKey].push({ code, message: message ?? null, meta: meta ?? null });
+   };
 
-   // Cleanup data
-   const notAcceptedProps: string[] = [];
-
-   for (const prop in data) {
-      if (!props.includes(prop)) {
-         if (whiteList !== true) {
-            notAcceptedProps.push(prop);
+   const handleValidate = (dataValue: any, dtoRef: ClassConstructor<any>, path?: string) => {
+      if (!Is.json(dataValue)) {
+         if (path) {
+            appendError(path, 'INVALID_JSON_DATA', 'Must be a jsob object data');
+            return;
          }
 
-         delete data[prop];
-      }
-   }
-
-   if (notAcceptedProps.length) {
-      ThrowException(`The ${notAcceptedProps.join(', ')} ${notAcceptedProps.length > 1 ? `aren't` : `isn't`} accpeted`);
-   }
-
-   // Handle transformer
-   for (const prop of props) {
-      if (propertyOptions[prop]?.transform) {
-         const { fromType, toType } = propertyOptions[prop].transform;
-         data[prop] = fromType
-            ? Transform.cleanIfType(data[prop], toType, fromType)
-            : Transform.clean(data[prop], toType);
-      }
-   }
-
-   // Handle validator
-   for (const prop of props) {
-      let val: any = data[prop];
-      const propOptions = propertyOptions[prop];
-      const isUndefined = Is.undefined(val);
-      const isOptional = propOptions?.optional === true;
-      const isNullable = propOptions?.nullable === true;
-
-      if (!propOptions || (isOptional && isUndefined) || (val === null && isNullable)) {
-         continue;
+         ThrowException('The body data must be a jsob object data');
       }
 
-      // Check has default value
-      if (!isOptional && isUndefined && !Is.undefined(propOptions.defaultValue)) {
-         val = propOptions.defaultValue;
+      const propertyOptions =
+         dtoRef[INIT_PARENT_PROPERTIES] === true
+            ? dtoRef.prototype[CLASS_PROPERTIES] || {}
+            : collectAllProperties(dtoRef);
+      const props: string[] = Object.keys(propertyOptions);
+
+      // Cleanup data
+      const notAcceptedProps: string[] = [];
+
+      for (const prop in data) {
+         if (!props.includes(prop)) {
+            if (whiteList !== true) {
+               notAcceptedProps.push(prop);
+            }
+
+            delete data[prop];
+         }
       }
 
-      // Check not-nullable
-      if (val === null && !isNullable) {
-         error[prop].push({ code: 'IS_NOT_NULL' });
+      if (notAcceptedProps.length) {
+         const message = `The ${notAcceptedProps.join(', ')} ${notAcceptedProps.length > 1 ? `aren't` : `isn't`} accpeted`;
+
+         if (path) {
+            appendError(path, 'NOT_ACCEPTED_DATA', message);
+            return;
+         }
+
+         ThrowException(message);
       }
 
-      if (propOptions.validate) {
-         for (const validateOption of Is.array(propOptions.validate) ? propOptions.validate : [propOptions.validate]) {
-            let isValid: boolean = true;
-            let errorCode: ValidationCode;
+      // Handle validator
+      for (const property in propertyOptions) {
+         const propOptions = propertyOptions[property];
 
-            const {
-               is: validateIsType,
-               each,
-               meta,
-               not,
-               code,
-            } = validateOption as ValidationOptions<IsValidType | ClassConstructor<any>>;
+         if (!Is.object(propOptions) || Is.empty(propOptions)) {
+            continue;
+         }
 
-            const isArrayCls = Is.array(validateIsType);
+         const pathKey = path ? `${path}.${property}` : property;
+         let propValue: any = dataValue[property];
 
-            if ((isArrayCls && Is.class(validateIsType[0])) || Is.class(validateIsType)) {
-               const IsTypeCls = (isArrayCls ? validateIsType[0] : validateIsType) as ClassConstructor<any>;
+         for (const schema in propOptions) {
+            const schemaOptions = propOptions[schema] as BaseSchemaOptions;
+            const optional = schemaOptions.optional === true;
+            const nullable = schemaOptions.nullable ?? optional;
 
-               if (isArrayCls && !Is.array(val)) {
-                  errorCode = 'IS_ARRAY';
-               } else if (!isArrayCls && !Is.object(val)) {
-                  errorCode = 'IS_OBJECT';
-               } else {
-                  const classValidate = async (value: any) => {
-                     try {
-                        await validateDTO(value, IsTypeCls);
-                     } catch (e) {
-                        if (e instanceof RpcException) {
-                           errorCode = e.getError();
-                        } else if (e instanceof HttpException) {
-                           errorCode = e.getResponse()['error'];
-                        }
+            if ((propValue === undefined && optional) || (propValue === null && nullable)) {
+               continue;
+            }
 
-                        if (!errorCode) {
-                           errorCode = e.error ?? isArrayCls ? 'IS_ARRAY' : 'IS_OBJECT';
-                        }
+            switch (schema as ValidSchema) {
+               case 'string':
+                  const stringSchemaOptions = schemaOptions as StringSchemaOptions;
 
-                        isValid = false;
+                  // Check to transform to other type of value
+                  if (Is.string(dataValue)) {
+                     switch (stringSchemaOptions.transform) {
+                        case 'safeHtml':
+                           propValue = Transform.trim(Transform.toSafeHtml(propValue));
+                           break;
+
+                        case 'format':
+                           switch (stringSchemaOptions.format) {
+                              case 'number':
+                                 propValue = Transform.toNumber(propValue);
+                                 break;
+
+                              case 'unsignedNumber':
+                                 propValue = Transform.toUNumber(propValue);
+                                 break;
+
+                              case 'integer':
+                                 propValue = Transform.toInt(propValue);
+                                 break;
+
+                              case 'unsignedInteger':
+                                 propValue = Transform.toUInt(propValue);
+                                 break;
+
+                              case 'boolean':
+                                 propValue = Transform.toBoolean(propValue);
+                                 break;
+                           }
+
+                           break;
+
+                        // No transfrom, allows raw value
+                        case false:
+                           break;
+
+                        // Defaults to strip all tags
+                        default:
+                           propValue = Transform.trim(Transform.toStripTags(propValue));
+                           break;
                      }
-                  };
+                  }
 
-                  if (isArrayCls) {
-                     for (const v of val) {
-                        await classValidate(v);
+                  if (propValue === '' && stringSchemaOptions.empty === 'skip') {
+                     delete dataValue[property];
+                     continue;
+                  }
+
+                  if (
+                     !Is.string(propValue, {
+                        format: stringSchemaOptions.format,
+                        isArray: stringSchemaOptions.isArray,
+                        minLength: stringSchemaOptions.minLength,
+                        maxLength: stringSchemaOptions.maxLength,
+                        notEmpty: stringSchemaOptions.empty !== false,
+                     })
+                  ) {
+                     appendError(pathKey, stringSchemaOptions.code || 'IS_STRING', stringSchemaOptions.message);
+                  }
+
+                  break;
+
+               case 'boolean':
+                  const booleanSchemaOptions = schemaOptions as BooleanSchemaOptions;
+
+                  if (!Is.boolean(propValue, { isArray: booleanSchemaOptions.isArray })) {
+                     appendError(pathKey, booleanSchemaOptions.code || 'IS_BOOLEAN', booleanSchemaOptions.message);
+                  }
+
+                  break;
+
+               case 'number':
+                  const numberSchemaOptions = schemaOptions as NumberSchemaOptions;
+
+                  if (
+                     !Is.number(propValue, {
+                        isArray: numberSchemaOptions.isArray,
+                        integer: numberSchemaOptions.integer,
+                        min: numberSchemaOptions.min,
+                        max: numberSchemaOptions.max,
+                     })
+                  ) {
+                     appendError(pathKey, numberSchemaOptions.code || 'IS_NUMBER', numberSchemaOptions.message);
+                  }
+
+                  break;
+
+               case 'password':
+                  const passwordSchemaOptions = schemaOptions as PasswordSchemaOptions;
+                  const isValidPassword = Is.strongPassword(propValue, {
+                     isArray: passwordSchemaOptions.isArray,
+                     minLength: passwordSchemaOptions.minLength,
+                     minLower: passwordSchemaOptions.minLower,
+                     minUpper: passwordSchemaOptions.minUpper,
+                     minNumber: passwordSchemaOptions.minNumber,
+                     minSpecialChars: passwordSchemaOptions.minSpecialChars,
+                  });
+
+                  if (!isValidPassword) {
+                     appendError(pathKey, passwordSchemaOptions.code || 'IS_PASSWORD', passwordSchemaOptions.message);
+                  }
+
+                  if (
+                     passwordSchemaOptions.equalsTo &&
+                     !Is.equals(propValue, dataValue[passwordSchemaOptions.equalsTo])
+                  ) {
+                     appendError(
+                        pathKey,
+                        passwordSchemaOptions.code || 'IS_PASSWORD_NOT_EQUALS',
+                        passwordSchemaOptions.message,
+                     );
+                  }
+
+                  break;
+
+               case 'enum':
+                  const enumSchemaOptions = schemaOptions as EnumSchemaOptions;
+
+                  if (!Is.enum(propValue, { isArray: enumSchemaOptions.isArray, enumArray: enumSchemaOptions.ref })) {
+                     appendError(pathKey, enumSchemaOptions.code || 'IS_ENUM', enumSchemaOptions.message);
+                  }
+
+                  break;
+
+               case 'json':
+                  const jsonSchemaOptions = schemaOptions as JsonSchemaOptions;
+
+                  if (!Is.json(propValue, { isArray: jsonSchemaOptions.isArray })) {
+                     appendError(pathKey, jsonSchemaOptions.code || 'IS_JSON', jsonSchemaOptions.message);
+                  }
+
+                  break;
+
+               case 'class':
+                  const { isArray, ref, code, message } = schemaOptions as ClassSchemaOptions;
+
+                  if (Is.json(propValue, { isArray })) {
+                     if (Is.array(propValue)) {
+                        propValue.forEach((dt) => handleValidate(dt, ref, pathKey));
+                     } else {
+                        handleValidate(propValue, ref, pathKey);
                      }
                   } else {
-                     await classValidate(val);
+                     appendError(pathKey, code || 'IS_CLASS', message);
                   }
-               }
-            } else {
-               if (Is.callable(validateIsType)) {
-                  isValid = !!(await Util.callAsync(null, validateIsType, val));
-               } else if (validateIsType === 'equals') {
-                  const { equalsTo } = (meta as EqualsRulesOptions) || {};
-                  isValid = typeof equalsTo === 'string' && Is.equals(val, data[equalsTo]);
-               } else {
-                  isValid = Is.valid(val, { rule: validateIsType, each, meta });
-               }
-            }
 
-            if (not === true) {
-               isValid = !isValid;
+                  break;
             }
-
-            if (Is.nothing(errorCode)) {
-               if (code) {
-                  errorCode = code;
-               } else if (Is.string(validateIsType)) {
-                  errorCode = `IS_${not ? 'NOT_' : ''}${Util.camelToSnackCase(validateIsType).toUpperCase()}`;
-               } else {
-                  errorCode = 'UNKNOWN';
-               }
-            }
-
-            if (!isValid) {
-               if (!error[prop]) {
-                  error[prop] = [];
-               }
-
-               error[prop].push({ code: errorCode, meta });
-            }
-         }
-      }
-   }
-
-   if (Is.emptyObject(error)) {
-      return data;
-   }
-
-   const cleanedError: ObjectRecord = {};
-   const cleanErrorCode = (err: any, prop?: string): void => {
-      if (Is.array(err)) {
-         for (const deepError of err) {
-            cleanErrorCode(deepError, prop);
-         }
-      } else if (Is.object(err)) {
-         const { code, meta } = err;
-         if (Is.nothing(code)) {
-            for (const k in err) {
-               cleanErrorCode(err[k], prop ? `${prop}.${k}` : k);
-            }
-         } else if (Is.object(code)) {
-            for (const k in code) {
-               cleanErrorCode(code[k], prop ? `${prop}.${k}` : k);
-            }
-         } else if (Is.string(code) && prop) {
-            if (!cleanedError[prop]) {
-               cleanedError[prop] = [];
-            }
-
-            cleanedError[prop].push({ code, meta: meta ?? null });
          }
       }
    };
 
-   // Cleanup error code
-   cleanErrorCode(error);
+   handleValidate(data, DTOClassRef);
 
-   new ThrowException(cleanedError);
+   if (!Is.empty(errors)) {
+      ThrowException(errors);
+   }
 }
 
 @Injectable()
 export class ValidationPipe implements PipeTransform {
    constructor(private readonly options?: { whiteList?: boolean }) {}
 
-   async transform(value: ObjectRecord, meta: ArgumentMetadata) {
+   async transform(value: any, meta: ArgumentMetadata) {
       const { metatype: ClassContructor } = meta;
 
-      return await validateDTO(value, ClassContructor, this.options?.whiteList);
+      if (Is.class(ClassContructor)) {
+         return await validateDTO(value, ClassContructor, this.options?.whiteList);
+      }
    }
 }

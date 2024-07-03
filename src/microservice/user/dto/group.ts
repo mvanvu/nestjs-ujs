@@ -2,7 +2,7 @@ import { EnumSchema, IPartialType, StringSchema } from '@shared-library';
 import { $Enums } from '.prisma/user';
 
 export class CreateGroupDto {
-   @StringSchema({ notEmpty: true })
+   @StringSchema({ empty: false })
    name: string;
 
    @StringSchema({ optional: true })

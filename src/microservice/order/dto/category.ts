@@ -5,7 +5,7 @@ export class CreateCategoryDto {
    @EnumSchema(Object.values(AvailableStatus), { optional: true })
    status?: AvailableStatus;
 
-   @StringSchema({ notEmpty: true })
+   @StringSchema({ empty: false })
    name: string;
 }
 

@@ -1,5 +1,5 @@
 import { StaffStatus } from '.prisma/order';
-import { BaseEntity, EnumSchema, ObjectSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { BaseEntity, EnumSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
 
 export class StaffEntity extends BaseEntity {
    @StringSchema()
@@ -17,10 +17,10 @@ export class StaffEntity extends BaseEntity {
    @StringSchema({ optional: true })
    email?: string;
 
-   @ObjectSchema(UserRefEntity, { optional: true })
+   @ClassSchema(UserRefEntity, { optional: true })
    author?: UserRefEntity;
 
-   @ObjectSchema(UserRefEntity, { optional: true })
+   @ClassSchema(UserRefEntity, { optional: true })
    editor?: UserRefEntity;
 
    @StringSchema({ format: 'date-time' })

@@ -1,5 +1,5 @@
 import { $Enums, Group } from '.prisma/user';
-import { EnumSchema, NumberSchema, ObjectSchema, StringSchema } from '../decorator/schema';
+import { EnumSchema, NumberSchema, ClassSchema, StringSchema } from '../decorator/schema';
 import { BaseEntity } from './base';
 
 export class RoleGroupEntity {
@@ -20,7 +20,7 @@ export class ChildrenGroupEntity {
    @StringSchema()
    name: string;
 
-   @ObjectSchema(RoleGroupEntity, { each: true })
+   @ClassSchema(RoleGroupEntity, { each: true })
    roles: RoleGroupEntity[];
 }
 
@@ -49,10 +49,10 @@ export class GroupEntity extends BaseEntity {
    @StringSchema()
    updatedBy?: string;
 
-   @ObjectSchema(ChildrenGroupEntity, { each: true })
+   @ClassSchema(ChildrenGroupEntity, { each: true })
    groups: ChildrenGroupEntity[];
 
-   @ObjectSchema(RoleGroupEntity, { each: true })
+   @ClassSchema(RoleGroupEntity, { each: true })
    roles: RoleGroupEntity[];
 
    @NumberSchema({ integer: true, min: 0 })
