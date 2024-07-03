@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { BaseService } from '@microservice/@library';
-import { UserRefEntity } from '@shared-library';
+import { BaseEntity, UserRefEntity } from '@shared-library';
 import { FinalUploadDto } from '../dto';
 import { FileEntity } from '../entity';
 
@@ -16,6 +16,6 @@ export class FileService extends BaseService {
          Object.assign(data, { author: { id: user.id, username: user.username, email: user.email } });
       }
 
-      return new FileEntity(await this.prisma.file.create({ data }));
+      return BaseEntity.bindToClass(await this.prisma.file.create({ data }), FileEntity);
    }
 }

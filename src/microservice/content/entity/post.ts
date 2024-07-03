@@ -1,9 +1,9 @@
 import { AvailableStatus } from '.prisma/content';
-import { UserRefEntity, BaseEntity, StringSchema, EnumSchema, ClassSchema } from '@shared-library';
+import { UserRefEntity, StringSchema, EnumSchema, ClassSchema } from '@shared-library';
 import { CategoryRef } from './category';
 import { MetadataEntity } from './metadata';
 
-export class PostEntity extends BaseEntity {
+export class PostEntity {
    @StringSchema()
    id: string;
 

@@ -1,7 +1,7 @@
 import { AvailableStatus } from '.prisma/content';
-import { BaseEntity, UserRefEntity, StringSchema, EnumSchema, ClassSchema } from '@shared-library';
+import { UserRefEntity, StringSchema, EnumSchema, ClassSchema } from '@shared-library';
 
-export class TagEntity extends BaseEntity {
+export class TagEntity {
    @StringSchema()
    id: string;
 

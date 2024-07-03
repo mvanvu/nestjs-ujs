@@ -24,7 +24,10 @@ export class PurgeCacheProvider {
          const isRelatedCacheKey = (cacheKey: string): boolean => {
             if (cacheRefKeys) {
                for (const refKey of Is.array(cacheRefKeys) ? cacheRefKeys : [cacheRefKeys]) {
-                  if ((Is.string(refKey) && refKey === cacheKey) || (Is.regex(refKey) && refKey.test(cacheKey))) {
+                  if (
+                     (Is.string(refKey) && refKey === cacheKey) ||
+                     (refKey instanceof RegExp && refKey.test(cacheKey))
+                  ) {
                      return true;
                   }
                }

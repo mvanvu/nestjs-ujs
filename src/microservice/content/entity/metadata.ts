@@ -1,6 +1,6 @@
-import { BaseEntity, StringSchema } from '@shared-library';
+import { StringSchema } from '@shared-library';
 
-export class MetadataEntity extends BaseEntity {
+export class MetadataEntity {
    @StringSchema({ optional: true })
    title?: string;
 

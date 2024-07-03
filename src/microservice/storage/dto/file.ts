@@ -13,4 +13,4 @@ export class UploadDto {
    file: Express.Multer.File;
 }
 
-export class FinalUploadDto extends IOmitType(FileEntity, ['id', 'url', 'bind']) {}
+export class FinalUploadDto extends IOmitType(FileEntity, ['id', 'url']) {}

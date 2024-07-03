@@ -20,7 +20,7 @@ export const User = createParamDecorator(
          return null;
       }
 
-      if (Is.string(property, true)) {
+      if (Is.string(property, { isArray: true })) {
          return property.map((prop) => user[prop]);
       }
 

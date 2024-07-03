@@ -1,6 +1,6 @@
 import * as nodemailer from 'nodemailer';
 import { Transform } from '@mvanvu/ujs';
-import { TransporterMessageInfo } from '@shared-library';
+import { BaseEntity, TransporterMessageInfo } from '@shared-library';
 import { MessageInfoEntity } from '@microservice/system/entity';
 import { SendMailDto } from '@microservice/system/dto';
 
@@ -19,7 +19,7 @@ export class BaseTransporter {
 
          console.log('Message sent: %s', info.messageId);
 
-         return new MessageInfoEntity(info);
+         return BaseEntity.bindToClass(info, MessageInfoEntity);
       } catch (e) {
          console.error('Send message failure:', e);
 

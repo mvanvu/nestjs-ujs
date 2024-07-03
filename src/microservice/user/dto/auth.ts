@@ -12,14 +12,12 @@ export class UserSignUpDto {
 
    @PasswordSchema({
       minLength: 8,
-      noSpaces: true,
       swagger: { description: 'The password of user', example: 'MyStr0ngPassWord!' },
    })
    password: string;
 
    @PasswordSchema({
       minLength: 8,
-      noSpaces: true,
       equalsTo: 'password',
       swagger: { description: 'The password of user', example: 'MyStr0ngPassWord!' },
    })

@@ -1,5 +1,5 @@
 import { ArgumentMetadata, HttpStatus, Injectable, PipeTransform } from '@nestjs/common';
-import { Is, Transform } from '@mvanvu/ujs';
+import { Is, ObjectRecord, Transform } from '@mvanvu/ujs';
 import { ClassConstructor } from '../type/common';
 import { CLASS_PROPERTIES, INIT_PARENT_PROPERTIES } from '../constant';
 import { ThrowException } from '../exception/throw';
@@ -16,7 +16,7 @@ import {
    ValidSchema,
 } from '@shared-library/type/schema';
 
-export async function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, whiteList?: boolean) {
+export function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, whiteList?: boolean): ObjectRecord {
    if (!Is.class(DTOClassRef)) {
       ThrowException(`${DTOClassRef} must be a valid DTO class constructor`, HttpStatus.NOT_IMPLEMENTED);
    }
@@ -251,15 +251,16 @@ export async function validateDTO(data: any, DTOClassRef: ClassConstructor<any>,
    if (!Is.empty(errors)) {
       ThrowException(errors);
    }
+
+   return data;
 }
 
 @Injectable()
 export class ValidationPipe implements PipeTransform {
    constructor(private readonly options?: { whiteList?: boolean }) {}
 
-   async transform(value: any, meta: ArgumentMetadata) {
+   transform(value: any, meta: ArgumentMetadata): ObjectRecord {
       const { metatype: ClassContructor } = meta;
-
-      return await validateDTO(value, ClassContructor, this.options?.whiteList);
+      return validateDTO(value, ClassContructor, this.options?.whiteList);
    }
 }

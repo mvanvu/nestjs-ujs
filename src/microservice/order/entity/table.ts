@@ -1,8 +1,8 @@
 import { AvailableStatus, TableStatus } from '.prisma/order';
 import { RestaurantRefEntity } from './restaurant';
-import { BaseEntity, EnumSchema, NumberSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { EnumSchema, NumberSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
 
-export class TableEntity extends BaseEntity {
+export class TableEntity {
    @StringSchema()
    id: string;
 

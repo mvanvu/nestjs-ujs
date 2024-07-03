@@ -14,6 +14,7 @@ import {
    UserEntity,
    AuthTokenEntity,
    AuthEntity,
+   BaseEntity,
 } from '@shared-library';
 
 @Injectable()
@@ -90,7 +91,7 @@ export class UserService extends BaseService {
             }),
          );
 
-      return { data: new UserEntity(newUser), meta: { verifyCode: newUser.verifyCode } };
+      return { data: BaseEntity.bindToClass(newUser, UserEntity), meta: { verifyCode: newUser.verifyCode } };
    }
 
    async generateTokens(userId: string): Promise<AuthTokenEntity> {
@@ -120,7 +121,7 @@ export class UserService extends BaseService {
       fieldsException.validate();
       const OR: Prisma.UserWhereInput['OR'] = [{ username: { equals: username, mode: 'insensitive' } }];
 
-      if (Is.email(username)) {
+      if (Is.string(username, { format: 'email' })) {
          OR.push({ email: { equals: username, mode: 'insensitive' } });
       }
 
@@ -130,7 +131,10 @@ export class UserService extends BaseService {
          ThrowException('Invalid credentials');
       }
 
-      return new AuthEntity({ user: new UserEntity(user), tokens: await this.generateTokens(user.id) });
+      return BaseEntity.bindToClass(
+         { user: BaseEntity.bindToClass(user, UserEntity), tokens: await this.generateTokens(user.id) },
+         AuthEntity,
+      );
    }
 
    async verifyToken(token: string): Promise<UserEntity> {
@@ -144,7 +148,7 @@ export class UserService extends BaseService {
             ThrowException('Invalid credentials');
          }
 
-         return new UserEntity(user);
+         return BaseEntity.bindToClass(user, UserEntity);
       } catch (e) {
          if (e instanceof JWTError) {
             ThrowException('The token is invalid or expired');
@@ -166,12 +170,13 @@ export class UserService extends BaseService {
          ThrowException('The account has verified');
       }
 
-      return new UserEntity(
+      return BaseEntity.bindToClass(
          await this.prisma.user.update({
             where: { id },
             data: { status: UserStatus.Active, verifyCode: { ...user.verifyCode, activateAccount: null } },
             include: this.userInclude,
          }),
+         UserEntity,
       );
    }
 
@@ -187,7 +192,7 @@ export class UserService extends BaseService {
          ThrowException(`The account isn't available`);
       }
 
-      return new UserEntity(
+      return BaseEntity.bindToClass(
          await this.prisma.user.update({
             where: { id },
             data: {
@@ -196,6 +201,7 @@ export class UserService extends BaseService {
             },
             include: this.userInclude,
          }),
+         UserEntity,
       );
    }
 
@@ -216,7 +222,10 @@ export class UserService extends BaseService {
          verifyCode.resetPassword = `${user.id}:${Hash.uuid()}`;
 
          return {
-            data: new UserEntity(await this.prisma.user.update({ where: { id: user.id }, data: { verifyCode } })),
+            data: BaseEntity.bindToClass(
+               await this.prisma.user.update({ where: { id: user.id }, data: { verifyCode } }),
+               UserEntity,
+            ),
             meta: { verifyCode },
          };
       }

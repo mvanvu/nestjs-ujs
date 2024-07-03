@@ -1,4 +1,5 @@
 import {
+   BaseEntity,
    DataMetaResult,
    HttpRequest,
    PermissionOptions,
@@ -41,7 +42,7 @@ export class UserAuthGuard implements CanActivate {
          const decode = Hash.jwt().decode(token);
          const userId = decode?.payload?.data?.id;
 
-         if (Is.mongoId(userId)) {
+         if (Is.string(userId, { format: 'mongoId' })) {
             const cacheKey = `${userId}:users/verify-token`;
             let user: UserEntity = await this.cacheManager.get(cacheKey);
 
@@ -60,7 +61,7 @@ export class UserAuthGuard implements CanActivate {
                }
             }
 
-            request.user = new UserEntity(user);
+            request.user = BaseEntity.bindToClass(user, UserEntity);
          } else {
             throw new ForbiddenException();
          }

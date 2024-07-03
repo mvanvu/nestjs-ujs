@@ -2,6 +2,7 @@ import { EventEmitter, Is, Registry, Util } from '@mvanvu/ujs';
 import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import {
+   BaseEntity,
    CRUDClient,
    EntityResult,
    HttpRequest,
@@ -68,11 +69,13 @@ export class BaseClientProxy {
          );
 
          // Check to convert entity response
-         if (options?.entityResponse && Is.objectOrArray(response.data)) {
-            if (Is.array(response.data, { rules: 'object' })) {
-               response.data = response.data.map((datum: object) => new options.entityResponse(datum));
+         if (options?.entityResponse && (Is.object(response.data) || Is.array(response.data))) {
+            if (Is.object(response.data, { isArray: true })) {
+               response.data = response.data.map((datum: object) =>
+                  BaseEntity.bindToClass(datum, options.entityResponse),
+               );
             } else if (Is.object(response.data)) {
-               response.data = new options.entityResponse(response.data);
+               response.data = BaseEntity.bindToClass(response.data, options.entityResponse);
             }
          }
 

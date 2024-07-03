@@ -4,7 +4,7 @@ export class SendMailDto {
    @StringSchema({ optional: true, empty: false })
    from?: string;
 
-   @StringSchema({ empty: false, each: 'unique', format: 'email' })
+   @StringSchema({ empty: false, isArray: 'unique', format: 'email' })
    to: string[];
 
    @StringSchema({ empty: false })

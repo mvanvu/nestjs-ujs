@@ -4,7 +4,7 @@ import { EnumSchema, StringSchema } from '../decorator/schema';
 const langCodes = Object.keys(i18n).map((code) => `${code.substring(0, 2)}-${code.substring(2)}`);
 
 export class PaginationQueryDto {
-   @StringSchema({ optional: true })
+   @StringSchema({ optional: true, empty: 'skip' })
    q?: string;
 
    @StringSchema({ optional: true, format: 'unsignedInteger', empty: 'skip' })

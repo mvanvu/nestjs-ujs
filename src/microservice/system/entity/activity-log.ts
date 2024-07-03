@@ -1,8 +1,8 @@
 import { ActivityLog } from '.prisma/system';
-import { BaseEntity, BooleanSchema, JsonSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { BooleanSchema, JsonSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
 import { DetectResult } from 'node-device-detector';
 
-export class ActivityLogEntity extends BaseEntity<ActivityLog> {
+export class ActivityLogEntity {
    @StringSchema()
    id: string;
 
@@ -36,12 +36,8 @@ export class ActivityLogEntity extends BaseEntity<ActivityLog> {
    @StringSchema({ format: 'date-time' })
    createdAt: Date;
 
-   constructor(entity?: ActivityLog) {
-      super(entity);
-
-      if (entity) {
-         this.dataInput = entity.dataInput?.['origin'] ?? null;
-         this.dataResult = entity.dataResult?.['origin'] ?? null;
-      }
+   bind(entity: ActivityLog) {
+      this.dataInput = entity.dataInput?.['origin'] ?? null;
+      this.dataResult = entity.dataResult?.['origin'] ?? null;
    }
 }

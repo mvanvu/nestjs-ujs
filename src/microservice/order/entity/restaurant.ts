@@ -1,7 +1,7 @@
 import { AvailableStatus } from '.prisma/content';
-import { BaseEntity, EnumSchema, IPickType, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { EnumSchema, IPickType, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
 
-export class RestaurantEntity extends BaseEntity {
+export class RestaurantEntity {
    @StringSchema()
    id: string;
 

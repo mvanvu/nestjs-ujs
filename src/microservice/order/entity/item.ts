@@ -1,8 +1,8 @@
 import { AvailableStatus } from '.prisma/content';
 import { CategoryRef } from './category';
-import { BaseEntity, EnumSchema, NumberSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { EnumSchema, NumberSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
 
-export class ToppingEntity extends BaseEntity {
+export class ToppingEntity {
    @StringSchema()
    name: string;
 
@@ -10,7 +10,7 @@ export class ToppingEntity extends BaseEntity {
    price: number;
 }
 
-export class ItemEntity extends BaseEntity {
+export class ItemEntity {
    @StringSchema()
    id: string;
 

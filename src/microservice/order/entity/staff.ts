@@ -1,7 +1,7 @@
 import { StaffStatus } from '.prisma/order';
-import { BaseEntity, EnumSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { EnumSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
 
-export class StaffEntity extends BaseEntity {
+export class StaffEntity {
    @StringSchema()
    id: string;
 

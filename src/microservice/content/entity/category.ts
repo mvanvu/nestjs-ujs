@@ -1,8 +1,8 @@
 import { AvailableStatus } from '.prisma/content';
-import { BaseEntity, UserRefEntity, StringSchema, EnumSchema, ClassSchema } from '@shared-library';
+import { UserRefEntity, StringSchema, EnumSchema, ClassSchema } from '@shared-library';
 import { MetadataEntity } from './metadata';
 
-export class CategoryRef extends BaseEntity {
+export class CategoryRef {
    @StringSchema()
    id: string;
 
@@ -13,7 +13,7 @@ export class CategoryRef extends BaseEntity {
    path: string;
 }
 
-export class CategoryEntity extends BaseEntity {
+export class CategoryEntity {
    @StringSchema()
    id: string;
 

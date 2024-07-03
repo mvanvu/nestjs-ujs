@@ -12,7 +12,7 @@ export class CreateRoleDto {
    @EnumSchema(Object.values($Enums.AvailableStatus), { optional: true })
    status?: $Enums.AvailableStatus;
 
-   @EnumSchema(permissionKeys, { optional: true, each: 'unique' })
+   @EnumSchema(permissionKeys, { optional: true, isArray: 'unique' })
    permissions?: string[];
 }
 

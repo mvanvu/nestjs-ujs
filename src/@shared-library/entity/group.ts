@@ -1,6 +1,5 @@
 import { $Enums, Group } from '.prisma/user';
 import { EnumSchema, NumberSchema, ClassSchema, StringSchema } from '../decorator/schema';
-import { BaseEntity } from './base';
 
 export class RoleGroupEntity {
    @StringSchema()
@@ -9,7 +8,7 @@ export class RoleGroupEntity {
    @StringSchema()
    name: string;
 
-   @StringSchema({ each: true })
+   @StringSchema({ isArray: true })
    permissions: string[];
 }
 
@@ -20,11 +19,11 @@ export class ChildrenGroupEntity {
    @StringSchema()
    name: string;
 
-   @ClassSchema(RoleGroupEntity, { each: true })
+   @ClassSchema(RoleGroupEntity, { isArray: true })
    roles: RoleGroupEntity[];
 }
 
-export class GroupEntity extends BaseEntity {
+export class GroupEntity {
    @StringSchema()
    id: string;
 
@@ -49,18 +48,16 @@ export class GroupEntity extends BaseEntity {
    @StringSchema()
    updatedBy?: string;
 
-   @ClassSchema(ChildrenGroupEntity, { each: true })
+   @ClassSchema(ChildrenGroupEntity, { isArray: true })
    groups: ChildrenGroupEntity[];
 
-   @ClassSchema(RoleGroupEntity, { each: true })
+   @ClassSchema(RoleGroupEntity, { isArray: true })
    roles: RoleGroupEntity[];
 
    @NumberSchema({ integer: true, min: 0 })
    totalActiveUsers: number;
 
-   constructor(record?: Group & { _count: { users: number } }) {
-      super(record);
-
+   bind(record?: Group & { _count: { users: number } }) {
       if (record?._count?.users !== undefined) {
          this.totalActiveUsers = record._count.users;
       }

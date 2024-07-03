@@ -19,6 +19,7 @@ import {
    CRUDExecuteContext,
    EntityResult,
    MessageMetaProvider,
+   BaseEntity,
 } from '@shared-library';
 import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
@@ -394,12 +395,14 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       context: TContext,
       isList?: boolean,
    ): Promise<T> {
-      const result = await Util.callAsync<T>(this, this.events.onEntity, item, <OnEntityOptions<TContext>>{
+      if (Is.class(this.events.onEntity)) {
+         return BaseEntity.bindToClass(item, this.events.onEntity);
+      }
+
+      return await Util.callAsync<T>(this, this.events.onEntity, item, <OnEntityOptions<TContext>>{
          context,
          isList,
       });
-
-      return Is.class(this.events.onEntity) ? result : item;
    }
 
    async read<T>(id: string, where?: Record<string, any>): Promise<EntityResult<T>> {
@@ -452,7 +455,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       for (const field of model.fields) {
          const { name } = field;
          const value = dto[name];
-         const isNothing = Is.nothing(value);
+         const isNothing = value === undefined || value === null;
 
          if (!id && field.isRequired && isNothing && !field.relationName && !field.hasDefaultValue) {
             fieldsException.add(name, FieldsException.REQUIRED, language._('FIELD_REQUIRED', { field: name }));
@@ -463,7 +466,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          }
       }
 
-      if (!Is.emptyObject(uniqueFields)) {
+      if (!Is.empty(uniqueFields)) {
          for (const name in <ObjectRecord>uniqueFields) {
             promises.push(
                entityModel['findFirst']({
@@ -652,21 +655,22 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       const meta = this.meta;
       const method = meta.get('method');
       const dto = meta.get('ctx').getData();
+      const isMongoId = Is.string(dto, { format: 'mongoId' });
 
       if (method === 'GET') {
-         return Is.mongoId(dto) ? this.read<TResult>(dto) : this.paginate<TResult>(dto);
+         return isMongoId ? this.read<TResult>(dto) : this.paginate<TResult>(dto);
       }
 
-      if (method === 'DELETE' && Is.mongoId(dto)) {
+      if (method === 'DELETE' && isMongoId) {
          return this.delete<TResult>(dto);
       }
 
       const userRef = meta.get('user', null);
 
-      if (method === 'PATCH' && Is.object(dto, { rules: { id: 'mongoId', data: 'object' } })) {
+      if (method === 'PATCH' && Is.object(dto) && Is.string(dto.id, { format: 'mongoId' }) && Is.object(dto.data)) {
          const DTOClassRef: ClassConstructor<any> =
             this.updateDTO ?? (this.createDTO ? IPartialType(this.createDTO) : undefined);
-         const data = DTOClassRef ? await validateDTO(dto.data, DTOClassRef) : dto.data;
+         const data = DTOClassRef ? validateDTO(dto.data, DTOClassRef) : dto.data;
 
          if (userRef) {
             // Append some dynamic user data
@@ -678,7 +682,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       }
 
       if (method === 'POST' && Is.object(dto)) {
-         const data = this.createDTO ? await validateDTO(dto, this.createDTO) : dto;
+         const data = this.createDTO ? validateDTO(dto, this.createDTO) : dto;
 
          if (userRef) {
             // Append some dynamic user data

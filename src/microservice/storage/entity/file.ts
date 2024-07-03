@@ -1,7 +1,7 @@
-import { BaseEntity, BooleanSchema, EnumSchema, NumberSchema, StringSchema } from '@shared-library';
+import { BooleanSchema, EnumSchema, NumberSchema, StringSchema } from '@shared-library';
 import { $Enums } from '.prisma/storage';
 
-export class FileEntity extends BaseEntity {
+export class FileEntity {
    @StringSchema()
    id: string;
 

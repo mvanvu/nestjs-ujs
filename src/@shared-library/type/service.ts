@@ -2,8 +2,8 @@ import { ClassConstructor, HttpRequest, ServiceOptions } from './common';
 import { IsEqual, ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
 import { type PaginationQueryDto } from '../dto/pagination-query';
-import { type UserRefEntity } from '@shared-library/entity/user';
-import { type Language } from '@shared-library/i18n';
+import { type UserRefEntity } from '../entity/user';
+import { type Language } from '../i18n';
 import { RequestContext } from '@nestjs/microservices';
 export type PrismaModels = Record<string, DMMF.Model>;
 

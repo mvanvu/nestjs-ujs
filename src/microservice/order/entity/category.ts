@@ -1,7 +1,7 @@
 import { AvailableStatus } from '.prisma/order';
-import { BaseEntity, EnumSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { EnumSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
 
-export class CategoryEntity extends BaseEntity {
+export class CategoryEntity {
    @StringSchema()
    id: string;
 
@@ -24,7 +24,7 @@ export class CategoryEntity extends BaseEntity {
    updatedAt?: Date;
 }
 
-export class CategoryRef extends BaseEntity {
+export class CategoryRef {
    @StringSchema()
    id: string;
 

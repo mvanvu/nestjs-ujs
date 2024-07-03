@@ -3,13 +3,13 @@ import { UserStatus } from '.prisma/user';
 import { BaseEntity } from './base';
 import { PermissionOptions } from '../type/common';
 import { IPickType } from './mapped-type';
-import { GroupEntity } from './user-group';
+import { GroupEntity } from './group';
 import { USER_PERMISSION_ADMIN_SCOPE } from '@shared-library/constant/common';
 import { appConfig } from '@metadata';
 import { EnumSchema, ClassSchema, StringSchema } from '@shared-library/decorator';
 
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
-export class UserEntity extends BaseEntity {
+export class UserEntity {
    @StringSchema()
    id: string;
 
@@ -76,7 +76,7 @@ export class UserEntity extends BaseEntity {
       if (rootUIDs.length) {
          for (const rootUid of rootUIDs) {
             if (
-               (Is.email(rootUid) && this.email === rootUid) ||
+               (Is.string(rootUid, { format: 'email' }) && this.email === rootUid) ||
                this.id === rootUid ||
                (this.username && this.username === rootUid)
             ) {
@@ -92,7 +92,7 @@ export class UserEntity extends BaseEntity {
       const isUserRoot = this.isRoot;
       const userPermissions = this.permissions;
 
-      if ((!permission || Is.emptyObject(permission)) && !isUserRoot) {
+      if ((!permission || Is.empty(permission)) && !isUserRoot) {
          return false;
       }
 
@@ -157,7 +157,7 @@ export class UserEntity extends BaseEntity {
    }
 
    toUserRefEntity(): UserRefEntity {
-      return UserEntity.bindToClass(UserRefEntity, this);
+      return BaseEntity.bindToClass(this, UserRefEntity);
    }
 }
 
@@ -169,7 +169,7 @@ export class AuthTokenEntity {
    refresh: string;
 }
 
-export class AuthEntity extends BaseEntity {
+export class AuthEntity {
    @ClassSchema(UserEntity)
    user: UserEntity;
 

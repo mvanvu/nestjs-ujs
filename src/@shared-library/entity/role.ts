@@ -1,8 +1,7 @@
 import { $Enums } from '.prisma/user';
 import { EnumSchema, StringSchema } from '../decorator/schema';
-import { BaseEntity } from './base';
 
-export class RoleEntity extends BaseEntity {
+export class RoleEntity {
    @StringSchema()
    id: string;
 
@@ -21,6 +20,6 @@ export class RoleEntity extends BaseEntity {
    @StringSchema({ format: 'date-time' })
    updatedAt?: Date;
 
-   @StringSchema({ each: true })
+   @StringSchema({ isArray: true })
    permissions: string[];
 }

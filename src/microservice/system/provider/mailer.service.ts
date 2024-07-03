@@ -3,7 +3,7 @@ import { SMTPTransporter } from './mailer-transporter';
 import { SendMailDto } from '../dto';
 import { MessageInfoEntity } from '../entity';
 import { SystemService } from './system.service';
-import { SystemConfigDto } from '@shared-library';
+import { BaseEntity, SystemConfigDto } from '@shared-library';
 
 @Injectable()
 export class MailerService {
@@ -19,6 +19,6 @@ export class MailerService {
          .getConfig()
          .then((systemConfig) => this.getTransporter(systemConfig.mailer).send(dto));
 
-      return result ? new MessageInfoEntity(result) : false;
+      return result ? BaseEntity.bindToClass(result, MessageInfoEntity) : false;
    }
 }

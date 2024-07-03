@@ -1,28 +1,28 @@
-import { ObjectRecord } from '@mvanvu/ujs';
 import { ClassConstructor } from '../type';
 import { CLASS_PROPERTIES } from '../constant';
+import { validateDTO } from '../pipe/validation';
+import { Is, Util } from '@mvanvu/ujs';
 
-export class BaseEntity<TEntity extends object = ObjectRecord> {
-   constructor(entity?: TEntity) {
-      if (entity) {
-         this.bind(entity);
+export class BaseEntity {
+   static bindToClass<T>(data: any, ClassRef: ClassConstructor<T>, validateSchema?: boolean): T {
+      if (validateSchema === true) {
+         validateDTO(data, ClassRef);
       }
-   }
 
-   static bindToClass<T>(ClassRef: ClassConstructor<T>, obj: ObjectRecord): T {
-      const props: string[] = Object.keys(ClassRef.prototype[CLASS_PROPERTIES] || {});
       const entity = new ClassRef();
 
-      for (const prop of props) {
-         entity[prop] = obj[prop] ?? undefined;
+      if (Is.object(data)) {
+         for (const prop of Object.keys(ClassRef.prototype[CLASS_PROPERTIES] || {})) {
+            if (data[prop] !== undefined) {
+               entity[prop] = data[prop];
+            }
+         }
+
+         if (Is.func(entity['bind'])) {
+            Util.call(entity, entity['bind']);
+         }
       }
 
       return entity;
-   }
-
-   bind(entity: ObjectRecord): this {
-      Object.assign(this, BaseEntity.bindToClass(this.constructor as ClassConstructor<typeof this>, entity));
-
-      return this;
    }
 }

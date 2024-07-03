@@ -28,7 +28,7 @@ export class ActivityLogProvider {
          }
       } else if (Is.object(data)) {
          for (const k in data) {
-            if (Is.objectOrArray(data[k])) {
+            if (Is.object(data[k]) || Is.array(data[k])) {
                this.hideSecret(data[k], secretKeys.includes(k));
             } else if (Is.primitive(data[k]) && (secretKeys.includes(k) || secretDeep)) {
                data[k] = '******';

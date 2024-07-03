@@ -11,10 +11,10 @@ export class CreateGroupDto {
    @EnumSchema(Object.values($Enums.AvailableStatus), { optional: true })
    status?: $Enums.AvailableStatus;
 
-   @StringSchema({ format: 'mongoId', each: 'unique', optional: true })
+   @StringSchema({ format: 'mongoId', isArray: 'unique', optional: true })
    groups?: string[];
 
-   @StringSchema({ format: 'mongoId', each: 'unique', optional: true })
+   @StringSchema({ format: 'mongoId', isArray: 'unique', optional: true })
    roles?: string[];
 }
 

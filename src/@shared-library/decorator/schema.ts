@@ -1,16 +1,19 @@
 import { applyDecorators } from '@nestjs/common';
-import { ClassConstructor } from '@mvanvu/ujs';
+import { ClassConstructor, Util } from '@mvanvu/ujs';
 import {
    ClassSchemaOptions,
    EnumSchemaOptions,
    JsonSchemaOptions,
    PropertySchemaOptions,
    ValidSchema,
+   BooleanSchemaOptions,
+   NumberSchemaOptions,
+   PasswordSchemaOptions,
+   StringSchemaOptions,
 } from '../type/schema';
-import { CLASS_PROPERTIES } from '@shared-library/constant';
+import { CLASS_PROPERTIES } from '../constant';
 import { isGateway } from '@metadata';
 import { ApiProperty } from '@nestjs/swagger';
-import { BooleanSchemaOptions, NumberSchemaOptions, PasswordSchemaOptions, StringSchemaOptions } from '../type/schema';
 
 export function PropertySchema<T extends ValidSchema>(
    options?: PropertySchemaOptions<T>,
@@ -26,16 +29,49 @@ export function PropertySchema<T extends ValidSchema>(
             target[CLASS_PROPERTIES][propertyKey] = {};
          }
 
-         if (!target[CLASS_PROPERTIES][propertyKey]) {
-            target[CLASS_PROPERTIES][propertyKey] = {};
+         const propOptions = Util.clone(options || {});
+
+         if (propOptions.hasOwnProperty('swagger')) {
+            delete propOptions['swagger'];
          }
 
-         target[CLASS_PROPERTIES][propertyKey][schema || 'prop'] = { options };
+         target[CLASS_PROPERTIES][propertyKey][schema || 'prop'] = propOptions;
       },
    ];
 
    if (options?.swagger !== false && isGateway()) {
-      decorators.push(ApiProperty({ ...(options?.swagger || {}), required: options?.optional !== true }));
+      const swaggerOptions = { ...(options?.swagger || {}), required: options?.optional !== true };
+
+      if (swaggerOptions.type === undefined) {
+         const each = !!options?.isArray;
+
+         switch (schema) {
+            case 'string':
+            case 'password':
+               swaggerOptions.type = each ? [String] : String;
+               break;
+
+            case 'number':
+               swaggerOptions.type = each ? [Number] : Number;
+               break;
+
+            case 'boolean':
+               swaggerOptions.type = each ? [Boolean] : Boolean;
+               break;
+
+            case 'json':
+               swaggerOptions.type = each ? [Object] : Object;
+               break;
+
+            case 'enum':
+            case 'class':
+               const { ref } = (options || {}) as EnumSchemaOptions | ClassSchemaOptions;
+               swaggerOptions.enum = each ? [ref] : ref;
+               break;
+         }
+      }
+
+      decorators.push(ApiProperty(swaggerOptions));
    }
 
    return applyDecorators(...decorators);

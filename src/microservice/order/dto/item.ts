@@ -28,7 +28,7 @@ export class CreateItemDto {
    @NumberSchema({ min: 0, integer: true })
    basePrice: number;
 
-   @ClassSchema(ItemToppingDto, { optional: true, each: 'unique' })
+   @ClassSchema(ItemToppingDto, { optional: true, isArray: 'unique' })
    toppings?: ItemToppingDto[];
 }
 
