@@ -114,7 +114,7 @@ import { spawn } from 'child_process';
                      continue;
                   }
 
-                  if (Is.nothing(envOverride[k])) {
+                  if (envOverride[k] === null || envOverride[k] === undefined) {
                      delete envConfig[k];
                   } else {
                      envConfig[k] = Is.string(envOverride[k]) ? `"${envOverride[k]}"` : envOverride[k];

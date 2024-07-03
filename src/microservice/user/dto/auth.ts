@@ -4,8 +4,8 @@ export class UserSignUpDto {
    @StringSchema({ optional: true, swagger: { description: 'The name of user', example: 'Rainy' } })
    name?: string;
 
-   @StringSchema({ optional: true, swagger: { description: 'The username of user', example: 'rainy.mi' } })
-   username?: string;
+   @StringSchema({ swagger: { description: 'The username of user', example: 'rainy.mi' } })
+   username: string;
 
    @StringSchema({ format: 'email', swagger: { description: 'The email of user', example: 'rainy.mi@email.com' } })
    email: string;
