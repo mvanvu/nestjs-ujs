@@ -1,4 +1,4 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { ArgumentMetadata, HttpStatus, Injectable, PipeTransform } from '@nestjs/common';
 import { Is, Transform } from '@mvanvu/ujs';
 import { ClassConstructor } from '../type/common';
 import { CLASS_PROPERTIES, INIT_PARENT_PROPERTIES } from '../constant';
@@ -17,6 +17,10 @@ import {
 } from '@shared-library/type/schema';
 
 export async function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, whiteList?: boolean) {
+   if (!Is.class(DTOClassRef)) {
+      ThrowException(`${DTOClassRef} must be a valid DTO class constructor`, HttpStatus.NOT_IMPLEMENTED);
+   }
+
    const errors: { [key: string]: { code: string; message?: string; meta?: any }[] } = {};
    const appendError = (pathKey: string, code: string, message?: string, meta?: any) => {
       if (!errors[pathKey]) {
@@ -226,7 +230,7 @@ export async function validateDTO(data: any, DTOClassRef: ClassConstructor<any>,
                case 'class':
                   const { isArray, ref, code, message } = schemaOptions as ClassSchemaOptions;
 
-                  if (Is.json(propValue, { isArray })) {
+                  if (Is.class(ref) && Is.json(propValue, { isArray })) {
                      if (Is.array(propValue)) {
                         propValue.forEach((dt) => handleValidate(dt, ref, pathKey));
                      } else {
@@ -256,8 +260,6 @@ export class ValidationPipe implements PipeTransform {
    async transform(value: any, meta: ArgumentMetadata) {
       const { metatype: ClassContructor } = meta;
 
-      if (Is.class(ClassContructor)) {
-         return await validateDTO(value, ClassContructor, this.options?.whiteList);
-      }
+      return await validateDTO(value, ClassContructor, this.options?.whiteList);
    }
 }
