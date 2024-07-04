@@ -1,6 +1,6 @@
 import { AvailableStatus, TableStatus } from '.prisma/order';
 import { RestaurantRefEntity } from './restaurant';
-import { EnumSchema, NumberSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { EnumSchema, NumberSchema, ClassSchema, StringSchema, UserRefEntity, DateSchema } from '@shared-library';
 
 export class TableEntity {
    @StringSchema()
@@ -27,9 +27,9 @@ export class TableEntity {
    @ClassSchema(UserRefEntity, { optional: true })
    editor?: UserRefEntity;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    createdAt: Date;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    updatedAt: Date;
 }

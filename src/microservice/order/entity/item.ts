@@ -1,6 +1,6 @@
 import { AvailableStatus } from '.prisma/content';
 import { CategoryRef } from './category';
-import { EnumSchema, NumberSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { EnumSchema, NumberSchema, ClassSchema, StringSchema, UserRefEntity, DateSchema } from '@shared-library';
 
 export class ToppingEntity {
    @StringSchema()
@@ -32,10 +32,10 @@ export class ItemEntity {
    @ClassSchema(UserRefEntity)
    editor?: UserRefEntity;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    createdAt: Date;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    updatedAt?: Date;
 
    @ClassSchema(CategoryRef, { optional: true })

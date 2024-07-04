@@ -1,8 +1,8 @@
 import { StaffStatus } from '.prisma/order';
-import { EnumSchema, IPartialType, StringSchema } from '@shared-library';
+import { EnumSchema, IPartialType, StringSchema, IDSchema } from '@shared-library';
 
 export class CreateStaffDto {
-   @StringSchema({ format: 'mongoId' })
+   @IDSchema()
    restaurantId: string;
 
    @EnumSchema(Object.values(StaffStatus), { optional: true })

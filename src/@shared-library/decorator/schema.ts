@@ -104,3 +104,11 @@ export function PasswordSchema(options?: PasswordSchemaOptions): PropertyDecorat
 export function JsonSchema(options?: JsonSchemaOptions): PropertyDecorator {
    return applyDecorators(PropertySchema(options, 'json'));
 }
+
+export function IDSchema(options?: Omit<StringSchemaOptions, 'format'>): PropertyDecorator {
+   return applyDecorators(PropertySchema({ ...(options || {}), format: 'mongoId' }, 'string'));
+}
+
+export function DateSchema(options?: Omit<StringSchemaOptions, 'format'>): PropertyDecorator {
+   return applyDecorators(PropertySchema({ ...(options || {}), format: 'date-time' }, 'string'));
+}

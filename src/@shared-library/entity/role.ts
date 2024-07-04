@@ -1,5 +1,5 @@
 import { $Enums } from '.prisma/user';
-import { EnumSchema, StringSchema } from '../decorator/schema';
+import { EnumSchema, StringSchema, DateSchema } from '../decorator/schema';
 
 export class RoleEntity {
    @StringSchema()
@@ -14,10 +14,10 @@ export class RoleEntity {
    @StringSchema()
    description: string;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    createdAt?: Date;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    updatedAt?: Date;
 
    @StringSchema({ isArray: true })

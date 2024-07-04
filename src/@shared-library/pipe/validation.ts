@@ -3,7 +3,7 @@ import { Is, ObjectRecord, Transform } from '@mvanvu/ujs';
 import { ClassConstructor } from '../type/common';
 import { CLASS_PROPERTIES, INIT_PARENT_PROPERTIES } from '../constant';
 import { ThrowException } from '../exception/throw';
-import { collectAllProperties } from '@shared-library/entity/mapped-type';
+import { collectAllProperties } from '../entity/mapped-type';
 import {
    BaseSchemaOptions,
    BooleanSchemaOptions,
@@ -14,7 +14,7 @@ import {
    PasswordSchemaOptions,
    StringSchemaOptions,
    ValidSchema,
-} from '@shared-library/type/schema';
+} from '../type/schema';
 
 export function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, whiteList?: boolean): ObjectRecord {
    if (!Is.class(DTOClassRef)) {
@@ -103,20 +103,11 @@ export function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, white
 
                         case 'format':
                            switch (stringSchemaOptions.format) {
-                              case 'number':
-                                 propValue = Transform.toNumber(propValue);
-                                 break;
-
                               case 'unsignedNumber':
-                                 propValue = Transform.toUNumber(propValue);
-                                 break;
-
-                              case 'integer':
-                                 propValue = Transform.toInt(propValue);
-                                 break;
-
                               case 'unsignedInteger':
-                                 propValue = Transform.toUInt(propValue);
+                              case 'number':
+                              case 'integer':
+                                 propValue = Transform.toNumber(propValue);
                                  break;
 
                               case 'boolean':

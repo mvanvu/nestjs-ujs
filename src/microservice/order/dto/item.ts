@@ -1,5 +1,5 @@
 import { AvailableStatus } from '.prisma/order';
-import { EnumSchema, IPartialType, NumberSchema, ClassSchema, StringSchema } from '@shared-library';
+import { EnumSchema, IPartialType, NumberSchema, ClassSchema, StringSchema, IDSchema } from '@shared-library';
 
 export class ItemToppingDto {
    @StringSchema({ empty: false })
@@ -10,10 +10,10 @@ export class ItemToppingDto {
 }
 
 export class CreateItemDto {
-   @StringSchema({ format: 'mongoId' })
+   @IDSchema()
    restaurantId: string;
 
-   @StringSchema({ format: 'mongoId' })
+   @IDSchema()
    categoryId: string;
 
    @EnumSchema(Object.values(AvailableStatus))

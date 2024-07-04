@@ -1,5 +1,5 @@
 import { StaffStatus } from '.prisma/order';
-import { EnumSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { EnumSchema, ClassSchema, StringSchema, UserRefEntity, DateSchema } from '@shared-library';
 
 export class StaffEntity {
    @StringSchema()
@@ -23,9 +23,9 @@ export class StaffEntity {
    @ClassSchema(UserRefEntity, { optional: true })
    editor?: UserRefEntity;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    createdAt: Date;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    updatedAt: Date;
 }

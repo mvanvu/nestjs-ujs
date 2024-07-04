@@ -1,8 +1,8 @@
 import { Prisma } from '.prisma/system';
-import { BooleanSchema, JsonSchema, ClassSchema, StringSchema } from '@shared-library';
+import { BooleanSchema, JsonSchema, ClassSchema, StringSchema, IDSchema } from '@shared-library';
 
 export class ActivityLogAuthor {
-   @StringSchema({ format: 'mongoId' })
+   @IDSchema()
    id: string;
 
    @StringSchema({ optional: true })
@@ -11,7 +11,7 @@ export class ActivityLogAuthor {
    @StringSchema({ optional: true })
    username?: string;
 
-   @StringSchema({ optional: true, format: 'mongoId' })
+   @IDSchema({ optional: true })
    email?: string;
 }
 

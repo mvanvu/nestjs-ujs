@@ -1,8 +1,8 @@
 import { AvailableStatus } from '.prisma/content';
-import { EnumSchema, IPartialType, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { EnumSchema, IPartialType, ClassSchema, StringSchema, UserRefEntity, IDSchema } from '@shared-library';
 
 export class CreateRestaurantDto {
-   @StringSchema({ format: 'mongoId' })
+   @IDSchema()
    ownerId: string;
 
    @ClassSchema(UserRefEntity, { swagger: { readOnly: true } })

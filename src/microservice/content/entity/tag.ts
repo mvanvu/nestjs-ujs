@@ -1,5 +1,5 @@
 import { AvailableStatus } from '.prisma/content';
-import { UserRefEntity, StringSchema, EnumSchema, ClassSchema } from '@shared-library';
+import { UserRefEntity, StringSchema, EnumSchema, ClassSchema, DateSchema } from '@shared-library';
 
 export class TagEntity {
    @StringSchema()
@@ -17,9 +17,9 @@ export class TagEntity {
    @ClassSchema(UserRefEntity, { optional: true })
    editor?: UserRefEntity;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    createdAt: Date;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    updatedAt: Date;
 }

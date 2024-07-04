@@ -1,8 +1,8 @@
 import { AvailableStatus } from '.prisma/order';
-import { EnumSchema, IPartialType, NumberSchema, StringSchema } from '@shared-library';
+import { EnumSchema, IPartialType, NumberSchema, StringSchema, IDSchema } from '@shared-library';
 
 export class CreateTableDto {
-   @StringSchema({ format: 'mongoId' })
+   @IDSchema()
    restaurantId: string;
 
    @EnumSchema(Object.values(AvailableStatus), { optional: true })

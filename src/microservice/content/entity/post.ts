@@ -1,5 +1,5 @@
 import { AvailableStatus } from '.prisma/content';
-import { UserRefEntity, StringSchema, EnumSchema, ClassSchema } from '@shared-library';
+import { UserRefEntity, StringSchema, EnumSchema, ClassSchema, DateSchema } from '@shared-library';
 import { CategoryRef } from './category';
 import { MetadataEntity } from './metadata';
 
@@ -28,10 +28,10 @@ export class PostEntity {
    @ClassSchema(UserRefEntity, { optional: true })
    editor?: UserRefEntity;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    createdAt: Date;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    updatedAt?: Date;
 
    @ClassSchema(CategoryRef, { optional: true })
