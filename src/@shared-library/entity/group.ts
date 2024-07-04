@@ -1,5 +1,5 @@
 import { $Enums, Group } from '.prisma/user';
-import { EnumSchema, NumberSchema, ClassSchema, StringSchema } from '../decorator/schema';
+import { EnumSchema, NumberSchema, ClassSchema, StringSchema, DateSchema } from '../decorator/schema';
 
 export class RoleGroupEntity {
    @StringSchema()
@@ -36,13 +36,13 @@ export class GroupEntity {
    @StringSchema()
    description: string;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    createdAt?: Date;
 
    @StringSchema()
    createdBy?: string;
 
-   @StringSchema({ format: 'date-time' })
+   @DateSchema()
    updatedAt?: Date;
 
    @StringSchema()
