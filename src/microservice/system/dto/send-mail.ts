@@ -1,10 +1,10 @@
-import { StringSchema } from '@shared-library';
+import { EmailSchema, StringSchema } from '@shared-library';
 
 export class SendMailDto {
    @StringSchema({ optional: true, empty: false })
    from?: string;
 
-   @StringSchema({ empty: false, isArray: 'unique', format: 'email' })
+   @EmailSchema({ isArray: 'unique' })
    to: string[];
 
    @StringSchema({ empty: false })

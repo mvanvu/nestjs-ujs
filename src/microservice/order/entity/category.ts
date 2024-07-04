@@ -1,8 +1,8 @@
 import { AvailableStatus } from '.prisma/order';
-import { EnumSchema, ClassSchema, StringSchema, UserRefEntity, DateSchema } from '@shared-library';
+import { EnumSchema, ClassSchema, StringSchema, UserRefEntity, DateSchema, IDSchema } from '@shared-library';
 
 export class CategoryEntity {
-   @StringSchema()
+   @IDSchema()
    id: string;
 
    @EnumSchema(Object.values(AvailableStatus))
@@ -11,21 +11,21 @@ export class CategoryEntity {
    @StringSchema()
    name: string;
 
-   @ClassSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity, { optional: true })
    author?: UserRefEntity;
 
-   @ClassSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity, { optional: true })
    editor?: UserRefEntity;
 
    @DateSchema()
    createdAt: Date;
 
    @DateSchema()
-   updatedAt?: Date;
+   updatedAt: Date;
 }
 
 export class CategoryRef {
-   @StringSchema()
+   @IDSchema()
    id: string;
 
    @StringSchema()

@@ -1,4 +1,4 @@
-import { EnumSchema, IPartialType, StringSchema } from '@shared-library';
+import { EnumSchema, IDSchema, IPartialType, ImageSchema } from '@shared-library';
 import { UserSignUpDto } from './auth';
 import { UserStatus } from '.prisma/user';
 
@@ -6,10 +6,10 @@ export class CreateUserDto extends UserSignUpDto {
    @EnumSchema(Object.keys(UserStatus), { optional: true })
    status?: UserStatus;
 
-   @StringSchema({ optional: true, format: 'mongoId' })
+   @IDSchema({ optional: true })
    groupId?: string;
 
-   @StringSchema({ optional: true, format: 'url' })
+   @ImageSchema({ optional: true })
    avatarUrl?: string;
 }
 

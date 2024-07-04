@@ -1,9 +1,17 @@
 import { AvailableStatus, TableStatus } from '.prisma/order';
 import { RestaurantRefEntity } from './restaurant';
-import { EnumSchema, NumberSchema, ClassSchema, StringSchema, UserRefEntity, DateSchema } from '@shared-library';
+import {
+   EnumSchema,
+   ClassSchema,
+   StringSchema,
+   UserRefEntity,
+   DateSchema,
+   IDSchema,
+   UIntSchema,
+} from '@shared-library';
 
 export class TableEntity {
-   @StringSchema()
+   @IDSchema()
    id: string;
 
    @ClassSchema(RestaurantRefEntity)
@@ -12,10 +20,10 @@ export class TableEntity {
    @EnumSchema(Object.values(AvailableStatus))
    status: AvailableStatus;
 
-   @EnumSchema(Object.values(TableStatus))
+   @EnumSchema(Object.values(TableStatus), { optional: true })
    activityStatus?: TableStatus;
 
-   @NumberSchema({ integer: true, min: 1 })
+   @UIntSchema({ min: 1 })
    number: number;
 
    @StringSchema({ optional: true })

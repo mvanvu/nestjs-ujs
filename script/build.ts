@@ -28,7 +28,7 @@ import { spawn } from 'child_process';
                type: 'multiselect',
                name: 'gatewayServices',
                message: 'Choose some services',
-               choices: gatewayServices.map((service) => ({ title: Util.uFirst(service) })),
+               choices: gatewayServices.map((service: string) => ({ title: Util.uFirst(service) })),
                hint: '- Space to select. Return to submit',
             })
          ).gatewayServices as number[];

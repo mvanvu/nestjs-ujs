@@ -1,8 +1,8 @@
-import { EnumSchema, IPartialType, StringSchema } from '@shared-library';
+import { EnumSchema, IDSchema, IPartialType, NameSchema, StringSchema } from '@shared-library';
 import { $Enums } from '.prisma/user';
 
 export class CreateGroupDto {
-   @StringSchema({ empty: false })
+   @NameSchema()
    name: string;
 
    @StringSchema({ optional: true })
@@ -11,10 +11,10 @@ export class CreateGroupDto {
    @EnumSchema(Object.values($Enums.AvailableStatus), { optional: true })
    status?: $Enums.AvailableStatus;
 
-   @StringSchema({ format: 'mongoId', isArray: 'unique', optional: true })
+   @IDSchema({ isArray: 'unique', optional: true })
    groups?: string[];
 
-   @StringSchema({ format: 'mongoId', isArray: 'unique', optional: true })
+   @IDSchema({ isArray: 'unique', optional: true })
    roles?: string[];
 }
 

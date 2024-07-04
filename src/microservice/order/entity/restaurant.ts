@@ -1,5 +1,13 @@
 import { AvailableStatus } from '.prisma/content';
-import { EnumSchema, IPickType, ClassSchema, StringSchema, UserRefEntity, DateSchema } from '@shared-library';
+import {
+   EnumSchema,
+   IPickType,
+   ClassSchema,
+   StringSchema,
+   UserRefEntity,
+   DateSchema,
+   EmailSchema,
+} from '@shared-library';
 
 export class RestaurantEntity {
    @StringSchema()
@@ -23,20 +31,20 @@ export class RestaurantEntity {
    @StringSchema({ optional: true })
    phoneNumber?: string;
 
-   @StringSchema({ optional: true, format: 'email' })
+   @EmailSchema({ optional: true })
    email?: string;
 
-   @ClassSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity, { optional: true })
    author?: UserRefEntity;
 
-   @ClassSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity, { optional: true })
    editor?: UserRefEntity;
 
    @DateSchema()
    createdAt: Date;
 
    @DateSchema()
-   updatedAt?: Date;
+   updatedAt: Date;
 }
 
 export class RestaurantRefEntity extends IPickType(RestaurantEntity, ['id', 'name', 'owner']) {}

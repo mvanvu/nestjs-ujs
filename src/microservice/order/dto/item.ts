@@ -1,8 +1,17 @@
 import { AvailableStatus } from '.prisma/order';
-import { EnumSchema, IPartialType, NumberSchema, ClassSchema, StringSchema, IDSchema } from '@shared-library';
+import {
+   EnumSchema,
+   IPartialType,
+   NumberSchema,
+   ClassSchema,
+   IDSchema,
+   NameSchema,
+   ImageSchema,
+   UIntSchema,
+} from '@shared-library';
 
 export class ItemToppingDto {
-   @StringSchema({ empty: false })
+   @NameSchema()
    name: string;
 
    @NumberSchema({ min: 0, integer: true })
@@ -19,13 +28,13 @@ export class CreateItemDto {
    @EnumSchema(Object.values(AvailableStatus))
    status?: AvailableStatus;
 
-   @StringSchema({ empty: false })
+   @NameSchema()
    name: string;
 
-   @StringSchema({ optional: true, format: 'url' })
+   @ImageSchema({ optional: true })
    imageUrl?: string;
 
-   @NumberSchema({ min: 0, integer: true })
+   @UIntSchema()
    basePrice: number;
 
    @ClassSchema(ItemToppingDto, { optional: true, isArray: 'unique' })

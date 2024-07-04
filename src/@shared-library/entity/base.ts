@@ -1,20 +1,35 @@
-import { ClassConstructor } from '../type';
+import { BaseSchemaOptions, ClassConstructor } from '../type';
 import { CLASS_PROPERTIES } from '../constant';
 import { validateDTO } from '../pipe/validation';
 import { Is, Util } from '@mvanvu/ujs';
 
 export class BaseEntity {
-   static bindToClass<T>(data: any, ClassRef: ClassConstructor<T>, validateSchema?: boolean): T {
-      if (validateSchema === true) {
+   static bindToClass<T>(
+      data: any,
+      ClassRef: ClassConstructor<T>,
+      options?: { validateSchema?: boolean; nullForUndefined?: boolean },
+   ): T {
+      if (options?.validateSchema === true) {
          validateDTO(data, ClassRef);
       }
 
+      const autoNull = options?.validateSchema !== false;
       const entity = new ClassRef();
 
       if (Is.object(data)) {
-         for (const prop of Object.keys(ClassRef.prototype[CLASS_PROPERTIES] || {})) {
+         const props = ClassRef.prototype[CLASS_PROPERTIES] || {};
+
+         for (const prop in props) {
             if (data[prop] !== undefined) {
                entity[prop] = data[prop];
+            }
+
+            if (entity[prop] === undefined && autoNull && !Is.empty(props[prop]?.options)) {
+               const { optional, nullable } = props[prop].options as BaseSchemaOptions;
+
+               if (nullable === true || (nullable === undefined && optional === true)) {
+                  entity[prop] = null;
+               }
             }
          }
 

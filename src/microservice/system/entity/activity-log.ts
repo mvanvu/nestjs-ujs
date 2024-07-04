@@ -1,9 +1,17 @@
 import { ActivityLog } from '.prisma/system';
-import { BooleanSchema, JsonSchema, ClassSchema, StringSchema, UserRefEntity, DateSchema } from '@shared-library';
+import {
+   BooleanSchema,
+   JsonSchema,
+   ClassSchema,
+   StringSchema,
+   UserRefEntity,
+   DateSchema,
+   IDSchema,
+} from '@shared-library';
 import { DetectResult } from 'node-device-detector';
 
 export class ActivityLogEntity {
-   @StringSchema()
+   @IDSchema()
    id: string;
 
    @BooleanSchema()
@@ -18,19 +26,19 @@ export class ActivityLogEntity {
    @JsonSchema({ optional: true })
    dataResult?: object;
 
-   @StringSchema()
+   @StringSchema({ optional: true, format: 'ipV4' })
    ipAddress?: string;
 
-   @StringSchema()
+   @StringSchema({ optional: true })
    deviceType?: string;
 
-   @JsonSchema()
+   @JsonSchema({ optional: true })
    detectResult?: DetectResult;
 
-   @StringSchema()
+   @StringSchema({ optional: true })
    userAgent?: string;
 
-   @ClassSchema(UserRefEntity)
+   @ClassSchema(UserRefEntity, { optional: true })
    author?: UserRefEntity;
 
    @DateSchema()

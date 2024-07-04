@@ -1,4 +1,4 @@
-import { EnumSchema, NumberSchema, ClassSchema, StringSchema } from '@shared-library/decorator';
+import { EnumSchema, NumberSchema, ClassSchema, StringSchema, EmailSchema } from '@shared-library/decorator';
 import { MailerTransporter } from '../type/common';
 
 const transporters: MailerTransporter[] = ['SMTP'];
@@ -18,7 +18,7 @@ export class MailerSMTPTransporterDto {
 }
 
 export class MailerConfigDto {
-   @StringSchema({ format: 'email' })
+   @EmailSchema()
    appMail: string;
 
    @EnumSchema(transporters)

@@ -1,14 +1,22 @@
 import { $Enums, Group } from '.prisma/user';
-import { EnumSchema, NumberSchema, ClassSchema, StringSchema, DateSchema } from '../decorator/schema';
+import {
+   EnumSchema,
+   NumberSchema,
+   ClassSchema,
+   StringSchema,
+   DateSchema,
+   IDSchema,
+   NameSchema,
+} from '../decorator/schema';
 
 export class RoleGroupEntity {
-   @StringSchema()
+   @IDSchema()
    id: string;
 
-   @StringSchema()
+   @NameSchema()
    name: string;
 
-   @StringSchema({ isArray: true })
+   @StringSchema({ isArray: 'unique' })
    permissions: string[];
 }
 
@@ -16,42 +24,42 @@ export class ChildrenGroupEntity {
    @StringSchema()
    id: string;
 
-   @StringSchema()
+   @NameSchema()
    name: string;
 
-   @ClassSchema(RoleGroupEntity, { isArray: true })
+   @ClassSchema(RoleGroupEntity, { isArray: 'unique' })
    roles: RoleGroupEntity[];
 }
 
 export class GroupEntity {
-   @StringSchema()
+   @IDSchema()
    id: string;
 
    @EnumSchema(Object.values($Enums.AvailableStatus))
    status: $Enums.AvailableStatus;
 
-   @StringSchema()
+   @NameSchema()
    name: string;
 
    @StringSchema()
    description: string;
 
-   @DateSchema()
+   @DateSchema({ optional: true })
    createdAt?: Date;
 
-   @StringSchema()
+   @IDSchema({ optional: true })
    createdBy?: string;
 
-   @DateSchema()
+   @DateSchema({ optional: true })
    updatedAt?: Date;
 
-   @StringSchema()
+   @IDSchema({ optional: true })
    updatedBy?: string;
 
-   @ClassSchema(ChildrenGroupEntity, { isArray: true })
+   @ClassSchema(ChildrenGroupEntity, { isArray: 'unique' })
    groups: ChildrenGroupEntity[];
 
-   @ClassSchema(RoleGroupEntity, { isArray: true })
+   @ClassSchema(RoleGroupEntity, { isArray: 'unique' })
    roles: RoleGroupEntity[];
 
    @NumberSchema({ integer: true, min: 0 })

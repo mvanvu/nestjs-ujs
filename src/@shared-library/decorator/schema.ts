@@ -35,7 +35,8 @@ export function PropertySchema<T extends ValidSchema>(
             delete propOptions['swagger'];
          }
 
-         target[CLASS_PROPERTIES][propertyKey][schema || 'prop'] = propOptions;
+         // Each property has only a schema
+         target[CLASS_PROPERTIES][propertyKey] = { schema: schema || 'prop', options: propOptions };
       },
    ];
 
@@ -109,10 +110,26 @@ export function IDSchema(options?: Omit<StringSchemaOptions, 'format'>): Propert
    return applyDecorators(PropertySchema({ ...(options || {}), format: 'mongoId' }, 'string'));
 }
 
+export function NameSchema(options?: Omit<StringSchemaOptions, 'empty'>): PropertyDecorator {
+   return applyDecorators(PropertySchema({ format: 'trim', ...(options || {}), empty: false }, 'string'));
+}
+
 export function EmailSchema(options?: Omit<StringSchemaOptions, 'format'>): PropertyDecorator {
    return applyDecorators(PropertySchema({ ...(options || {}), format: 'email' }, 'string'));
 }
 
 export function DateSchema(options?: Omit<StringSchemaOptions, 'format'>): PropertyDecorator {
    return applyDecorators(PropertySchema({ ...(options || {}), format: 'date-time' }, 'string'));
+}
+
+export function ImageSchema(options?: Omit<StringSchemaOptions, 'format'>): PropertyDecorator {
+   return applyDecorators(PropertySchema({ ...(options || {}), format: 'image' }, 'string'));
+}
+
+export function IntSchema(options?: Omit<NumberSchemaOptions, 'integer'>): PropertyDecorator {
+   return applyDecorators(PropertySchema({ ...(options || {}), integer: true }, 'number'));
+}
+
+export function UIntSchema(options?: Omit<NumberSchemaOptions, 'integer'>): PropertyDecorator {
+   return applyDecorators(PropertySchema({ ...(options || {}), integer: true, min: 0 }, 'number'));
 }

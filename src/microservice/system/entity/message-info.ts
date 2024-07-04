@@ -2,7 +2,7 @@ import { StringSchema } from '@shared-library';
 import Mail from 'nodemailer/lib/mailer';
 
 export class MessageInfoEntity {
-   @StringSchema()
+   @StringSchema({ empty: false })
    messageId: string;
 
    @StringSchema({ isArray: 'unique' })
@@ -14,6 +14,6 @@ export class MessageInfoEntity {
    @StringSchema({ isArray: 'unique' })
    pending: Array<string | Mail.Address>;
 
-   @StringSchema()
+   @StringSchema({ empty: false })
    response: string;
 }

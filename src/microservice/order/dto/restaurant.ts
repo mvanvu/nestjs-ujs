@@ -1,5 +1,15 @@
 import { AvailableStatus } from '.prisma/content';
-import { EnumSchema, IPartialType, ClassSchema, StringSchema, UserRefEntity, IDSchema } from '@shared-library';
+import {
+   EnumSchema,
+   IPartialType,
+   ClassSchema,
+   StringSchema,
+   UserRefEntity,
+   IDSchema,
+   EmailSchema,
+   NameSchema,
+   ImageSchema,
+} from '@shared-library';
 
 export class CreateRestaurantDto {
    @IDSchema()
@@ -11,13 +21,13 @@ export class CreateRestaurantDto {
    @EnumSchema(Object.values(AvailableStatus), { optional: true })
    status?: AvailableStatus;
 
-   @StringSchema({ empty: false })
+   @NameSchema()
    name: string;
 
    @StringSchema({ optional: true, transform: 'safeHtml' })
    description?: string;
 
-   @StringSchema({ optional: true, format: 'url' })
+   @ImageSchema({ optional: true })
    imageUrl?: string;
 
    @StringSchema({ optional: true })
@@ -26,7 +36,7 @@ export class CreateRestaurantDto {
    @StringSchema({ optional: true })
    phoneNumber?: string;
 
-   @StringSchema({ optional: true, format: 'email' })
+   @EmailSchema({ optional: true })
    email?: string;
 }
 

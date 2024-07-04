@@ -7,7 +7,7 @@ export class MetadataDto {
    @StringSchema({ optional: true })
    description?: string;
 
-   @StringSchema({ optional: true, format: 'url' })
+   @StringSchema({ optional: true, format: 'image' })
    image?: string;
 
    @StringSchema({ optional: true })

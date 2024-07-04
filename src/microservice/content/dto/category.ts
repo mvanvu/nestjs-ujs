@@ -1,15 +1,15 @@
-import { EnumSchema, IPartialType, ClassSchema, StringSchema } from '@shared-library';
+import { EnumSchema, IPartialType, ClassSchema, StringSchema, IDSchema, NameSchema } from '@shared-library';
 import { MetadataDto } from './metadata';
 import { AvailableStatus } from '.prisma/content';
 
 export class CreateCategoryDto {
-   @StringSchema({ optional: true, format: 'mongoId' })
+   @IDSchema({ optional: true })
    parentId?: string;
 
    @EnumSchema(Object.values(AvailableStatus), { optional: true })
    status?: AvailableStatus;
 
-   @StringSchema({ empty: false })
+   @NameSchema()
    name: string;
 
    @StringSchema({ optional: true })

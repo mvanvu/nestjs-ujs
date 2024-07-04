@@ -1,14 +1,14 @@
 import { AvailableStatus } from '.prisma/content';
-import { UserRefEntity, StringSchema, EnumSchema, ClassSchema, DateSchema } from '@shared-library';
+import { UserRefEntity, EnumSchema, ClassSchema, DateSchema, IDSchema, NameSchema } from '@shared-library';
 
 export class TagEntity {
-   @StringSchema()
+   @IDSchema()
    id: string;
 
    @EnumSchema(Object.values(AvailableStatus))
    status: AvailableStatus;
 
-   @StringSchema()
+   @NameSchema()
    name: string;
 
    @ClassSchema(UserRefEntity, { optional: true })

@@ -1,16 +1,25 @@
 import { AvailableStatus } from '.prisma/content';
-import { UserRefEntity, StringSchema, EnumSchema, ClassSchema, DateSchema } from '@shared-library';
+import {
+   UserRefEntity,
+   StringSchema,
+   EnumSchema,
+   ClassSchema,
+   DateSchema,
+   IDSchema,
+   ImageSchema,
+   NameSchema,
+} from '@shared-library';
 import { CategoryRef } from './category';
 import { MetadataEntity } from './metadata';
 
 export class PostEntity {
-   @StringSchema()
+   @IDSchema()
    id: string;
 
    @EnumSchema(Object.values(AvailableStatus))
    status: AvailableStatus;
 
-   @StringSchema()
+   @NameSchema()
    name: string;
 
    @StringSchema()
@@ -19,7 +28,7 @@ export class PostEntity {
    @StringSchema({ optional: true })
    description?: string;
 
-   @StringSchema({ optional: true, format: 'url' })
+   @ImageSchema({ optional: true })
    imageUrl?: string;
 
    @ClassSchema(UserRefEntity, { optional: true })
@@ -32,7 +41,7 @@ export class PostEntity {
    createdAt: Date;
 
    @DateSchema()
-   updatedAt?: Date;
+   updatedAt: Date;
 
    @ClassSchema(CategoryRef, { optional: true })
    category?: CategoryRef;

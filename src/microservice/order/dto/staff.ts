@@ -1,5 +1,13 @@
 import { StaffStatus } from '.prisma/order';
-import { EnumSchema, IPartialType, StringSchema, IDSchema } from '@shared-library';
+import {
+   EnumSchema,
+   IPartialType,
+   StringSchema,
+   IDSchema,
+   EmailSchema,
+   NameSchema,
+   ImageSchema,
+} from '@shared-library';
 
 export class CreateStaffDto {
    @IDSchema()
@@ -8,16 +16,16 @@ export class CreateStaffDto {
    @EnumSchema(Object.values(StaffStatus), { optional: true })
    status?: StaffStatus;
 
-   @StringSchema({ optional: true, empty: false })
+   @NameSchema({ optional: true })
    name: string;
 
-   @StringSchema({ optional: true, format: 'url' })
+   @ImageSchema({ optional: true })
    imageUrl?: string;
 
    @StringSchema({ optional: true })
    phoneNumber?: string;
 
-   @StringSchema({ optional: true, format: 'email' })
+   @EmailSchema({ optional: true })
    email?: string;
 }
 

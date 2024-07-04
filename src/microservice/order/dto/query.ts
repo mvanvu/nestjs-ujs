@@ -1,9 +1,9 @@
-import { PaginationQueryDto, StringSchema } from '@shared-library';
+import { IDSchema, PaginationQueryDto } from '@shared-library';
 
 export class OrderPaginationQueryDto extends PaginationQueryDto {
-   @StringSchema({ optional: true, format: 'mongoId' })
+   @IDSchema({ optional: true })
    restaurantId?: string;
 
-   @StringSchema({ format: 'mongoId', swagger: false })
+   @IDSchema({ optional: true, swagger: false })
    ownerId?: string;
 }

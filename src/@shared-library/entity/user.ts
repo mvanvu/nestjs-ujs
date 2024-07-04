@@ -6,7 +6,16 @@ import { IPickType } from './mapped-type';
 import { GroupEntity } from './group';
 import { USER_PERMISSION_ADMIN_SCOPE } from '@shared-library/constant/common';
 import { appConfig } from '@metadata';
-import { EnumSchema, ClassSchema, StringSchema, DateSchema } from '@shared-library/decorator';
+import {
+   EnumSchema,
+   ClassSchema,
+   StringSchema,
+   DateSchema,
+   EmailSchema,
+   ImageSchema,
+   IDSchema,
+   NameSchema,
+} from '@shared-library/decorator';
 
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
 export class UserEntity {
@@ -16,32 +25,32 @@ export class UserEntity {
    @EnumSchema(Object.values(UserStatus))
    status: UserStatus;
 
-   @StringSchema()
+   @NameSchema({ optional: true })
    name?: string;
 
-   @StringSchema()
+   @NameSchema({ optional: true })
    username?: string;
 
-   @StringSchema()
+   @ImageSchema({ optional: true })
    avatarUrl?: string;
 
-   @StringSchema({ format: 'email' })
+   @EmailSchema()
    email: string;
 
-   @ClassSchema(UserGroupEntity)
+   @ClassSchema(UserGroupEntity, { optional: true })
    group?: UserGroupEntity;
 
    @DateSchema()
    createdAt: Date;
 
-   @StringSchema()
-   createdBy: string;
+   @IDSchema({ optional: true })
+   createdBy?: string;
 
    @DateSchema()
    updatedAt: Date;
 
-   @StringSchema()
-   updatedBy: string;
+   @IDSchema({ optional: true })
+   updatedBy?: string;
 
    private _permissions: string[];
 

@@ -1,14 +1,14 @@
-import { BooleanSchema, EnumSchema, NumberSchema, StringSchema } from '@shared-library';
+import { BooleanSchema, EnumSchema, IDSchema, StringSchema, UIntSchema } from '@shared-library';
 import { $Enums } from '.prisma/storage';
 
 export class FileEntity {
-   @StringSchema()
+   @IDSchema()
    id: string;
 
    @StringSchema()
    name: string;
 
-   @NumberSchema({ min: 0, integer: true })
+   @UIntSchema()
    size: number;
 
    @BooleanSchema()

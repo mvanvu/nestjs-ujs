@@ -8,7 +8,7 @@ export class CreateTableDto {
    @EnumSchema(Object.values(AvailableStatus), { optional: true })
    status?: AvailableStatus;
 
-   @NumberSchema({ min: 1 })
+   @NumberSchema({ min: 1, integer: true })
    number: number;
 
    @StringSchema({ optional: true, empty: false })

@@ -1,9 +1,9 @@
-import { EnumSchema, IPartialType, StringSchema } from '@shared-library';
+import { EnumSchema, IPartialType, NameSchema, StringSchema } from '@shared-library';
 import { $Enums } from '.prisma/user';
 import { permissionKeys } from '@metadata';
 
 export class CreateRoleDto {
-   @StringSchema({ empty: false })
+   @NameSchema()
    name: string;
 
    @StringSchema({ optional: true })

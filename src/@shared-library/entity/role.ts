@@ -1,25 +1,25 @@
 import { $Enums } from '.prisma/user';
-import { EnumSchema, StringSchema, DateSchema } from '../decorator/schema';
+import { EnumSchema, StringSchema, DateSchema, IDSchema, NameSchema } from '../decorator/schema';
 
 export class RoleEntity {
-   @StringSchema()
+   @IDSchema()
    id: string;
 
    @EnumSchema(Object.values($Enums.AvailableStatus))
    status: $Enums.AvailableStatus;
 
-   @StringSchema()
+   @NameSchema()
    name: string;
 
-   @StringSchema()
-   description: string;
+   @StringSchema({ nullable: true })
+   description?: string;
 
    @DateSchema()
-   createdAt?: Date;
+   createdAt: Date;
 
    @DateSchema()
-   updatedAt?: Date;
+   updatedAt: Date;
 
-   @StringSchema({ isArray: true })
+   @StringSchema({ isArray: 'unique' })
    permissions: string[];
 }

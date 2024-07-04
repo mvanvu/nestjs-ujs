@@ -1,17 +1,25 @@
 import { Prisma } from '.prisma/system';
-import { BooleanSchema, JsonSchema, ClassSchema, StringSchema, IDSchema } from '@shared-library';
+import {
+   BooleanSchema,
+   JsonSchema,
+   ClassSchema,
+   StringSchema,
+   IDSchema,
+   NameSchema,
+   EmailSchema,
+} from '@shared-library';
 
 export class ActivityLogAuthor {
    @IDSchema()
    id: string;
 
-   @StringSchema({ optional: true })
+   @NameSchema({ optional: true })
    name?: string;
 
-   @StringSchema({ optional: true })
+   @NameSchema({ optional: true })
    username?: string;
 
-   @IDSchema({ optional: true })
+   @EmailSchema({ optional: true })
    email?: string;
 }
 
@@ -31,7 +39,7 @@ export class ActivityLogDto {
    @ClassSchema(ActivityLogAuthor, { optional: true })
    author?: ActivityLogAuthor;
 
-   @StringSchema({ optional: true })
+   @StringSchema({ optional: true, format: 'ipV4' })
    ipAddress?: string;
 
    @StringSchema({ optional: true })

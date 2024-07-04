@@ -1,13 +1,13 @@
-import { StringSchema } from '@shared-library';
+import { IDSchema, ImageSchema, StringSchema } from '@shared-library';
 
 export class MetadataEntity {
-   @StringSchema({ optional: true })
+   @IDSchema({ optional: true })
    title?: string;
 
    @StringSchema({ optional: true })
    description?: string;
 
-   @StringSchema({ optional: true, format: 'url' })
+   @ImageSchema({ optional: true })
    image?: string;
 
    @StringSchema({ optional: true })

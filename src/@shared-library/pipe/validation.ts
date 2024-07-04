@@ -74,165 +74,165 @@ export function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, white
       for (const property in propertyOptions) {
          const propOptions = propertyOptions[property];
 
-         if (!Is.object(propOptions) || Is.empty(propOptions)) {
+         if (
+            !Is.object(propOptions) ||
+            Is.empty(propOptions) ||
+            Is.empty(propOptions.schema) ||
+            Is.empty(propOptions.options)
+         ) {
             continue;
          }
 
+         const { schema, options } = propOptions as { schema: ValidSchema; options: BaseSchemaOptions };
+         const schemaOptions = options as BaseSchemaOptions;
+         const optional = schemaOptions.optional === true;
+         const nullable = schemaOptions.nullable ?? optional;
          const pathKey = path ? `${path}.${property}` : property;
          let propValue: any = dataValue[property];
 
-         for (const schema in propOptions) {
-            const schemaOptions = propOptions[schema] as BaseSchemaOptions;
-            const optional = schemaOptions.optional === true;
-            const nullable = schemaOptions.nullable ?? optional;
+         if ((propValue === undefined && optional) || (propValue === null && nullable)) {
+            continue;
+         }
 
-            if ((propValue === undefined && optional) || (propValue === null && nullable)) {
-               continue;
-            }
+         switch (schema as ValidSchema) {
+            case 'string':
+               const stringSchemaOptions = schemaOptions as StringSchemaOptions;
 
-            switch (schema as ValidSchema) {
-               case 'string':
-                  const stringSchemaOptions = schemaOptions as StringSchemaOptions;
+               // Check to transform to other type of value
+               if (Is.string(dataValue)) {
+                  switch (stringSchemaOptions.transform) {
+                     case 'safeHtml':
+                        propValue = Transform.trim(Transform.toSafeHtml(propValue));
+                        break;
 
-                  // Check to transform to other type of value
-                  if (Is.string(dataValue)) {
-                     switch (stringSchemaOptions.transform) {
-                        case 'safeHtml':
-                           propValue = Transform.trim(Transform.toSafeHtml(propValue));
-                           break;
+                     case 'format':
+                        switch (stringSchemaOptions.format) {
+                           case 'unsignedNumber':
+                           case 'unsignedInteger':
+                           case 'number':
+                           case 'integer':
+                              propValue = Transform.toNumber(propValue);
+                              break;
 
-                        case 'format':
-                           switch (stringSchemaOptions.format) {
-                              case 'unsignedNumber':
-                              case 'unsignedInteger':
-                              case 'number':
-                              case 'integer':
-                                 propValue = Transform.toNumber(propValue);
-                                 break;
+                           case 'boolean':
+                              propValue = Transform.toBoolean(propValue);
+                              break;
+                        }
 
-                              case 'boolean':
-                                 propValue = Transform.toBoolean(propValue);
-                                 break;
-                           }
+                        break;
 
-                           break;
+                     // No transfrom, allows raw value
+                     case false:
+                        break;
 
-                        // No transfrom, allows raw value
-                        case false:
-                           break;
-
-                        // Defaults to strip all tags
-                        default:
-                           propValue = Transform.trim(Transform.toStripTags(propValue));
-                           break;
-                     }
+                     // Defaults to strip all tags
+                     default:
+                        propValue = Transform.trim(Transform.toStripTags(propValue));
+                        break;
                   }
+               }
 
-                  if (propValue === '' && stringSchemaOptions.empty === 'skip') {
-                     delete dataValue[property];
-                     continue;
-                  }
+               if (propValue === '' && stringSchemaOptions.empty === 'skip') {
+                  delete dataValue[property];
+                  continue;
+               }
 
-                  if (
-                     !Is.string(propValue, {
-                        format: stringSchemaOptions.format,
-                        isArray: stringSchemaOptions.isArray,
-                        minLength: stringSchemaOptions.minLength,
-                        maxLength: stringSchemaOptions.maxLength,
-                        notEmpty: stringSchemaOptions.empty !== false,
-                     })
-                  ) {
-                     appendError(pathKey, stringSchemaOptions.code || 'IS_STRING', stringSchemaOptions.message);
-                  }
+               if (
+                  !Is.string(propValue, {
+                     format: stringSchemaOptions.format ?? 'trim', // Defaults to trim
+                     isArray: stringSchemaOptions.isArray,
+                     minLength: stringSchemaOptions.minLength,
+                     maxLength: stringSchemaOptions.maxLength,
+                     notEmpty: stringSchemaOptions.empty !== false,
+                  })
+               ) {
+                  appendError(pathKey, stringSchemaOptions.code || 'IS_STRING', stringSchemaOptions.message);
+               }
 
-                  break;
+               break;
 
-               case 'boolean':
-                  const booleanSchemaOptions = schemaOptions as BooleanSchemaOptions;
+            case 'boolean':
+               const booleanSchemaOptions = schemaOptions as BooleanSchemaOptions;
 
-                  if (!Is.boolean(propValue, { isArray: booleanSchemaOptions.isArray })) {
-                     appendError(pathKey, booleanSchemaOptions.code || 'IS_BOOLEAN', booleanSchemaOptions.message);
-                  }
+               if (!Is.boolean(propValue, { isArray: booleanSchemaOptions.isArray })) {
+                  appendError(pathKey, booleanSchemaOptions.code || 'IS_BOOLEAN', booleanSchemaOptions.message);
+               }
 
-                  break;
+               break;
 
-               case 'number':
-                  const numberSchemaOptions = schemaOptions as NumberSchemaOptions;
+            case 'number':
+               const numberSchemaOptions = schemaOptions as NumberSchemaOptions;
 
-                  if (
-                     !Is.number(propValue, {
-                        isArray: numberSchemaOptions.isArray,
-                        integer: numberSchemaOptions.integer,
-                        min: numberSchemaOptions.min,
-                        max: numberSchemaOptions.max,
-                     })
-                  ) {
-                     appendError(pathKey, numberSchemaOptions.code || 'IS_NUMBER', numberSchemaOptions.message);
-                  }
+               if (
+                  !Is.number(propValue, {
+                     isArray: numberSchemaOptions.isArray,
+                     integer: numberSchemaOptions.integer,
+                     min: numberSchemaOptions.min,
+                     max: numberSchemaOptions.max,
+                  })
+               ) {
+                  appendError(pathKey, numberSchemaOptions.code || 'IS_NUMBER', numberSchemaOptions.message);
+               }
 
-                  break;
+               break;
 
-               case 'password':
-                  const passwordSchemaOptions = schemaOptions as PasswordSchemaOptions;
-                  const isValidPassword = Is.strongPassword(propValue, {
-                     isArray: passwordSchemaOptions.isArray,
-                     minLength: passwordSchemaOptions.minLength,
-                     minLower: passwordSchemaOptions.minLower,
-                     minUpper: passwordSchemaOptions.minUpper,
-                     minNumber: passwordSchemaOptions.minNumber,
-                     minSpecialChars: passwordSchemaOptions.minSpecialChars,
-                  });
+            case 'password':
+               const passwordSchemaOptions = schemaOptions as PasswordSchemaOptions;
+               const isValidPassword = Is.strongPassword(propValue, {
+                  isArray: passwordSchemaOptions.isArray,
+                  minLength: passwordSchemaOptions.minLength,
+                  minLower: passwordSchemaOptions.minLower,
+                  minUpper: passwordSchemaOptions.minUpper,
+                  minNumber: passwordSchemaOptions.minNumber,
+                  minSpecialChars: passwordSchemaOptions.minSpecialChars,
+               });
 
-                  if (!isValidPassword) {
-                     appendError(pathKey, passwordSchemaOptions.code || 'IS_PASSWORD', passwordSchemaOptions.message);
-                  }
+               if (!isValidPassword) {
+                  appendError(pathKey, passwordSchemaOptions.code || 'IS_PASSWORD', passwordSchemaOptions.message);
+               }
 
-                  if (
-                     passwordSchemaOptions.equalsTo &&
-                     !Is.equals(propValue, dataValue[passwordSchemaOptions.equalsTo])
-                  ) {
-                     appendError(
-                        pathKey,
-                        passwordSchemaOptions.code || 'IS_PASSWORD_NOT_EQUALS',
-                        passwordSchemaOptions.message,
-                     );
-                  }
+               if (passwordSchemaOptions.equalsTo && !Is.equals(propValue, dataValue[passwordSchemaOptions.equalsTo])) {
+                  appendError(
+                     pathKey,
+                     passwordSchemaOptions.code || 'IS_PASSWORD_NOT_EQUALS',
+                     passwordSchemaOptions.message,
+                  );
+               }
 
-                  break;
+               break;
 
-               case 'enum':
-                  const enumSchemaOptions = schemaOptions as EnumSchemaOptions;
+            case 'enum':
+               const enumSchemaOptions = schemaOptions as EnumSchemaOptions;
 
-                  if (!Is.enum(propValue, { isArray: enumSchemaOptions.isArray, enumArray: enumSchemaOptions.ref })) {
-                     appendError(pathKey, enumSchemaOptions.code || 'IS_ENUM', enumSchemaOptions.message);
-                  }
+               if (!Is.enum(propValue, { isArray: enumSchemaOptions.isArray, enumArray: enumSchemaOptions.ref })) {
+                  appendError(pathKey, enumSchemaOptions.code || 'IS_ENUM', enumSchemaOptions.message);
+               }
 
-                  break;
+               break;
 
-               case 'json':
-                  const jsonSchemaOptions = schemaOptions as JsonSchemaOptions;
+            case 'json':
+               const jsonSchemaOptions = schemaOptions as JsonSchemaOptions;
 
-                  if (!Is.json(propValue, { isArray: jsonSchemaOptions.isArray })) {
-                     appendError(pathKey, jsonSchemaOptions.code || 'IS_JSON', jsonSchemaOptions.message);
-                  }
+               if (!Is.json(propValue, { isArray: jsonSchemaOptions.isArray })) {
+                  appendError(pathKey, jsonSchemaOptions.code || 'IS_JSON', jsonSchemaOptions.message);
+               }
 
-                  break;
+               break;
 
-               case 'class':
-                  const { isArray, ref, code, message } = schemaOptions as ClassSchemaOptions;
+            case 'class':
+               const { isArray, ref, code, message } = schemaOptions as ClassSchemaOptions;
 
-                  if (Is.class(ref) && Is.json(propValue, { isArray })) {
-                     if (Is.array(propValue)) {
-                        propValue.forEach((dt) => handleValidate(dt, ref, pathKey));
-                     } else {
-                        handleValidate(propValue, ref, pathKey);
-                     }
+               if (Is.class(ref) && Is.json(propValue, { isArray })) {
+                  if (Is.array(propValue)) {
+                     propValue.forEach((dt) => handleValidate(dt, ref, pathKey));
                   } else {
-                     appendError(pathKey, code || 'IS_CLASS', message);
+                     handleValidate(propValue, ref, pathKey);
                   }
+               } else {
+                  appendError(pathKey, code || 'IS_CLASS', message);
+               }
 
-                  break;
-            }
+               break;
          }
       }
    };

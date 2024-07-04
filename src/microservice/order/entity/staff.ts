@@ -1,8 +1,16 @@
 import { StaffStatus } from '.prisma/order';
-import { EnumSchema, ClassSchema, StringSchema, UserRefEntity, DateSchema } from '@shared-library';
+import {
+   EnumSchema,
+   ClassSchema,
+   StringSchema,
+   UserRefEntity,
+   DateSchema,
+   IDSchema,
+   EmailSchema,
+} from '@shared-library';
 
 export class StaffEntity {
-   @StringSchema()
+   @IDSchema()
    id: string;
 
    @EnumSchema(Object.values(StaffStatus))
@@ -14,7 +22,7 @@ export class StaffEntity {
    @StringSchema({ optional: true })
    phoneNumber?: string;
 
-   @StringSchema({ optional: true })
+   @EmailSchema({ optional: true })
    email?: string;
 
    @ClassSchema(UserRefEntity, { optional: true })
