@@ -109,6 +109,10 @@ export function IDSchema(options?: Omit<StringSchemaOptions, 'format'>): Propert
    return applyDecorators(PropertySchema({ ...(options || {}), format: 'mongoId' }, 'string'));
 }
 
+export function EmailSchema(options?: Omit<StringSchemaOptions, 'format'>): PropertyDecorator {
+   return applyDecorators(PropertySchema({ ...(options || {}), format: 'email' }, 'string'));
+}
+
 export function DateSchema(options?: Omit<StringSchemaOptions, 'format'>): PropertyDecorator {
    return applyDecorators(PropertySchema({ ...(options || {}), format: 'date-time' }, 'string'));
 }

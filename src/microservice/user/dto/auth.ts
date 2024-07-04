@@ -1,4 +1,4 @@
-import { IPickType, PasswordSchema, StringSchema } from '@shared-library';
+import { EmailSchema, IPickType, PasswordSchema, StringSchema } from '@shared-library';
 
 export class UserSignUpDto {
    @StringSchema({ optional: true, swagger: { description: 'The name of user', example: 'Rainy' } })
@@ -7,7 +7,7 @@ export class UserSignUpDto {
    @StringSchema({ swagger: { description: 'The username of user', example: 'rainy.mi' } })
    username: string;
 
-   @StringSchema({ format: 'email', swagger: { description: 'The email of user', example: 'rainy.mi@email.com' } })
+   @EmailSchema({ swagger: { description: 'The email of user', example: 'rainy.mi@email.com' } })
    email: string;
 
    @PasswordSchema({
