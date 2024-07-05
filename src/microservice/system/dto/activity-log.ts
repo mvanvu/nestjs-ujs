@@ -1,27 +1,5 @@
 import { Prisma } from '.prisma/system';
-import {
-   BooleanSchema,
-   JsonSchema,
-   ClassSchema,
-   StringSchema,
-   IDSchema,
-   NameSchema,
-   EmailSchema,
-} from '@shared-library';
-
-export class ActivityLogAuthor {
-   @IDSchema()
-   id: string;
-
-   @NameSchema({ optional: true })
-   name?: string;
-
-   @NameSchema({ optional: true })
-   username?: string;
-
-   @EmailSchema({ optional: true })
-   email?: string;
-}
+import { BooleanSchema, JsonSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
 
 export class ActivityLogDto {
    @BooleanSchema()
@@ -36,10 +14,10 @@ export class ActivityLogDto {
    @JsonSchema({ optional: true, swagger: false })
    dataResult?: { origin: any };
 
-   @ClassSchema(ActivityLogAuthor, { optional: true })
-   author?: ActivityLogAuthor;
+   @ClassSchema(UserRefEntity, { optional: true })
+   author?: UserRefEntity;
 
-   @StringSchema({ optional: true, format: 'ipV4' })
+   @StringSchema({ optional: true })
    ipAddress?: string;
 
    @StringSchema({ optional: true })

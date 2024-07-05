@@ -2,3 +2,8 @@ export * from './activity-log.provider';
 export * from './mailer.provider';
 export * from './system-config.service';
 export * from './purge-cache.provider';
+export * from './file.mime';
+export * from './file.provider.interface';
+export * from './file.provider.local';
+export * from './file.provider.google-drive';
+export * from './file.provider';

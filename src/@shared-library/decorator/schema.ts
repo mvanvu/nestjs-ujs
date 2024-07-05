@@ -65,9 +65,13 @@ export function PropertySchema<T extends ValidSchema>(
                break;
 
             case 'enum':
+               const { ref: enumArray } = (options || {}) as EnumSchemaOptions;
+               swaggerOptions.enum = each ? [enumArray] : enumArray;
+               break;
+
             case 'class':
-               const { ref } = (options || {}) as EnumSchemaOptions | ClassSchemaOptions;
-               swaggerOptions.enum = each ? [ref] : ref;
+               const { ref: classRef } = (options || {}) as EnumSchemaOptions | ClassSchemaOptions;
+               swaggerOptions.type = each ? [classRef] : classRef;
                break;
          }
       }
@@ -132,4 +136,12 @@ export function IntSchema(options?: Omit<NumberSchemaOptions, 'integer'>): Prope
 
 export function UIntSchema(options?: Omit<NumberSchemaOptions, 'integer'>): PropertyDecorator {
    return applyDecorators(PropertySchema({ ...(options || {}), integer: true, min: 0 }, 'number'));
+}
+
+export function HtmlSchema(options?: Omit<StringSchemaOptions, 'transform'>): PropertyDecorator {
+   return applyDecorators(PropertySchema({ ...(options || {}), transform: 'safeHtml' }, 'string'));
+}
+
+export function RawSchema(options?: Omit<StringSchemaOptions, 'transform'>): PropertyDecorator {
+   return applyDecorators(PropertySchema({ ...(options || {}), transform: false }, 'string'));
 }

@@ -9,6 +9,7 @@ import {
    EmailSchema,
    NameSchema,
    ImageSchema,
+   HtmlSchema,
 } from '@shared-library';
 
 export class CreateRestaurantDto {
@@ -24,7 +25,7 @@ export class CreateRestaurantDto {
    @NameSchema()
    name: string;
 
-   @StringSchema({ optional: true, transform: 'safeHtml' })
+   @HtmlSchema({ optional: true })
    description?: string;
 
    @ImageSchema({ optional: true })

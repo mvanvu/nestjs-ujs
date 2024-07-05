@@ -20,7 +20,19 @@ export class ActivityLogProvider {
    private readonly clientProxy: ClientProxy;
 
    private hideSecret(data: any, secretDeep?: boolean): void {
-      const secretKeys: string[] = ['secret', 'token', 'pass', 'hash', 'password', 'cardNumber', 'cvc', 'cvv'];
+      const secretKeys: string[] = [
+         'secret',
+         'secrets',
+         'token',
+         'tokens',
+         'pass',
+         'hash',
+         'password',
+         'pwd',
+         'cardNumber',
+         'cvc',
+         'cvv',
+      ];
 
       if (Is.array(data)) {
          for (const datum of data) {
@@ -61,7 +73,7 @@ export class ActivityLogProvider {
          success &&
          data.dataResult.origin?.data.user
       ) {
-         data.author = BaseEntity.bindToClass(UserRefEntity, data.dataResult.origin.data.user);
+         data.author = BaseEntity.bindToClass(data.dataResult.origin.data.user, UserRefEntity);
       }
 
       if (data.dataInput.origin?.meta?.user) {

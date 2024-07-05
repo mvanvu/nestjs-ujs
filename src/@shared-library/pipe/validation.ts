@@ -49,13 +49,13 @@ export function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, white
       // Cleanup data
       const notAcceptedProps: string[] = [];
 
-      for (const prop in data) {
+      for (const prop in dataValue) {
          if (!props.includes(prop)) {
             if (whiteList !== true) {
                notAcceptedProps.push(prop);
             }
 
-            delete data[prop];
+            delete dataValue[prop];
          }
       }
 
@@ -98,11 +98,28 @@ export function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, white
             case 'string':
                const stringSchemaOptions = schemaOptions as StringSchemaOptions;
 
+               if (propValue === '' && stringSchemaOptions.empty === 'skip') {
+                  delete dataValue[property];
+                  continue;
+               }
+
+               if (
+                  !Is.string(propValue, {
+                     format: stringSchemaOptions.format,
+                     isArray: stringSchemaOptions.isArray,
+                     minLength: stringSchemaOptions.minLength,
+                     maxLength: stringSchemaOptions.maxLength,
+                     notEmpty: stringSchemaOptions.empty !== false,
+                  })
+               ) {
+                  appendError(pathKey, stringSchemaOptions.code || 'IS_STRING', stringSchemaOptions.message);
+               }
+
                // Check to transform to other type of value
-               if (Is.string(dataValue)) {
+               else {
                   switch (stringSchemaOptions.transform) {
                      case 'safeHtml':
-                        propValue = Transform.trim(Transform.toSafeHtml(propValue));
+                        dataValue[property] = propValue = Transform.clean(propValue, ['toSafeHtml', 'trim']);
                         break;
 
                      case 'format':
@@ -130,23 +147,6 @@ export function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, white
                         propValue = Transform.trim(Transform.toStripTags(propValue));
                         break;
                   }
-               }
-
-               if (propValue === '' && stringSchemaOptions.empty === 'skip') {
-                  delete dataValue[property];
-                  continue;
-               }
-
-               if (
-                  !Is.string(propValue, {
-                     format: stringSchemaOptions.format ?? 'trim', // Defaults to trim
-                     isArray: stringSchemaOptions.isArray,
-                     minLength: stringSchemaOptions.minLength,
-                     maxLength: stringSchemaOptions.maxLength,
-                     notEmpty: stringSchemaOptions.empty !== false,
-                  })
-               ) {
-                  appendError(pathKey, stringSchemaOptions.code || 'IS_STRING', stringSchemaOptions.message);
                }
 
                break;
@@ -234,24 +234,30 @@ export function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, white
 
                break;
          }
+
+         // Update data value
+         dataValue[property] = propValue;
       }
+
+      return dataValue;
    };
 
-   handleValidate(data, DTOClassRef);
+   const cleanedData = handleValidate(data, DTOClassRef);
 
    if (!Is.empty(errors)) {
       ThrowException(errors);
    }
 
-   return data;
+   return cleanedData;
 }
 
 @Injectable()
 export class ValidationPipe implements PipeTransform {
    constructor(private readonly options?: { whiteList?: boolean }) {}
 
-   transform(value: any, meta: ArgumentMetadata): ObjectRecord {
+   transform(value: any, meta: ArgumentMetadata): any {
       const { metatype: ClassContructor } = meta;
-      return validateDTO(value, ClassContructor, this.options?.whiteList);
+
+      return Is.class(ClassContructor) ? validateDTO(value, ClassContructor, this.options?.whiteList) : value;
    }
 }

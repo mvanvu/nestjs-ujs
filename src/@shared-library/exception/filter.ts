@@ -39,7 +39,7 @@ export class ExceptionFilter implements NestExceptionFilter {
          response.status(status).json(jsonRes);
       } else {
          if (isDevMode) {
-            console.debug(`Microservice ${appConfig.get('appEnv')} executed ERROR: ${JSON.stringify(exception)}`);
+            console.debug(`Microservice ${appConfig.get('appEnv')} executed ERROR:`, exception);
          }
 
          return throwError(() =>

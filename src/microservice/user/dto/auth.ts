@@ -27,7 +27,7 @@ export class UserSignUpDto {
 export class UserSignInDto extends IPickType(UserSignUpDto, ['username', 'password']) {}
 
 export class AuthTokenDto {
-   @StringSchema({ empty: false })
+   @StringSchema({ empty: false, format: 'jwt' })
    token: string;
 }
 

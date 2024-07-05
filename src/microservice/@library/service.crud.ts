@@ -21,7 +21,7 @@ import {
    MessageMetaProvider,
    BaseEntity,
 } from '@shared-library';
-import { DateTime, Is, ObjectRecord, Registry, Transform, Util } from '@mvanvu/ujs';
+import { DateTime, Is, ObjectRecord, Registry, Transform, TransformType, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
@@ -306,8 +306,8 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
 
             if (castAs) {
                const typeTransform = castAs.filter((asType) =>
-                  ['number', 'unumber', 'int', 'uint', 'boolean'].includes(asType),
-               );
+                  ['toNumber', 'toBoolean'].includes(asType),
+               ) as TransformType[];
                valueArray = valueArray.map((value) => Transform.clean(value, typeTransform));
             }
 
@@ -361,12 +361,12 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       let limit: number =
          query.limit === undefined || !query.limit.toString().match(/^[0-9]+$/)
             ? defaultLimit
-            : Transform.toUInt(query.limit);
+            : Transform.toNumber(query.limit);
       if (limit === 0 || (maxLimit && maxLimit < limit)) {
          limit = maxLimit;
       }
 
-      const page = Transform.toUInt(query.page) || 1;
+      const page = Transform.toNumber(query.page) || 1;
       modelParams.take = limit;
       modelParams.skip = (page - 1) * limit;
       Object.assign(query, { page, limit, q });

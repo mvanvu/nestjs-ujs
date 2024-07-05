@@ -1,12 +1,4 @@
-import {
-   EnumSchema,
-   IPartialType,
-   ClassSchema,
-   StringSchema,
-   IDSchema,
-   NameSchema,
-   ImageSchema,
-} from '@shared-library';
+import { EnumSchema, IPartialType, ClassSchema, IDSchema, NameSchema, ImageSchema, HtmlSchema } from '@shared-library';
 import { MetadataDto } from './metadata';
 import { AvailableStatus } from '.prisma/content';
 
@@ -20,7 +12,7 @@ export class CreatePostDto {
    @NameSchema()
    name: string;
 
-   @StringSchema({ optional: true })
+   @HtmlSchema({ optional: true })
    description?: string;
 
    @ImageSchema({ optional: true })

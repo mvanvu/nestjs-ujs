@@ -118,7 +118,7 @@ export class AppModule {
       app.enableShutdownHooks();
       app.use(helmet());
 
-      const staticPath = serviceConfig.get('storage.upload.localPath');
+      const staticPath = serviceConfig.get('system.upload.localPath');
 
       if (staticPath) {
          const rootPath = path.join(process.cwd(), staticPath, 'public');

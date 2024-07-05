@@ -1,10 +1,12 @@
 import { OnEvent } from '@gateway/@library';
-import { DataMetaResult, OnServiceResponse, UserEntity, eventConstant } from '@shared-library';
+import { DataMetaResult, EntityResult, OnServiceResponse, UserEntity, eventConstant } from '@shared-library';
 import { injectProxy, serviceConfig } from '@metadata';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import * as fs from 'fs';
-import { SendMailDto } from '@microservice/system/dto';
+import { SendMailDto, SendTestMailDto } from '@microservice/system/dto';
+import { MessageInfoEntity } from '@microservice/system/entity';
+import { lastValueFrom } from 'rxjs';
 
 export type MailerTemplate = { index: string; resetPasswordBody: string; verifyAccountBody: string };
 const mailerTmplPath = process.cwd() + '/src/api-gateway/system/provider/mailer-template';
@@ -97,5 +99,17 @@ export class MailerProvider {
             this.systemProxy.emit(patterns.sendMail, data);
          }
       }
+   }
+
+   sendTestEmail(dto: SendTestMailDto): Promise<EntityResult<MessageInfoEntity | false>> {
+      const data: SendMailDto = {
+         to: [dto.email],
+         subject: dto.subject,
+         body: this.parseBody(dto.body),
+      };
+
+      return lastValueFrom(
+         this.systemProxy.send<EntityResult<MessageInfoEntity | false>, SendMailDto>(patterns.sendMail, data),
+      );
    }
 }

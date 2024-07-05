@@ -3,7 +3,7 @@ import { $Enums } from '.prisma/storage';
 import { FileEntity } from '../entity';
 
 export class UploadDto {
-   @StringSchema({ format: 'boolean', transform: 'format' })
+   @StringSchema({ format: 'boolean', transform: 'format', swagger: { type: Boolean } })
    isPublic: boolean;
 
    @EnumSchema(Object.values($Enums.FileType))

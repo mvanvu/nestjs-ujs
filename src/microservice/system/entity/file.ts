@@ -1,5 +1,5 @@
 import { BooleanSchema, EnumSchema, IDSchema, StringSchema, UIntSchema } from '@shared-library';
-import { $Enums } from '.prisma/storage';
+import { $Enums } from '.prisma/system';
 
 export class FileEntity {
    @IDSchema()
@@ -20,12 +20,12 @@ export class FileEntity {
    @StringSchema()
    mime: string;
 
-   @EnumSchema(Object.values($Enums.Provider))
-   provider: $Enums.Provider;
+   @EnumSchema(Object.values($Enums.SorageProvider))
+   provider: $Enums.SorageProvider;
 
    @StringSchema()
    providerId: string;
 
-   @StringSchema()
+   @StringSchema({ format: 'url' })
    url: string;
 }

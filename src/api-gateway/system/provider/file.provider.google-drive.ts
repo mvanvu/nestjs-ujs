@@ -5,10 +5,10 @@ import { Readable } from 'stream';
 import { Provider } from '.prisma/storage';
 import { StreamableFile } from '@nestjs/common';
 import { serviceConfig } from '@metadata';
-import { FinalUploadDto, UploadDto } from '@microservice/storage/dto';
-import { FileEntity } from '@microservice/storage/entity';
+import { FinalUploadDto, UploadDto } from '@microservice/system/dto';
+import { FileEntity } from '@microservice/system/entity';
 
-const storageConfig = serviceConfig.get('storage');
+const storageConfig = serviceConfig.get('system');
 
 export class FileProviderGoogleDrive implements FileProviderInterface {
    private readonly storage: v3.Drive;

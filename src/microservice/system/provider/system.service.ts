@@ -1,13 +1,13 @@
 import { Registry } from '@mvanvu/ujs';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
-import { CRUDResult, SystemConfigDto } from '@shared-library';
-import { ActivityLogDto } from '../dto';
-import { ActivityLogEntity } from '../entity';
-import { getSystemConfig, updateSystemConfig } from '@microservice/@library';
+import { BaseEntity, SystemConfigDto, UserRefEntity } from '@shared-library';
+import { ActivityLogDto, FinalUploadDto } from '../dto';
+import { ActivityLogEntity, FileEntity } from '../entity';
+import { BaseService, CRUDService, getSystemConfig, updateSystemConfig } from '@microservice/@library';
 
 @Injectable()
-export class SystemService {
+export class SystemService extends BaseService {
    @Inject(PrismaService) private readonly prisma: PrismaService;
 
    private readonly systemKey: string = 'system';
@@ -49,11 +49,20 @@ export class SystemService {
       );
    }
 
-   executeCRUD(): Promise<CRUDResult<ActivityLogEntity>> {
+   createCRUDService(): CRUDService<PrismaService> {
       return this.prisma
          .createCRUDService('ActivityLog')
          .validateDTOPipe(ActivityLogDto)
-         .entityResponse(ActivityLogEntity)
-         .execute();
+         .entityResponse(ActivityLogEntity);
+   }
+
+   async upload(data: FinalUploadDto): Promise<FileEntity> {
+      const user: UserRefEntity = this.meta.get('user');
+
+      if (user) {
+         Object.assign(data, { author: { id: user.id, username: user.username, email: user.email } });
+      }
+
+      return BaseEntity.bindToClass(await this.prisma.file.create({ data }), FileEntity);
    }
 }

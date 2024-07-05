@@ -3,8 +3,8 @@ import { MailerService, SystemService } from '../provider';
 import { serviceConfig } from '@metadata';
 import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 import { CRUDResult, SystemConfigDto } from '@shared-library';
-import { ActivityLogDto, SendMailDto } from '../dto';
-import { ActivityLogEntity, MessageInfoEntity } from '../entity';
+import { ActivityLogDto, FinalUploadDto, SendMailDto } from '../dto';
+import { ActivityLogEntity, FileEntity, MessageInfoEntity } from '../entity';
 const patterns = serviceConfig.get('system.patterns');
 
 @Controller()
@@ -29,11 +29,16 @@ export class SystemController {
 
    @MessagePattern(patterns.getActivityLog)
    executeCRUD(): Promise<CRUDResult<ActivityLogEntity>> {
-      return this.systemService.executeCRUD();
+      return this.systemService.createCRUDService().execute();
    }
 
    @EventPattern(patterns.sendMail)
    sendMail(dto: SendMailDto): Promise<MessageInfoEntity | false> {
       return this.mailerService.send(dto);
+   }
+
+   @MessagePattern(patterns.upload)
+   upload(@Payload() data: FinalUploadDto): Promise<FileEntity> {
+      return this.systemService.upload(data);
    }
 }

@@ -37,3 +37,29 @@ model ActivityLog {
     createdAt      DateTime @default(now())
     author         User?
 }
+
+enum SorageProvider {
+    Local
+    GoogleDrive
+}
+
+enum FileType {
+    Image
+    Video
+    Media
+    Document
+    Unknown
+}
+
+model File {
+    id         String         @id @default(auto()) @map("_id") @db.ObjectId
+    name       String
+    type       FileType
+    mime       String
+    size       Int            @db.Long
+    isPublic   Boolean
+    provider   SorageProvider
+    providerId String
+    createdAt  DateTime       @default(now())
+    author     User?
+}

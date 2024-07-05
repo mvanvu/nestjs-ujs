@@ -34,7 +34,7 @@ export class BaseEntity {
          }
 
          if (Is.func(entity['bind'])) {
-            Util.call(entity, entity['bind']);
+            Util.call(entity, entity['bind'], data);
          }
       }
 

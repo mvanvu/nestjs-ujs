@@ -18,7 +18,6 @@ export default {
       admin: {
          scope: USER_PERMISSION_ADMIN_SCOPE,
       },
-
       group: {
          create: 'user.group.create',
          read: 'user.group.read',

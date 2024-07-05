@@ -7,9 +7,9 @@ import { Transform } from '@mvanvu/ujs';
 import { serviceConfig } from '@metadata';
 import { ThrowException } from '@shared-library';
 import { allAcceptedFileTypes, fileTypes } from './file.mime';
-import { FinalUploadDto, UploadDto } from '@microservice/storage/dto';
-import { FileEntity } from '@microservice/storage/entity';
-const storageConfig = serviceConfig.get('storage');
+import { FinalUploadDto, UploadDto } from '@microservice/system/dto';
+import { FileEntity } from '@microservice/system/entity';
+const storageConfig = serviceConfig.get('system');
 
 @Injectable()
 export class FileProvider {
