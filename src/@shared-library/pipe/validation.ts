@@ -103,16 +103,21 @@ export function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, white
                   continue;
                }
 
-               if (
-                  !Is.string(propValue, {
-                     format: stringSchemaOptions.format,
-                     isArray: stringSchemaOptions.isArray,
-                     minLength: stringSchemaOptions.minLength,
-                     maxLength: stringSchemaOptions.maxLength,
-                     notEmpty: stringSchemaOptions.empty !== false,
-                  })
-               ) {
-                  appendError(pathKey, stringSchemaOptions.code || 'IS_STRING', stringSchemaOptions.message);
+               const notEmpty = stringSchemaOptions.empty !== false;
+               const stringMeta = {
+                  format: stringSchemaOptions.format,
+                  minLength: stringSchemaOptions.minLength,
+                  maxLength: stringSchemaOptions.maxLength,
+                  notEmpty,
+               };
+
+               if (!Is.string(propValue, { isArray: stringSchemaOptions.isArray, ...stringMeta })) {
+                  appendError(
+                     pathKey,
+                     stringSchemaOptions.code || 'IS_STRING',
+                     stringSchemaOptions.message,
+                     stringMeta,
+                  );
                }
 
                // Check to transform to other type of value
@@ -162,33 +167,44 @@ export function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, white
 
             case 'number':
                const numberSchemaOptions = schemaOptions as NumberSchemaOptions;
+               const numberMeta = {
+                  integer: numberSchemaOptions.integer,
+                  min: numberSchemaOptions.min,
+                  max: numberSchemaOptions.max,
+               };
 
-               if (
-                  !Is.number(propValue, {
-                     isArray: numberSchemaOptions.isArray,
-                     integer: numberSchemaOptions.integer,
-                     min: numberSchemaOptions.min,
-                     max: numberSchemaOptions.max,
-                  })
-               ) {
-                  appendError(pathKey, numberSchemaOptions.code || 'IS_NUMBER', numberSchemaOptions.message);
+               if (!Is.number(propValue, { isArray: numberSchemaOptions.isArray, ...numberMeta })) {
+                  appendError(
+                     pathKey,
+                     numberSchemaOptions.code || 'IS_NUMBER',
+                     numberSchemaOptions.message,
+                     numberMeta,
+                  );
                }
 
                break;
 
             case 'password':
                const passwordSchemaOptions = schemaOptions as PasswordSchemaOptions;
-               const isValidPassword = Is.strongPassword(propValue, {
-                  isArray: passwordSchemaOptions.isArray,
+               const passwordMeta = {
                   minLength: passwordSchemaOptions.minLength,
                   minLower: passwordSchemaOptions.minLower,
                   minUpper: passwordSchemaOptions.minUpper,
                   minNumber: passwordSchemaOptions.minNumber,
                   minSpecialChars: passwordSchemaOptions.minSpecialChars,
+               };
+               const isValidPassword = Is.strongPassword(propValue, {
+                  isArray: passwordSchemaOptions.isArray,
+                  ...passwordMeta,
                });
 
                if (!isValidPassword) {
-                  appendError(pathKey, passwordSchemaOptions.code || 'IS_PASSWORD', passwordSchemaOptions.message);
+                  appendError(
+                     pathKey,
+                     passwordSchemaOptions.code || 'IS_PASSWORD',
+                     passwordSchemaOptions.message,
+                     passwordMeta,
+                  );
                }
 
                if (passwordSchemaOptions.equalsTo && !Is.equals(propValue, dataValue[passwordSchemaOptions.equalsTo])) {
@@ -196,6 +212,7 @@ export function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, white
                      pathKey,
                      passwordSchemaOptions.code || 'IS_PASSWORD_NOT_EQUALS',
                      passwordSchemaOptions.message,
+                     { equalsTo: passwordSchemaOptions.equalsTo },
                   );
                }
 
@@ -205,7 +222,19 @@ export function validateDTO(data: any, DTOClassRef: ClassConstructor<any>, white
                const enumSchemaOptions = schemaOptions as EnumSchemaOptions;
 
                if (!Is.enum(propValue, { isArray: enumSchemaOptions.isArray, enumArray: enumSchemaOptions.ref })) {
-                  appendError(pathKey, enumSchemaOptions.code || 'IS_ENUM', enumSchemaOptions.message);
+                  const enumArray = [];
+
+                  for (let i = 0, n = enumSchemaOptions.ref.length; i < n && i < 10; i++) {
+                     enumArray.push(enumSchemaOptions.ref[i]);
+                  }
+
+                  enumArray.sort(() => Math.random() - 0.5);
+
+                  if (enumSchemaOptions.ref.length > 9) {
+                     enumArray.push('...');
+                  }
+
+                  appendError(pathKey, enumSchemaOptions.code || 'IS_ENUM', enumSchemaOptions.message, enumArray);
                }
 
                break;

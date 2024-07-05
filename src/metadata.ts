@@ -19,18 +19,23 @@ export const serviceListNames = Object.entries(serviceConfigData).map(([, servic
 
 export type ServiceName = (typeof serviceListNames)[number];
 
-export const permissionKeys: string[] = [];
+const permissionKeys: string[] = [];
 
+export const getPermissionKeys = (): string[] => {
+   if (!permissionKeys.length) {
+      for (const service in serviceConfigData) {
+         if (serviceConfigData[service].permissions) {
+            loadPermissionKeys(serviceConfigData[service].permissions, permissionKeys);
+         }
+      }
+   }
+
+   return permissionKeys;
+};
 let _app: NestExpressApplication | INestMicroservice;
 
 export const bootstrap = (app: NestExpressApplication | INestMicroservice): void => {
    _app = app;
-
-   for (const service in serviceConfigData) {
-      if (serviceConfigData[service].permissions) {
-         loadPermissionKeys(serviceConfigData[service].permissions, permissionKeys);
-      }
-   }
 };
 
 export const app = <

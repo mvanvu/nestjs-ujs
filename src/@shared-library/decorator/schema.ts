@@ -95,11 +95,11 @@ export function BooleanSchema(options?: BooleanSchemaOptions): PropertyDecorator
 }
 
 export function ClassSchema(ref: ClassConstructor<any>, options?: Omit<ClassSchemaOptions, 'ref'>): PropertyDecorator {
-   return applyDecorators(PropertySchema({ ref, ...(options || {}) }, 'class'));
+   return applyDecorators(PropertySchema({ ...(options || {}), ref }, 'class'));
 }
 
 export function EnumSchema(ref: any[], options?: Omit<EnumSchemaOptions, 'ref'>): PropertyDecorator {
-   return applyDecorators(PropertySchema({ ref, ...(options || {}) }, 'enum'));
+   return applyDecorators(PropertySchema({ ...(options || {}), ref }, 'enum'));
 }
 
 export function PasswordSchema(options?: PasswordSchemaOptions): PropertyDecorator {
