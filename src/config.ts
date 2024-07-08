@@ -1,5 +1,6 @@
 import { Registry } from '@mvanvu/ujs';
 const envConfig = Registry.from(process.env);
+const corsOrigin = envConfig.get<string>('CORS_ORIGIN', '*');
 const appConfigData = {
    nodeEnv: envConfig.get<'development' | 'production' | 'test'>('NODE_ENV'),
    appEnv: envConfig.get<'api-gateway' | 'system' | 'user' | 'order' | 'content'>('APP_ENV'),
@@ -11,7 +12,7 @@ const appConfigData = {
       prefix: envConfig.get<string>('API_PREFIX', 'api'),
       cors: {
          enable: envConfig.get<boolean>('CORS_ENABLED', true, 'toBoolean'),
-         origin: envConfig.get<string>('CORS_ORIGIN', '*').split(','),
+         origin: corsOrigin.includes(',') ? corsOrigin.split(',') : corsOrigin,
          methods: envConfig.get<string>('CORS_METHODS', '*').split(','),
       },
       throttler: envConfig

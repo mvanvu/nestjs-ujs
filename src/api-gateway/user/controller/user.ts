@@ -60,6 +60,16 @@ export class UserController {
    }
 
    @Public()
+   @Post('verify-token')
+   @ApiEntityResponse(UserEntity, {
+      summary: 'Validate the access/refresh token',
+      statusCode: HttpStatus.OK,
+   })
+   verifyToken(@Body() data: AuthTokenDto): Promise<EntityResult<UserEntity>> {
+      return this.userProxy.send(patterns.verifyToken, data);
+   }
+
+   @Public()
    @Post('signup')
    @ApiEntityResponse(UserEntity, { summary: 'Register a new user account', statusCode: HttpStatus.CREATED })
    signUp(@Body() data: UserSignUpDto): Promise<EntityResult<UserEntity>> {
