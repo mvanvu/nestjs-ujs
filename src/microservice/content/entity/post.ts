@@ -8,7 +8,7 @@ export class PostEntity {
    @Schema.mongoId().decorate()
    id: string;
 
-   @Schema.enum(Object.values(AvailableStatus)).decorate()
+   @Schema.enum(AvailableStatus).decorate()
    status: AvailableStatus;
 
    @Schema.content().decorate()

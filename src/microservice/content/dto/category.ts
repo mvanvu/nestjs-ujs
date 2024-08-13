@@ -7,7 +7,7 @@ export class CreateCategoryDto {
    @Schema.mongoId().optional().decorate()
    parentId?: string;
 
-   @Schema.enum(Object.values(AvailableStatus)).optional().decorate()
+   @Schema.enum(AvailableStatus).optional().decorate()
    status?: AvailableStatus;
 
    @Schema.content().decorate()

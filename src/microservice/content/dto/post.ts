@@ -4,7 +4,7 @@ import { AvailableStatus } from '.prisma/content';
 import { Schema } from '@mvanvu/ujs';
 
 export class CreatePostDto {
-   @Schema.enum(Object.values(AvailableStatus)).optional().decorate()
+   @Schema.enum(AvailableStatus).optional().decorate()
    status?: AvailableStatus;
 
    @Schema.mongoId().optional().decorate()
