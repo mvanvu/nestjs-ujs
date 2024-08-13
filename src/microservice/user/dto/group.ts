@@ -1,20 +1,21 @@
-import { EnumSchema, IDSchema, IPartialType, NameSchema, StringSchema } from '@shared-library';
+import { IPartialType } from '@shared-library';
 import { $Enums } from '.prisma/user';
+import { Schema } from '@mvanvu/ujs';
 
 export class CreateGroupDto {
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    description?: string;
 
-   @EnumSchema(Object.values($Enums.AvailableStatus), { optional: true })
+   @Schema.enum($Enums.AvailableStatus).decorate()
    status?: $Enums.AvailableStatus;
 
-   @IDSchema({ isArray: 'unique', optional: true })
+   @Schema.mongoId().array().optional().decorate()
    groups?: string[];
 
-   @IDSchema({ isArray: 'unique', optional: true })
+   @Schema.mongoId().array().optional().decorate()
    roles?: string[];
 }
 

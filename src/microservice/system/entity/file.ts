@@ -1,31 +1,31 @@
-import { BooleanSchema, EnumSchema, IDSchema, StringSchema, UIntSchema } from '@shared-library';
 import { $Enums } from '.prisma/system';
+import { Schema } from '@mvanvu/ujs';
 
 export class FileEntity {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @StringSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @UIntSchema()
+   @Schema.uint().decorate()
    size: number;
 
-   @BooleanSchema()
+   @Schema.boolean().decorate()
    isPublic: boolean;
 
-   @EnumSchema(Object.values($Enums.FileType))
+   @Schema.enum(Object.values($Enums.FileType)).decorate()
    type: $Enums.FileType;
 
-   @StringSchema()
+   @Schema.content().decorate()
    mime: string;
 
-   @EnumSchema(Object.values($Enums.SorageProvider))
+   @Schema.enum(Object.values($Enums.SorageProvider)).decorate()
    provider: $Enums.SorageProvider;
 
-   @StringSchema()
+   @Schema.content().decorate()
    providerId: string;
 
-   @StringSchema({ format: 'url' })
+   @Schema.imageUri().decorate()
    url: string;
 }

@@ -1,5 +1,5 @@
 import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy } from '@gateway/@library';
-import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseMongoIdPipe } from '@shared-library';
+import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseTypePipe } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -26,7 +26,7 @@ export class OrderItemController {
 
    @ApiEntityResponse(ItemEntity, { summary: 'Get detail of the item' })
    @Get(':id')
-   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<ItemEntity>> {
+   read(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<ItemEntity>> {
       return this.itemCRUD.read(id);
    }
 
@@ -38,13 +38,16 @@ export class OrderItemController {
 
    @Patch(':id')
    @ApiEntityResponse(ItemEntity, { summary: 'Update a item' })
-   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateItemDto): Promise<EntityResult<ItemEntity>> {
+   update(
+      @Param('id', ParseTypePipe('mongoId')) id: string,
+      @Body() data: UpdateItemDto,
+   ): Promise<EntityResult<ItemEntity>> {
       return this.itemCRUD.update(id, data);
    }
 
    @ApiEntityResponse(ItemEntity, { summary: 'Delete a item' })
    @Delete(':id')
-   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<ItemEntity>> {
+   delete(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<ItemEntity>> {
       return this.itemCRUD.delete(id);
    }
 }

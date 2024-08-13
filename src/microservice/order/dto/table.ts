@@ -1,17 +1,18 @@
 import { AvailableStatus } from '.prisma/order';
-import { EnumSchema, IPartialType, NumberSchema, StringSchema, IDSchema } from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { IPartialType } from '@shared-library';
 
 export class CreateTableDto {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    restaurantId: string;
 
-   @EnumSchema(Object.values(AvailableStatus), { optional: true })
+   @Schema.enum(AvailableStatus).optional().decorate()
    status?: AvailableStatus;
 
-   @NumberSchema({ min: 1, integer: true })
+   @Schema.uint(true).decorate()
    number: number;
 
-   @StringSchema({ optional: true, empty: false })
+   @Schema.content().decorate()
    area?: string;
 }
 

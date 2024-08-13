@@ -1,47 +1,40 @@
 import { ActivityLog } from '.prisma/system';
-import {
-   BooleanSchema,
-   JsonSchema,
-   ClassSchema,
-   StringSchema,
-   UserRefEntity,
-   DateSchema,
-   IDSchema,
-} from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { UserRefEntity } from '@shared-library';
 import { DetectResult } from 'node-device-detector';
 
 export class ActivityLogEntity {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @BooleanSchema()
+   @Schema.boolean().decorate()
    success: boolean;
 
-   @StringSchema()
+   @Schema.content().decorate()
    messagePattern: string;
 
-   @JsonSchema({ optional: true })
+   @Schema.object().optional().decorate()
    dataInput?: object;
 
-   @JsonSchema({ optional: true })
+   @Schema.object().optional().decorate()
    dataResult?: object;
 
-   @StringSchema({ optional: true, format: 'ipV4' })
+   @Schema.ipv4().optional().decorate()
    ipAddress?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    deviceType?: string;
 
-   @JsonSchema({ optional: true })
+   @Schema.object().optional().decorate()
    detectResult?: DetectResult;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    userAgent?: string;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    author?: UserRefEntity;
 
-   @DateSchema()
+   @Schema.dateTime().decorate()
    createdAt: Date;
 
    bind(entity: ActivityLog) {

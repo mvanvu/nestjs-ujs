@@ -9,9 +9,9 @@ export interface BaseSchemaOptions extends IsBaseOptions {
    message?: string;
 }
 
-export interface StringSchemaOptions extends BaseSchemaOptions, Omit<IsStringOptions, 'notEmpty'> {
+export interface StringSchemaOptions extends BaseSchemaOptions, IsStringOptions {
    transform?: 'safeHtml' | 'format' | false;
-   empty?: 'skip' | false;
+   skipEmpty?: boolean;
 }
 
 export interface NumberSchemaOptions extends BaseSchemaOptions {

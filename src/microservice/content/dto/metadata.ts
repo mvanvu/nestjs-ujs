@@ -1,21 +1,22 @@
-import { StringSchema } from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import {} from '@shared-library';
 
 export class MetadataDto {
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    title?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    description?: string;
 
-   @StringSchema({ optional: true, format: 'image' })
+   @Schema.imageUri().optional().decorate()
    image?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    author?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    robot?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    index?: string;
 }

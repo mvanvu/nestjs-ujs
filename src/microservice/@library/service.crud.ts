@@ -21,7 +21,7 @@ import {
    MessageMetaProvider,
    BaseEntity,
 } from '@shared-library';
-import { DateTime, Is, ObjectRecord, Registry, Transform, TransformType, Util } from '@mvanvu/ujs';
+import { DateTime, Is, ObjectRecord, Registry, Schema, Transform, TransformType, Util } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
@@ -655,7 +655,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       const meta = this.meta;
       const method = meta.get('method');
       const dto = meta.get('ctx').getData();
-      const isMongoId = Is.string(dto, { format: 'mongoId' });
+      const isMongoId = Schema.mongoId().check(dto);
 
       if (method === 'GET') {
          return isMongoId ? this.read<TResult>(dto) : this.paginate<TResult>(dto);
@@ -667,7 +667,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
 
       const userRef = meta.get('user', null);
 
-      if (method === 'PATCH' && Is.object(dto) && Is.string(dto.id, { format: 'mongoId' }) && Is.object(dto.data)) {
+      if (method === 'PATCH' && Is.object(dto) && Schema.mongoId().check(dto.id) && Is.object(dto.data)) {
          const DTOClassRef: ClassConstructor<any> =
             this.updateDTO ?? (this.createDTO ? IPartialType(this.createDTO) : undefined);
          const data = DTOClassRef ? validateDTO(dto.data, DTOClassRef) : dto.data;

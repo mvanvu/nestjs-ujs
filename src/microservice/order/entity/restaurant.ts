@@ -1,50 +1,43 @@
 import { AvailableStatus } from '.prisma/content';
-import {
-   EnumSchema,
-   IPickType,
-   ClassSchema,
-   StringSchema,
-   UserRefEntity,
-   DateSchema,
-   EmailSchema,
-} from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { IPickType, UserRefEntity } from '@shared-library';
 
 export class RestaurantEntity {
-   @StringSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @ClassSchema(UserRefEntity)
+   @Schema.classRef(UserRefEntity).decorate()
    owner: UserRefEntity;
 
-   @EnumSchema(Object.values(AvailableStatus))
+   @Schema.enum(AvailableStatus).decorate()
    status: AvailableStatus;
 
-   @StringSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    description?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.content().optional().decorate()
    address?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.content().optional().decorate()
    phoneNumber?: string;
 
-   @EmailSchema({ optional: true })
+   @Schema.email().optional().decorate()
    email?: string;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    author?: UserRefEntity;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    editor?: UserRefEntity;
 
-   @DateSchema()
+   @Schema.dateTime().decorate()
    createdAt: Date;
 
-   @DateSchema()
-   updatedAt: Date;
+   @Schema.dateTime().optional().decorate()
+   updatedAt?: Date;
 }
 
 export class RestaurantRefEntity extends IPickType(RestaurantEntity, ['id', 'name', 'owner']) {}

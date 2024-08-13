@@ -1,21 +1,20 @@
-import { IDSchema, ImageSchema, StringSchema } from '@shared-library';
-
+import { Schema } from '@mvanvu/ujs';
 export class MetadataEntity {
-   @IDSchema({ optional: true })
+   @Schema.string().optional().decorate()
    title?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    description?: string;
 
-   @ImageSchema({ optional: true })
+   @Schema.imageUri().optional().decorate()
    image?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    author?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    robot?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    index?: string;
 }

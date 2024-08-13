@@ -1,19 +1,20 @@
-import { EnumSchema, IPartialType, NameSchema, StringSchema } from '@shared-library';
+import { IPartialType } from '@shared-library';
 import { $Enums } from '.prisma/user';
 import { getPermissionKeys } from '@metadata';
+import { Schema } from '@mvanvu/ujs';
 const permissionKeys = getPermissionKeys();
 
 export class CreateRoleDto {
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    description?: string;
 
-   @EnumSchema(Object.values($Enums.AvailableStatus), { optional: true })
+   @Schema.enum($Enums.AvailableStatus).optional().decorate()
    status?: $Enums.AvailableStatus;
 
-   @EnumSchema(permissionKeys, { optional: true, isArray: 'unique' })
+   @Schema.enum(permissionKeys).array().optional().decorate()
    permissions?: string[];
 }
 

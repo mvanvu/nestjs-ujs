@@ -1,55 +1,47 @@
 import { AvailableStatus } from '.prisma/content';
 import { CategoryRef } from './category';
-import {
-   EnumSchema,
-   ClassSchema,
-   StringSchema,
-   UserRefEntity,
-   DateSchema,
-   IDSchema,
-   ImageSchema,
-   UIntSchema,
-} from '@shared-library';
+import { UserRefEntity } from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
 
 export class ToppingEntity {
-   @StringSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @UIntSchema()
+   @Schema.uint().decorate()
    price: number;
 }
 
 export class ItemEntity {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @EnumSchema(Object.values(AvailableStatus))
+   @Schema.enum(AvailableStatus).decorate()
    status: AvailableStatus;
 
-   @StringSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @ImageSchema({ optional: true })
+   @Schema.imageUri().optional().decorate()
    imageUrl?: string;
 
-   @UIntSchema()
+   @Schema.uint().decorate()
    basePrice: number;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).decorate()
    author?: UserRefEntity;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).decorate()
    editor?: UserRefEntity;
 
-   @DateSchema()
+   @Schema.dateTime().decorate()
    createdAt: Date;
 
-   @DateSchema()
-   updatedAt: Date;
+   @Schema.dateTime().optional().decorate()
+   updatedAt?: Date;
 
-   @ClassSchema(CategoryRef, { optional: true })
+   @Schema.classRef(CategoryRef).optional().decorate()
    category?: CategoryRef;
 
-   @ClassSchema(ToppingEntity, { optional: true })
+   @Schema.classRef(ToppingEntity).optional().decorate()
    topping?: ToppingEntity;
 }

@@ -1,43 +1,35 @@
 import { AvailableStatus } from '.prisma/order';
-import {
-   EnumSchema,
-   IPartialType,
-   NumberSchema,
-   ClassSchema,
-   IDSchema,
-   NameSchema,
-   ImageSchema,
-   UIntSchema,
-} from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { IPartialType } from '@shared-library';
 
 export class ItemToppingDto {
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @NumberSchema({ min: 0, integer: true })
+   @Schema.uint().decorate()
    price: number;
 }
 
 export class CreateItemDto {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    restaurantId: string;
 
-   @IDSchema()
+   @Schema.mongoId().decorate()
    categoryId: string;
 
-   @EnumSchema(Object.values(AvailableStatus))
+   @Schema.enum(AvailableStatus).optional().decorate()
    status?: AvailableStatus;
 
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @ImageSchema({ optional: true })
+   @Schema.imageUri().optional().decorate()
    imageUrl?: string;
 
-   @UIntSchema()
+   @Schema.uint().decorate()
    basePrice: number;
 
-   @ClassSchema(ItemToppingDto, { optional: true, isArray: 'unique' })
+   @Schema.classRef(ItemToppingDto).array().optional().decorate()
    toppings?: ItemToppingDto[];
 }
 

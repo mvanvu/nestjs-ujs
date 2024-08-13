@@ -1,28 +1,29 @@
 import { Prisma } from '.prisma/system';
-import { BooleanSchema, JsonSchema, ClassSchema, StringSchema, UserRefEntity } from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { UserRefEntity } from '@shared-library';
 
 export class ActivityLogDto {
-   @BooleanSchema()
+   @Schema.boolean().decorate()
    success: boolean;
 
-   @StringSchema({ empty: false })
+   @Schema.content().decorate()
    messagePattern: string;
 
-   @JsonSchema({ optional: true, swagger: false })
+   @Schema.object().optional().decorate()
    dataInput?: { origin: any };
 
-   @JsonSchema({ optional: true, swagger: false })
+   @Schema.object().optional().decorate()
    dataResult?: { origin: any };
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    author?: UserRefEntity;
 
-   @StringSchema({ optional: true })
+   @Schema.ipv4().optional().decorate()
    ipAddress?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    userAgent?: string;
 
-   @JsonSchema({ optional: true, swagger: false })
+   @Schema.object().optional().decorate()
    detectResult?: Prisma.InputJsonObject;
 }

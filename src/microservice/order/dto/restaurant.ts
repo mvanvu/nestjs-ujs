@@ -1,43 +1,33 @@
 import { AvailableStatus } from '.prisma/content';
-import {
-   EnumSchema,
-   IPartialType,
-   ClassSchema,
-   StringSchema,
-   UserRefEntity,
-   IDSchema,
-   EmailSchema,
-   NameSchema,
-   ImageSchema,
-   HtmlSchema,
-} from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { IPartialType, UserRefEntity } from '@shared-library';
 
 export class CreateRestaurantDto {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    ownerId: string;
 
-   @ClassSchema(UserRefEntity, { swagger: { readOnly: true } })
+   @Schema.classRef(UserRefEntity).decorate()
    owner: UserRefEntity;
 
-   @EnumSchema(Object.values(AvailableStatus), { optional: true })
+   @Schema.enum(AvailableStatus).optional().decorate()
    status?: AvailableStatus;
 
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @HtmlSchema({ optional: true })
+   @Schema.safeHTML().optional().decorate()
    description?: string;
 
-   @ImageSchema({ optional: true })
+   @Schema.imageUri().optional().decorate()
    imageUrl?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.content().optional().decorate()
    address?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.content().optional().decorate()
    phoneNumber?: string;
 
-   @EmailSchema({ optional: true })
+   @Schema.email().optional().decorate()
    email?: string;
 }
 

@@ -1,11 +1,12 @@
-import { EnumSchema, IPartialType, NameSchema } from '@shared-library';
+import { IPartialType } from '@shared-library';
 import { AvailableStatus } from '.prisma/content';
+import { Schema } from '@mvanvu/ujs';
 
 export class CreateTagDto {
-   @EnumSchema(Object.values(AvailableStatus), { optional: true })
+   @Schema.enum(AvailableStatus).optional().decorate()
    status?: AvailableStatus;
 
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 }
 

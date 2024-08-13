@@ -1,12 +1,5 @@
 import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy, User } from '@gateway/@library';
-import {
-   CRUDClient,
-   EntityResult,
-   PaginationResult,
-   ParseMongoIdPipe,
-   ThrowException,
-   UserEntity,
-} from '@shared-library';
+import { CRUDClient, EntityResult, PaginationResult, ParseTypePipe, ThrowException, UserEntity } from '@shared-library';
 import { CreateTableDto, UpdateTableDto, OrderPaginationQueryDto } from '@microservice/order/dto';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
@@ -37,7 +30,10 @@ export class OrderTableController {
 
    @ApiEntityResponse(TableEntity, { summary: 'Get detail of the table' })
    @Get(':id')
-   async read(@Param('id', ParseMongoIdPipe) id: string, @User() user: UserEntity): Promise<EntityResult<TableEntity>> {
+   async read(
+      @Param('id', ParseTypePipe('mongoId')) id: string,
+      @User() user: UserEntity,
+   ): Promise<EntityResult<TableEntity>> {
       const table = await this.tableCRUD.read<TableEntity>(id);
 
       if (!user.authorise(permissions.restaurant.read) && table.data.restaurant.owner.id !== user.id) {
@@ -74,7 +70,7 @@ export class OrderTableController {
    @Patch(':id')
    @ApiEntityResponse(TableEntity, { summary: 'Update a table' })
    async update(
-      @Param('id', ParseMongoIdPipe) id: string,
+      @Param('id', ParseTypePipe('mongoId')) id: string,
       @Body() data: UpdateTableDto,
       @User() user: UserEntity,
    ): Promise<EntityResult<TableEntity>> {
@@ -97,7 +93,7 @@ export class OrderTableController {
    @ApiEntityResponse(TableEntity, { summary: 'Delete a table' })
    @Delete(':id')
    async delete(
-      @Param('id', ParseMongoIdPipe) id: string,
+      @Param('id', ParseTypePipe('mongoId')) id: string,
       @User() user: UserEntity,
    ): Promise<EntityResult<TableEntity>> {
       // Find the restaurant of the current owner user

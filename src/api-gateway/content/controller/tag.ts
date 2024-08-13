@@ -1,5 +1,5 @@
 import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy, Permission } from '@gateway/@library';
-import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseMongoIdPipe } from '@shared-library';
+import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseTypePipe } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -28,7 +28,7 @@ export class ContentTagController {
    @Permission({ key: permissions.tag.read, adminScope: true })
    @ApiEntityResponse(TagEntity, { summary: 'Get detail of the tag' })
    @Get(':id')
-   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<TagEntity>> {
+   read(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<TagEntity>> {
       return this.postCRUD.read(id);
    }
 
@@ -42,14 +42,17 @@ export class ContentTagController {
    @Permission({ key: permissions.tag.update, adminScope: true })
    @Patch(':id')
    @ApiEntityResponse(TagEntity, { summary: 'Update a tag' })
-   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateTagDto): Promise<EntityResult<TagEntity>> {
+   update(
+      @Param('id', ParseTypePipe('mongoId')) id: string,
+      @Body() data: UpdateTagDto,
+   ): Promise<EntityResult<TagEntity>> {
       return this.postCRUD.update(id, data);
    }
 
    @Permission({ key: permissions.tag.delete, adminScope: true })
    @ApiEntityResponse(TagEntity, { summary: 'Delete a tag' })
    @Delete(':id')
-   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<TagEntity>> {
+   delete(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<TagEntity>> {
       return this.postCRUD.delete(id);
    }
 }

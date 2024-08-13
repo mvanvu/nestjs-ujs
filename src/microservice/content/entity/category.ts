@@ -1,57 +1,50 @@
 import { AvailableStatus } from '.prisma/content';
-import {
-   UserRefEntity,
-   StringSchema,
-   EnumSchema,
-   ClassSchema,
-   DateSchema,
-   IDSchema,
-   NameSchema,
-} from '@shared-library';
+import { UserRefEntity } from '@shared-library';
 import { MetadataEntity } from './metadata';
+import { Schema } from '@mvanvu/ujs';
 
 export class CategoryRef {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @StringSchema()
+   @Schema.content().decorate()
    path: string;
 }
 
 export class CategoryEntity {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @EnumSchema(Object.values(AvailableStatus))
+   @Schema.enum(Object.values(AvailableStatus)).decorate()
    status: AvailableStatus;
 
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @StringSchema()
+   @Schema.content().decorate()
    path: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    description?: string;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    author?: UserRefEntity;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    editor?: UserRefEntity;
 
-   @DateSchema()
+   @Schema.dateTime().decorate()
    createdAt: Date;
 
-   @DateSchema()
-   updatedAt: Date;
+   @Schema.dateTime().optional().decorate()
+   updatedAt?: Date;
 
-   @ClassSchema(CategoryRef, { optional: true })
+   @Schema.classRef(CategoryRef).optional().decorate()
    parent?: CategoryRef;
 
-   @ClassSchema(MetadataEntity, { optional: true })
+   @Schema.classRef(MetadataEntity).optional().decorate()
    metadata?: MetadataEntity;
 }

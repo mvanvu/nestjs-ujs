@@ -1,21 +1,21 @@
+import { Schema } from '@mvanvu/ujs';
 import { i18n } from '../i18n';
-import { EnumSchema, StringSchema } from '../decorator/schema';
 
 const langCodes = Object.keys(i18n).map((code) => `${code.substring(0, 2)}-${code.substring(2)}`);
 
 export class PaginationQueryDto {
-   @StringSchema({ optional: true, empty: 'skip' })
+   @Schema.string().optional().decorate()
    q?: string;
 
-   @StringSchema({ optional: true, format: 'unsignedInteger', empty: 'skip' })
+   @Schema.strUInt().optional().decorate()
    page?: number;
 
-   @StringSchema({ optional: true, format: 'unsignedInteger', empty: 'skip' })
+   @Schema.strUInt().optional().decorate()
    limit?: number;
 
-   @StringSchema({ optional: true })
+   @Schema.trim().optional().decorate()
    order?: string;
 
-   @EnumSchema(langCodes, { optional: true })
+   @Schema.enum(langCodes).optional().decorate()
    lang?: string;
 }

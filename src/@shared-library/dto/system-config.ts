@@ -1,37 +1,37 @@
-import { EnumSchema, NumberSchema, ClassSchema, StringSchema, EmailSchema } from '@shared-library/decorator';
+import { Schema } from '@mvanvu/ujs';
 import { MailerTransporter } from '../type/common';
 
 const transporters: MailerTransporter[] = ['SMTP'];
 
 export class MailerSMTPTransporterDto {
-   @StringSchema({ empty: false })
+   @Schema.string().decorate()
    host: string;
 
-   @NumberSchema({ min: 0 })
+   @Schema.uint().decorate()
    port: number;
 
-   @StringSchema({ empty: false })
+   @Schema.string({ minLength: 1 }).decorate()
    user: string;
 
-   @StringSchema({ empty: false })
+   @Schema.string({ minLength: 4 }).decorate()
    pass: string;
 }
 
 export class MailerConfigDto {
-   @EmailSchema()
+   @Schema.email().decorate()
    appMail: string;
 
-   @EnumSchema(transporters)
+   @Schema.enum(transporters).decorate()
    transporter: MailerTransporter;
 
-   @ClassSchema(MailerSMTPTransporterDto, { optional: true })
+   @Schema.classRef(MailerSMTPTransporterDto).optional().decorate()
    smtp?: MailerSMTPTransporterDto;
 }
 
 export class SystemConfigDto {
-   @ClassSchema(MailerConfigDto, { optional: true })
+   @Schema.classRef(MailerConfigDto).optional().decorate()
    mailer?: MailerConfigDto;
 
-   @NumberSchema({ optional: true, integer: true, min: 1 })
+   @Schema.uint(false).optional().decorate()
    removeActivityLogsAfterDays?: number;
 }

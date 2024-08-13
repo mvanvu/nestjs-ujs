@@ -1,26 +1,29 @@
-import { EmailSchema, RawSchema, StringSchema } from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class SendMailDto {
-   @StringSchema({ optional: true, empty: false })
+   @Schema.string().optional().decorate()
    from?: string;
 
-   @EmailSchema({ isArray: 'unique' })
+   @Schema.email().array().decorate()
    to: string[];
 
-   @StringSchema({ empty: false })
+   @Schema.content().decorate()
    subject: string;
 
-   @RawSchema({ empty: false })
+   @Schema.raw().decorate()
    body: string;
 }
 
 export class SendTestMailDto {
-   @EmailSchema()
+   @Schema.email().decorate()
    email: string;
 
-   @StringSchema({ empty: false, swagger: { example: 'Test send email' } })
+   @ApiProperty({ example: 'Test send email' })
+   @Schema.content().decorate()
    subject: string;
 
-   @RawSchema({ empty: false, swagger: { example: 'Send test mail successfully, this email for testing purpose' } })
+   @ApiProperty({ example: 'Send test mail successfully, this email for testing purpose' })
+   @Schema.raw().decorate()
    body: string;
 }

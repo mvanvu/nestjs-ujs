@@ -3,6 +3,7 @@ import {
    DataMetaResult,
    HttpRequest,
    PermissionOptions,
+   Schema,
    USER_PUBLIC_KEY,
    USER_ROLE_KEY,
    UserEntity,
@@ -13,7 +14,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom, timeout } from 'rxjs';
 import { injectProxy, serviceConfig, app as getApplication, appConfig } from '@metadata';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { Hash, Is } from '@mvanvu/ujs';
+import { Hash } from '@mvanvu/ujs';
 
 @Injectable()
 export class UserAuthGuard implements CanActivate {
@@ -42,7 +43,7 @@ export class UserAuthGuard implements CanActivate {
          const decode = Hash.jwt().decode(token);
          const userId = decode?.payload?.data?.id;
 
-         if (Is.string(userId, { format: 'mongoId' })) {
+         if (Schema.mongoId().check(userId)) {
             const cacheKey = `${userId}:users/verify-token`;
             let user: UserEntity = await this.cacheManager.get(cacheKey);
 

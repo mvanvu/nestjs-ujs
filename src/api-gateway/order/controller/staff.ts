@@ -1,5 +1,5 @@
 import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy } from '@gateway/@library';
-import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseMongoIdPipe } from '@shared-library';
+import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseTypePipe } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -26,7 +26,7 @@ export class OrderStaffController {
 
    @ApiEntityResponse(StaffEntity, { summary: 'Get detail of the staff' })
    @Get(':id')
-   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<StaffEntity>> {
+   read(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<StaffEntity>> {
       return this.staffCRUD.read(id);
    }
 
@@ -38,13 +38,16 @@ export class OrderStaffController {
 
    @Patch(':id')
    @ApiEntityResponse(StaffEntity, { summary: 'Update a staff' })
-   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateStaffDto): Promise<EntityResult<StaffEntity>> {
+   update(
+      @Param('id', ParseTypePipe('mongoId')) id: string,
+      @Body() data: UpdateStaffDto,
+   ): Promise<EntityResult<StaffEntity>> {
       return this.staffCRUD.update(id, data);
    }
 
    @ApiEntityResponse(StaffEntity, { summary: 'Delete a table' })
    @Delete(':id')
-   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<StaffEntity>> {
+   delete(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<StaffEntity>> {
       return this.staffCRUD.delete(id);
    }
 }

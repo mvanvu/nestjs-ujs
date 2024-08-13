@@ -6,50 +6,41 @@ import { IPickType } from './mapped-type';
 import { GroupEntity } from './group';
 import { USER_PERMISSION_ADMIN_SCOPE } from '@shared-library/constant/common';
 import { appConfig } from '@metadata';
-import {
-   EnumSchema,
-   ClassSchema,
-   StringSchema,
-   DateSchema,
-   EmailSchema,
-   ImageSchema,
-   IDSchema,
-   NameSchema,
-} from '@shared-library/decorator';
+import { Schema } from '@mvanvu/ujs';
 
 export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
 export class UserEntity {
-   @StringSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @EnumSchema(Object.values(UserStatus))
+   @Schema.enum(Object.values(UserStatus)).decorate()
    status: UserStatus;
 
-   @NameSchema({ optional: true })
+   @Schema.content().optional().decorate()
    name?: string;
 
-   @NameSchema({ optional: true })
+   @Schema.content().optional().decorate()
    username?: string;
 
-   @ImageSchema({ optional: true })
+   @Schema.imageUri().optional().decorate()
    avatarUrl?: string;
 
-   @EmailSchema()
+   @Schema.email().decorate()
    email: string;
 
-   @ClassSchema(UserGroupEntity, { optional: true })
+   @Schema.classRef(UserGroupEntity).optional().decorate()
    group?: UserGroupEntity;
 
-   @DateSchema()
+   @Schema.dateTime().decorate()
    createdAt: Date;
 
-   @IDSchema({ optional: true })
+   @Schema.mongoId().optional().decorate()
    createdBy?: string;
 
-   @DateSchema()
-   updatedAt: Date;
+   @Schema.dateTime().optional().decorate()
+   updatedAt?: Date;
 
-   @IDSchema({ optional: true })
+   @Schema.mongoId().optional().decorate()
    updatedBy?: string;
 
    private _permissions: string[];
@@ -85,7 +76,7 @@ export class UserEntity {
       if (rootUIDs.length) {
          for (const rootUid of rootUIDs) {
             if (
-               (Is.string(rootUid, { format: 'email' }) && this.email === rootUid) ||
+               (Schema.email().check(rootUid) && this.email === rootUid) ||
                this.id === rootUid ||
                (this.username && this.username === rootUid)
             ) {
@@ -171,18 +162,18 @@ export class UserEntity {
 }
 
 export class AuthTokenEntity {
-   @StringSchema()
+   @Schema.jwt().decorate()
    access: string;
 
-   @StringSchema()
+   @Schema.jwt().decorate()
    refresh: string;
 }
 
 export class AuthEntity {
-   @ClassSchema(UserEntity)
+   @Schema.classRef(UserEntity).decorate()
    user: UserEntity;
 
-   @ClassSchema(AuthTokenEntity)
+   @Schema.classRef(AuthTokenEntity).decorate()
    tokens: AuthTokenEntity;
 }
 

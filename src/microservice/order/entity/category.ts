@@ -1,33 +1,34 @@
 import { AvailableStatus } from '.prisma/order';
-import { EnumSchema, ClassSchema, StringSchema, UserRefEntity, DateSchema, IDSchema } from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { UserRefEntity } from '@shared-library';
 
 export class CategoryEntity {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @EnumSchema(Object.values(AvailableStatus))
+   @Schema.enum(AvailableStatus).decorate()
    status: AvailableStatus;
 
-   @StringSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    author?: UserRefEntity;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    editor?: UserRefEntity;
 
-   @DateSchema()
+   @Schema.dateTime().decorate()
    createdAt: Date;
 
-   @DateSchema()
-   updatedAt: Date;
+   @Schema.dateTime().optional().decorate()
+   updatedAt?: Date;
 }
 
 export class CategoryRef {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @StringSchema()
+   @Schema.content().decorate()
    name: string;
 }

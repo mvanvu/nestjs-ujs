@@ -1,25 +1,26 @@
 import { AvailableStatus } from '.prisma/content';
-import { UserRefEntity, EnumSchema, ClassSchema, DateSchema, IDSchema, NameSchema } from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { UserRefEntity } from '@shared-library';
 
 export class TagEntity {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @EnumSchema(Object.values(AvailableStatus))
+   @Schema.enum(AvailableStatus).decorate()
    status: AvailableStatus;
 
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    author?: UserRefEntity;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    editor?: UserRefEntity;
 
-   @DateSchema()
+   @Schema.dateTime().decorate()
    createdAt: Date;
 
-   @DateSchema()
-   updatedAt: Date;
+   @Schema.dateTime().optional().decorate()
+   updatedAt?: Date;
 }

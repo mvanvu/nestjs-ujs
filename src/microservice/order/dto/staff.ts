@@ -1,31 +1,24 @@
 import { StaffStatus } from '.prisma/order';
-import {
-   EnumSchema,
-   IPartialType,
-   StringSchema,
-   IDSchema,
-   EmailSchema,
-   NameSchema,
-   ImageSchema,
-} from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { IPartialType } from '@shared-library';
 
 export class CreateStaffDto {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    restaurantId: string;
 
-   @EnumSchema(Object.values(StaffStatus), { optional: true })
+   @Schema.enum(StaffStatus).optional().decorate()
    status?: StaffStatus;
 
-   @NameSchema({ optional: true })
+   @Schema.content().decorate()
    name: string;
 
-   @ImageSchema({ optional: true })
+   @Schema.imageUri().optional().decorate()
    imageUrl?: string;
 
-   @StringSchema({ optional: true })
+   @Schema.content().optional().decorate()
    phoneNumber?: string;
 
-   @EmailSchema({ optional: true })
+   @Schema.email().optional().decorate()
    email?: string;
 }
 

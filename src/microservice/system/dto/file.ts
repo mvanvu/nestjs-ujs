@@ -1,15 +1,18 @@
-import { EnumSchema, IOmitType, PropertySchema, StringSchema } from '@shared-library';
+import { IOmitType } from '@shared-library';
 import { $Enums } from '.prisma/storage';
 import { FileEntity } from '../entity';
+import { ApiProperty } from '@nestjs/swagger';
+import { Schema } from '@mvanvu/ujs';
 
 export class UploadDto {
-   @StringSchema({ format: 'boolean', transform: 'format', swagger: { type: Boolean } })
+   @Schema.strBool().decorate()
    isPublic: boolean;
 
-   @EnumSchema(Object.values($Enums.FileType))
+   @Schema.enum(Object.values($Enums.FileType)).decorate()
    fileType: $Enums.FileType;
 
-   @PropertySchema({ swagger: { type: 'file' } })
+   @ApiProperty({ type: 'file' })
+   @Schema.object().decorate()
    file: Express.Multer.File;
 }
 

@@ -1,9 +1,10 @@
-import { IDSchema, PaginationQueryDto } from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { PaginationQueryDto } from '@shared-library';
 
 export class OrderPaginationQueryDto extends PaginationQueryDto {
-   @IDSchema({ optional: true })
+   @Schema.mongoId().optional().decorate()
    restaurantId?: string;
 
-   @IDSchema({ optional: true, swagger: false })
+   @Schema.mongoId().optional().decorate()
    ownerId?: string;
 }

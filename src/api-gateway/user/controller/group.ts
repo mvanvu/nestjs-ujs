@@ -7,7 +7,7 @@ import {
    GroupEntity,
    PaginationQueryDto,
    PaginationResult,
-   ParseMongoIdPipe,
+   ParseTypePipe,
 } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { CreateGroupDto, UpdateGroupDto } from '@microservice/user/dto';
@@ -34,7 +34,7 @@ export class GroupController {
    @Permission({ key: permissions.group.read, adminScope: true })
    @ApiEntityResponse(GroupEntity, { summary: 'Get detail of the user group' })
    @Get(':id')
-   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<GroupEntity>> {
+   read(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<GroupEntity>> {
       return this.groupCRUD.read(id);
    }
 
@@ -48,14 +48,17 @@ export class GroupController {
    @Permission({ key: permissions.group.update, adminScope: true })
    @Patch(':id')
    @ApiEntityResponse(GroupEntity, { summary: 'Update an user group' })
-   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateGroupDto): Promise<EntityResult<GroupEntity>> {
+   update(
+      @Param('id', ParseTypePipe('mongoId')) id: string,
+      @Body() data: UpdateGroupDto,
+   ): Promise<EntityResult<GroupEntity>> {
       return this.groupCRUD.update(id, data);
    }
 
    @Permission({ key: permissions.group.delete, adminScope: true })
    @ApiEntityResponse(GroupEntity, { summary: 'Delete an user group' })
    @Delete(':id')
-   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<GroupEntity>> {
+   delete(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<GroupEntity>> {
       return this.groupCRUD.delete(id);
    }
 }

@@ -1,68 +1,60 @@
 import { $Enums, Group } from '.prisma/user';
-import {
-   EnumSchema,
-   NumberSchema,
-   ClassSchema,
-   StringSchema,
-   DateSchema,
-   IDSchema,
-   NameSchema,
-} from '../decorator/schema';
+import { Schema } from '@mvanvu/ujs';
 
 export class RoleGroupEntity {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @StringSchema({ isArray: 'unique' })
+   @Schema.string().array().decorate()
    permissions: string[];
 }
 
 export class ChildrenGroupEntity {
-   @StringSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @ClassSchema(RoleGroupEntity, { isArray: 'unique' })
+   @Schema.classRef(RoleGroupEntity).array().decorate()
    roles: RoleGroupEntity[];
 }
 
 export class GroupEntity {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @EnumSchema(Object.values($Enums.AvailableStatus))
+   @Schema.enum(Object.values($Enums.AvailableStatus)).decorate()
    status: $Enums.AvailableStatus;
 
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @StringSchema()
-   description: string;
+   @Schema.string().optional().decorate()
+   description?: string;
 
-   @DateSchema({ optional: true })
-   createdAt?: Date;
+   @Schema.dateTime().decorate()
+   createdAt: Date;
 
-   @IDSchema({ optional: true })
+   @Schema.mongoId().optional().decorate()
    createdBy?: string;
 
-   @DateSchema({ optional: true })
+   @Schema.dateTime().optional().decorate()
    updatedAt?: Date;
 
-   @IDSchema({ optional: true })
+   @Schema.mongoId().optional().decorate()
    updatedBy?: string;
 
-   @ClassSchema(ChildrenGroupEntity, { isArray: 'unique' })
+   @Schema.classRef(ChildrenGroupEntity).array().decorate()
    groups: ChildrenGroupEntity[];
 
-   @ClassSchema(RoleGroupEntity, { isArray: 'unique' })
+   @Schema.classRef(RoleGroupEntity).array().decorate()
    roles: RoleGroupEntity[];
 
-   @NumberSchema({ integer: true, min: 0 })
+   @Schema.uint().decorate()
    totalActiveUsers: number;
 
    bind(record?: Group & { _count: { users: number } }) {

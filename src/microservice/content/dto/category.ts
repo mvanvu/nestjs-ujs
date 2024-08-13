@@ -1,21 +1,22 @@
-import { EnumSchema, IPartialType, ClassSchema, StringSchema, IDSchema, NameSchema } from '@shared-library';
+import { IPartialType } from '@shared-library';
 import { MetadataDto } from './metadata';
 import { AvailableStatus } from '.prisma/content';
+import { Schema } from '@mvanvu/ujs';
 
 export class CreateCategoryDto {
-   @IDSchema({ optional: true })
+   @Schema.mongoId().optional().decorate()
    parentId?: string;
 
-   @EnumSchema(Object.values(AvailableStatus), { optional: true })
+   @Schema.enum(Object.values(AvailableStatus)).optional().decorate()
    status?: AvailableStatus;
 
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @StringSchema({ optional: true })
+   @Schema.string().optional().decorate()
    description?: string;
 
-   @ClassSchema(MetadataDto, { optional: true })
+   @Schema.classRef(MetadataDto).optional().decorate()
    metadata?: MetadataDto;
 }
 

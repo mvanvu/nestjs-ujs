@@ -1,2 +1,2 @@
-export * from './parse-mongo-id.pipe';
+export * from './schema';
 export * from './validation';

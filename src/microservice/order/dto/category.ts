@@ -1,11 +1,12 @@
 import { AvailableStatus } from '.prisma/order';
-import { EnumSchema, IPartialType, NameSchema } from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { IPartialType } from '@shared-library';
 
 export class CreateCategoryDto {
-   @EnumSchema(Object.values(AvailableStatus), { optional: true })
+   @Schema.enum(AvailableStatus).decorate()
    status?: AvailableStatus;
 
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 }
 

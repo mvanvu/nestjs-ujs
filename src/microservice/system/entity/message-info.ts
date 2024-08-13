@@ -1,19 +1,19 @@
-import { StringSchema } from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
 import Mail from 'nodemailer/lib/mailer';
 
 export class MessageInfoEntity {
-   @StringSchema({ empty: false })
+   @Schema.content().decorate()
    messageId: string;
 
-   @StringSchema({ isArray: 'unique' })
+   @Schema.content().array().decorate()
    accepted: Array<string | Mail.Address>;
 
-   @StringSchema({ isArray: 'unique' })
+   @Schema.content().array().decorate()
    rejected: Array<string | Mail.Address>;
 
-   @StringSchema({ isArray: 'unique' })
+   @Schema.content().array().decorate()
    pending: Array<string | Mail.Address>;
 
-   @StringSchema({ empty: false })
+   @Schema.content().decorate()
    response: string;
 }

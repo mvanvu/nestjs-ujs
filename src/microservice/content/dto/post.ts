@@ -1,24 +1,25 @@
-import { EnumSchema, IPartialType, ClassSchema, IDSchema, NameSchema, ImageSchema, HtmlSchema } from '@shared-library';
+import { IPartialType } from '@shared-library';
 import { MetadataDto } from './metadata';
 import { AvailableStatus } from '.prisma/content';
+import { Schema } from '@mvanvu/ujs';
 
 export class CreatePostDto {
-   @EnumSchema(Object.values(AvailableStatus), { optional: true })
+   @Schema.enum(Object.values(AvailableStatus)).optional().decorate()
    status?: AvailableStatus;
 
-   @IDSchema({ optional: true })
+   @Schema.mongoId().optional().decorate()
    categoryId?: string;
 
-   @NameSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @HtmlSchema({ optional: true })
+   @Schema.safeHTML().optional().decorate()
    description?: string;
 
-   @ImageSchema({ optional: true })
+   @Schema.imageUri().optional().decorate()
    imageUrl?: string;
 
-   @ClassSchema(MetadataDto, { optional: true })
+   @Schema.classRef(MetadataDto).optional().decorate()
    metadata?: MetadataDto;
 }
 

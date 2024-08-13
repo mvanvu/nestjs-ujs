@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
    PaginationQueryDto,
-   ParseMongoIdPipe,
+   ParseTypePipe,
    CRUDClient,
    AuthTokenEntity,
    UserEntity,
@@ -133,7 +133,7 @@ export class UserController {
    @Permission({ key: permissions.user.read, adminScope: true })
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin get the detail of user account' })
-   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<UserEntity>> {
+   read(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<UserEntity>> {
       return this.userCRUD.read(id);
    }
 
@@ -150,7 +150,7 @@ export class UserController {
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin update the user account' })
    async update(
-      @Param('id', ParseMongoIdPipe) id: string,
+      @Param('id', ParseTypePipe('mongoId')) id: string,
       @Body() data: UpdateUserDto,
       @User() author: UserEntity,
    ): Promise<EntityResult<UserEntity>> {
@@ -189,7 +189,7 @@ export class UserController {
    @ApiBearerAuth()
    @ApiEntityResponse(UserEntity, { summary: 'Admin delete an user account' })
    async delete(
-      @Param('id', ParseMongoIdPipe) id: string,
+      @Param('id', ParseTypePipe('mongoId')) id: string,
       @User() author: UserEntity,
    ): Promise<EntityResult<UserEntity>> {
       // Verify permission

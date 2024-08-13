@@ -1,4 +1,4 @@
-import { EventEmitter, Is, Registry, Util } from '@mvanvu/ujs';
+import { EventEmitter, Is, Registry, Schema, Util } from '@mvanvu/ujs';
 import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import {
@@ -70,7 +70,7 @@ export class BaseClientProxy {
 
          // Check to convert entity response
          if (options?.entityResponse && (Is.object(response.data) || Is.array(response.data))) {
-            if (Is.object(response.data, { isArray: true })) {
+            if (Schema.array(Schema.object()).check(response.data)) {
                response.data = response.data.map((datum: object) =>
                   BaseEntity.bindToClass(datum, options.entityResponse),
                );

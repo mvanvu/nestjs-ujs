@@ -1,43 +1,36 @@
 import { AvailableStatus, TableStatus } from '.prisma/order';
 import { RestaurantRefEntity } from './restaurant';
-import {
-   EnumSchema,
-   ClassSchema,
-   StringSchema,
-   UserRefEntity,
-   DateSchema,
-   IDSchema,
-   UIntSchema,
-} from '@shared-library';
+import { UserRefEntity } from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
 
 export class TableEntity {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @ClassSchema(RestaurantRefEntity)
+   @Schema.classRef(RestaurantRefEntity).decorate()
    restaurant: RestaurantRefEntity;
 
-   @EnumSchema(Object.values(AvailableStatus))
+   @Schema.enum(AvailableStatus).decorate()
    status: AvailableStatus;
 
-   @EnumSchema(Object.values(TableStatus), { optional: true })
+   @Schema.enum(TableStatus).optional().decorate()
    activityStatus?: TableStatus;
 
-   @UIntSchema({ min: 1 })
+   @Schema.uint(true).decorate()
    number: number;
 
-   @StringSchema({ optional: true })
+   @Schema.content().optional().decorate()
    area?: string;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    author?: UserRefEntity;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    editor?: UserRefEntity;
 
-   @DateSchema()
+   @Schema.dateTime().decorate()
    createdAt: Date;
 
-   @DateSchema()
-   updatedAt: Date;
+   @Schema.dateTime().optional().decorate()
+   updatedAt?: Date;
 }

@@ -4,7 +4,7 @@ import {
    EntityResult,
    PaginationQueryDto,
    PaginationResult,
-   ParseMongoIdPipe,
+   ParseTypePipe,
    UserRefEntity,
 } from '@shared-library';
 import { serviceConfig } from '@metadata';
@@ -39,7 +39,7 @@ export class OrderRestaurantController {
    @Permission({ key: permissions.restaurant.read, adminScope: true })
    @ApiEntityResponse(RestaurantEntity, { summary: 'Get detail of the restaurant' })
    @Get(':id')
-   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<RestaurantEntity>> {
+   read(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<RestaurantEntity>> {
       return this.restaurantCRUD.read(id);
    }
 
@@ -59,7 +59,7 @@ export class OrderRestaurantController {
    @Patch(':id')
    @ApiEntityResponse(RestaurantEntity, { summary: 'Update a restaurant' })
    update(
-      @Param('id', ParseMongoIdPipe) id: string,
+      @Param('id', ParseTypePipe('mongoId')) id: string,
       @Body() data: UpdateRestaurantDto,
    ): Promise<EntityResult<RestaurantEntity>> {
       return this.clientProxy.validateUserRef(data.ownerId, (userRef?: UserRefEntity) => {
@@ -75,7 +75,7 @@ export class OrderRestaurantController {
    @Permission({ key: permissions.restaurant.delete, adminScope: true })
    @ApiEntityResponse(RestaurantEntity, { summary: 'Delete a restaurant' })
    @Delete(':id')
-   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<RestaurantEntity>> {
+   delete(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<RestaurantEntity>> {
       return this.restaurantCRUD.delete(id);
    }
 }

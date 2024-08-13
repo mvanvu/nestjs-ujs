@@ -1,39 +1,32 @@
 import { StaffStatus } from '.prisma/order';
-import {
-   EnumSchema,
-   ClassSchema,
-   StringSchema,
-   UserRefEntity,
-   DateSchema,
-   IDSchema,
-   EmailSchema,
-} from '@shared-library';
+import { Schema } from '@mvanvu/ujs';
+import { UserRefEntity } from '@shared-library';
 
 export class StaffEntity {
-   @IDSchema()
+   @Schema.mongoId().decorate()
    id: string;
 
-   @EnumSchema(Object.values(StaffStatus))
+   @Schema.enum(StaffStatus).decorate()
    status: StaffStatus;
 
-   @StringSchema()
+   @Schema.content().decorate()
    name: string;
 
-   @StringSchema({ optional: true })
+   @Schema.content().optional().decorate()
    phoneNumber?: string;
 
-   @EmailSchema({ optional: true })
+   @Schema.email().optional().decorate()
    email?: string;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    author?: UserRefEntity;
 
-   @ClassSchema(UserRefEntity, { optional: true })
+   @Schema.classRef(UserRefEntity).optional().decorate()
    editor?: UserRefEntity;
 
-   @DateSchema()
+   @Schema.dateTime().decorate()
    createdAt: Date;
 
-   @DateSchema()
-   updatedAt: Date;
+   @Schema.dateTime().optional().decorate()
+   updatedAt?: Date;
 }

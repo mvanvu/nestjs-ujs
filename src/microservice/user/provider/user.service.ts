@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { Prisma, UserStatus, VerifyCode } from '.prisma/user';
 import * as argon2 from 'argon2';
-import { DateTime, Hash, Is, JWTError } from '@mvanvu/ujs';
+import { DateTime, Hash, Is, JWTError, Schema } from '@mvanvu/ujs';
 import { appConfig, serviceConfig } from '@metadata';
 import { BaseService, CRUDService } from '@microservice/@library';
 import {
@@ -121,7 +121,7 @@ export class UserService extends BaseService {
       fieldsException.validate();
       const OR: Prisma.UserWhereInput['OR'] = [{ username: { equals: username, mode: 'insensitive' } }];
 
-      if (Is.string(username, { format: 'email' })) {
+      if (Schema.email().check(username)) {
          OR.push({ email: { equals: username, mode: 'insensitive' } });
       }
 
