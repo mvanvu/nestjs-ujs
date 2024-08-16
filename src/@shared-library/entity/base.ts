@@ -3,11 +3,7 @@ import { validateDTO } from '../pipe/validation';
 import { Is, UJS_CLASS_PROPERTIES, Util } from '@mvanvu/ujs';
 
 export class BaseEntity {
-   static bindToClass<T>(
-      data: any,
-      ClassRef: ClassConstructor<T>,
-      options?: { validateSchema?: boolean; nullForUndefined?: boolean },
-   ): T {
+   static bindToClass<T>(data: any, ClassRef: ClassConstructor<T>, options?: { validateSchema?: boolean }): T {
       if (options?.validateSchema === true) {
          validateDTO(data, ClassRef);
       }
@@ -16,7 +12,7 @@ export class BaseEntity {
       const entity = new ClassRef();
 
       if (Is.object(data)) {
-         const props = ClassRef.prototype[UJS_CLASS_PROPERTIES] || {};
+         const props = Reflect.getMetadata(UJS_CLASS_PROPERTIES, ClassRef.prototype) || {};
 
          for (const prop in props) {
             if (data[prop] !== undefined) {

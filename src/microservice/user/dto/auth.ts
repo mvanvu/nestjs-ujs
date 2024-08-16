@@ -10,10 +10,10 @@ export class UserSignUpDto {
    @(Schema.email().eg('rainy.mi@email.com').decorate())
    email: string;
 
-   @(Schema.password().eg('MyStr0ngPassWord').decorate())
+   @(Schema.password().eg('MyStr0ngPassWord!').decorate())
    password: string;
 
-   @(Schema.password().eg('MyStr0ngPassWord').decorate())
+   @(Schema.password().eg('MyStr0ngPassWord!').decorate())
    password2: string;
 }
 
