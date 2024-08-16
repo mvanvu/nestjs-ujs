@@ -171,7 +171,6 @@ export class AuthTokenEntity {
 export class AuthEntity {
    @(Schema.classRef(UserEntity).decorate())
 
-   // @ApiProperty({ type: UserEntity })
    user: UserEntity;
 
    @(Schema.classRef(AuthTokenEntity).decorate())
