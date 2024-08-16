@@ -6,7 +6,7 @@
       }
    },
    "microservice": {
-      "list": ["user", "system", "content", "order", "storage"],
+      "list": ["user", "system", "content", "order"],
       "dependencies": {
          "exclude": [
             "helmet",
@@ -18,7 +18,8 @@
             "node-device-detector",
             "@nestjs/throttler",
             "nodemailer",
-            "pactum"
+            "pactum",
+            "@nestjs/swagger"
          ],
          "include": ["user:argon2", "mailer:nodemailer"]
       }
@@ -29,7 +30,6 @@
       "system": {},
       "content": {},
       "mailer": {},
-      "order": {},
-      "storage": {}
+      "order": {}
    }
 }

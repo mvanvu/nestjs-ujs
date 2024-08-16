@@ -1,19 +1,18 @@
 import { AvailableStatus } from '.prisma/order';
-import { Schema } from '@mvanvu/ujs';
-import { IPartialType } from '@shared-library';
+import { ClassRefSchema, Schema } from '@mvanvu/ujs';
 
 export class CreateTableDto {
-   @Schema.mongoId().decorate()
+   @(Schema.mongoId().decorate())
    restaurantId: string;
 
-   @Schema.enum(AvailableStatus).optional().decorate()
+   @(Schema.enum(AvailableStatus).optional().decorate())
    status?: AvailableStatus;
 
-   @Schema.uint(true).decorate()
+   @(Schema.uint(true).decorate())
    number: number;
 
-   @Schema.content().decorate()
+   @(Schema.content().decorate())
    area?: string;
 }
 
-export class UpdateTableDto extends IPartialType(CreateTableDto) {}
+export class UpdateTableDto extends ClassRefSchema.Partial(CreateTableDto) {}

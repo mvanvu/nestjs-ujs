@@ -1,7 +1,6 @@
 import { BaseSchemaOptions, ClassConstructor } from '../type';
-import { CLASS_PROPERTIES } from '../constant';
 import { validateDTO } from '../pipe/validation';
-import { Is, Util } from '@mvanvu/ujs';
+import { Is, UJS_CLASS_PROPERTIES, Util } from '@mvanvu/ujs';
 
 export class BaseEntity {
    static bindToClass<T>(
@@ -17,7 +16,7 @@ export class BaseEntity {
       const entity = new ClassRef();
 
       if (Is.object(data)) {
-         const props = ClassRef.prototype[CLASS_PROPERTIES] || {};
+         const props = ClassRef.prototype[UJS_CLASS_PROPERTIES] || {};
 
          for (const prop in props) {
             if (data[prop] !== undefined) {

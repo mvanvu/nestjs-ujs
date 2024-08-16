@@ -6,7 +6,6 @@ import {
    UpdateResult,
    CRUDResult,
    ClassConstructor,
-   IPartialType,
    validateDTO,
    availableStatuses,
    OnEntity,
@@ -21,7 +20,17 @@ import {
    MessageMetaProvider,
    BaseEntity,
 } from '@shared-library';
-import { DateTime, Is, ObjectRecord, Registry, Schema, Transform, TransformType, Util } from '@mvanvu/ujs';
+import {
+   ClassRefSchema,
+   DateTime,
+   Is,
+   ObjectRecord,
+   Registry,
+   Schema,
+   Transform,
+   TransformType,
+   Util,
+} from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
@@ -669,7 +678,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
 
       if (method === 'PATCH' && Is.object(dto) && Schema.mongoId().check(dto.id) && Is.object(dto.data)) {
          const DTOClassRef: ClassConstructor<any> =
-            this.updateDTO ?? (this.createDTO ? IPartialType(this.createDTO) : undefined);
+            this.updateDTO ?? (this.createDTO ? ClassRefSchema.Partial(this.createDTO) : undefined);
          const data = DTOClassRef ? validateDTO(dto.data, DTOClassRef) : dto.data;
 
          if (userRef) {

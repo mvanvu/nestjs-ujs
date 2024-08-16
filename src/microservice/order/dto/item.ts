@@ -1,36 +1,35 @@
 import { AvailableStatus } from '.prisma/order';
-import { Schema } from '@mvanvu/ujs';
-import { IPartialType } from '@shared-library';
+import { ClassRefSchema, Schema } from '@mvanvu/ujs';
 
 export class ItemToppingDto {
-   @Schema.content().decorate()
+   @(Schema.content().decorate())
    name: string;
 
-   @Schema.uint().decorate()
+   @(Schema.uint().decorate())
    price: number;
 }
 
 export class CreateItemDto {
-   @Schema.mongoId().decorate()
+   @(Schema.mongoId().decorate())
    restaurantId: string;
 
-   @Schema.mongoId().decorate()
+   @(Schema.mongoId().decorate())
    categoryId: string;
 
-   @Schema.enum(AvailableStatus).optional().decorate()
+   @(Schema.enum(AvailableStatus).optional().decorate())
    status?: AvailableStatus;
 
-   @Schema.content().decorate()
+   @(Schema.content().decorate())
    name: string;
 
-   @Schema.imageUri().optional().decorate()
+   @(Schema.imageUri().optional().decorate())
    imageUrl?: string;
 
-   @Schema.uint().decorate()
+   @(Schema.uint().decorate())
    basePrice: number;
 
-   @Schema.classRef(ItemToppingDto).array().optional().decorate()
+   @(Schema.classRef(ItemToppingDto).array().optional().decorate())
    toppings?: ItemToppingDto[];
 }
 
-export class UpdateItemDto extends IPartialType(CreateItemDto) {}
+export class UpdateItemDto extends ClassRefSchema.Partial(CreateItemDto) {}

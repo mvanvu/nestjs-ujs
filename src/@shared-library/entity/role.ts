@@ -2,24 +2,24 @@ import { $Enums } from '.prisma/user';
 import { Schema } from '@mvanvu/ujs';
 
 export class RoleEntity {
-   @Schema.mongoId().decorate()
+   @(Schema.mongoId().decorate())
    id: string;
 
-   @Schema.enum(Object.values($Enums.AvailableStatus)).decorate()
+   @(Schema.enum(Object.values($Enums.AvailableStatus)).decorate())
    status: $Enums.AvailableStatus;
 
-   @Schema.content().decorate()
+   @(Schema.content().decorate())
    name: string;
 
-   @Schema.string().optional().decorate()
+   @(Schema.string().optional().decorate())
    description?: string;
 
-   @Schema.dateTime().decorate()
+   @(Schema.dateTime().decorate())
    createdAt: Date;
 
-   @Schema.dateTime().optional().decorate()
+   @(Schema.dateTime().optional().decorate())
    updatedAt?: Date;
 
-   @Schema.string().array().decorate()
+   @(Schema.string().array().decorate())
    permissions: string[];
 }

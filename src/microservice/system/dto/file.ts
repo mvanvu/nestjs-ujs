@@ -1,19 +1,17 @@
-import { IOmitType } from '@shared-library';
 import { $Enums } from '.prisma/storage';
 import { FileEntity } from '../entity';
-import { ApiProperty } from '@nestjs/swagger';
-import { Schema } from '@mvanvu/ujs';
+import { ClassRefSchema, Schema } from '@mvanvu/ujs';
 
 export class UploadDto {
-   @Schema.strBool().decorate()
+   @(Schema.strBool().decorate())
    isPublic: boolean;
 
-   @Schema.enum(Object.values($Enums.FileType)).decorate()
+   @(Schema.enum($Enums.FileType).decorate())
    fileType: $Enums.FileType;
 
-   @ApiProperty({ type: 'file' })
-   @Schema.object().decorate()
+   // File validation has already exists from the @UseInterceptors(FileInterceptor('file')) so we disable the schema validate here
+   @(Schema.string().format('binary').validate(false).decorate())
    file: Express.Multer.File;
 }
 
-export class FinalUploadDto extends IOmitType(FileEntity, ['id', 'url']) {}
+export class FinalUploadDto extends ClassRefSchema.Omit(FileEntity, ['id', 'url']) {}

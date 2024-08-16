@@ -30,7 +30,7 @@ export class ExceptionFilter implements NestExceptionFilter {
 
          const status = Is.func(exception?.getStatus)
             ? exception.getStatus()
-            : exceptionResponse?.statusCode ?? HttpStatus.BAD_GATEWAY;
+            : (exceptionResponse?.statusCode ?? HttpStatus.BAD_GATEWAY);
 
          if (isDevMode) {
             jsonRes.stack = exception.stack;

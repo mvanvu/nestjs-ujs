@@ -19,6 +19,7 @@
       "noFallthroughCasesInSwitch": false,
       "allowJs": true,
       "checkJs": true,
+      "esModuleInterop": true, // Important for node-device-detector
       "paths": {
          "@metadata": ["src/metadata"],
          "@shared-library": ["src/@shared-library"],

@@ -49,7 +49,7 @@ class CoreModule {}
 class MicroserviceModule {
    static registerAsync(): DynamicModule {
       return {
-         module: CoreModule,
+         module: MicroserviceModule,
          imports: serviceListNames.map((serviceName) =>
             import(`./${serviceName}/${serviceName}.module`).then(
                (moduleRef) => moduleRef[`${Util.uFirst(serviceName)}Module`],
@@ -61,6 +61,7 @@ class MicroserviceModule {
 
 @Module({
    imports: [
+      CoreModule,
       ThrottlerModule.forRoot(appConfig.get('apiGateway.throttler')),
       ...serviceListNames.map((name) =>
          ClientsModule.registerAsync({
@@ -113,7 +114,7 @@ class MicroserviceModule {
 })
 export class AppModule {
    static async bootstrap(): Promise<void> {
-      const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
+      const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
       app.enableShutdownHooks();
       app.use(helmet());

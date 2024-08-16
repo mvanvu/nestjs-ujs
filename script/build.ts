@@ -1,5 +1,5 @@
 import { Is, ObjectRecord, Util } from '@mvanvu/ujs';
-import * as prompts from 'prompts';
+import prompts from 'prompts';
 import * as fs from 'fs';
 import { spawn } from 'child_process';
 

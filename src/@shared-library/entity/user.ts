@@ -1,46 +1,45 @@
-import { Is } from '@mvanvu/ujs';
+import { ClassRefSchema, Is } from '@mvanvu/ujs';
 import { UserStatus } from '.prisma/user';
 import { BaseEntity } from './base';
 import { PermissionOptions } from '../type/common';
-import { IPickType } from './mapped-type';
 import { GroupEntity } from './group';
 import { USER_PERMISSION_ADMIN_SCOPE } from '@shared-library/constant/common';
 import { appConfig } from '@metadata';
 import { Schema } from '@mvanvu/ujs';
 
-export class UserGroupEntity extends IPickType(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
+export class UserGroupEntity extends ClassRefSchema.Pick(GroupEntity, ['id', 'name', 'groups', 'roles']) {}
 export class UserEntity {
-   @Schema.mongoId().decorate()
+   @(Schema.mongoId().decorate())
    id: string;
 
-   @Schema.enum(Object.values(UserStatus)).decorate()
+   @(Schema.enum(Object.values(UserStatus)).decorate())
    status: UserStatus;
 
-   @Schema.content().optional().decorate()
+   @(Schema.content().optional().decorate())
    name?: string;
 
-   @Schema.content().optional().decorate()
+   @(Schema.content().optional().decorate())
    username?: string;
 
-   @Schema.imageUri().optional().decorate()
+   @(Schema.imageUri().optional().decorate())
    avatarUrl?: string;
 
-   @Schema.email().decorate()
+   @(Schema.email().decorate())
    email: string;
 
-   @Schema.classRef(UserGroupEntity).optional().decorate()
+   @(Schema.classRef(UserGroupEntity).optional().decorate())
    group?: UserGroupEntity;
 
-   @Schema.dateTime().decorate()
+   @(Schema.dateTime().decorate())
    createdAt: Date;
 
-   @Schema.mongoId().optional().decorate()
+   @(Schema.mongoId().optional().decorate())
    createdBy?: string;
 
-   @Schema.dateTime().optional().decorate()
+   @(Schema.dateTime().optional().decorate())
    updatedAt?: Date;
 
-   @Schema.mongoId().optional().decorate()
+   @(Schema.mongoId().optional().decorate())
    updatedBy?: string;
 
    private _permissions: string[];
@@ -162,19 +161,21 @@ export class UserEntity {
 }
 
 export class AuthTokenEntity {
-   @Schema.jwt().decorate()
+   @(Schema.jwt().decorate())
    access: string;
 
-   @Schema.jwt().decorate()
+   @(Schema.jwt().decorate())
    refresh: string;
 }
 
 export class AuthEntity {
-   @Schema.classRef(UserEntity).decorate()
+   @(Schema.classRef(UserEntity).decorate())
+
+   // @ApiProperty({ type: UserEntity })
    user: UserEntity;
 
-   @Schema.classRef(AuthTokenEntity).decorate()
+   @(Schema.classRef(AuthTokenEntity).decorate())
    tokens: AuthTokenEntity;
 }
 
-export class UserRefEntity extends IPickType(UserEntity, ['id', 'name', 'username', 'email', 'avatarUrl']) {}
+export class UserRefEntity extends ClassRefSchema.Pick(UserEntity, ['id', 'name', 'username', 'email', 'avatarUrl']) {}
