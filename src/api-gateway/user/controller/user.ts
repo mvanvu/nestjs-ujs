@@ -20,6 +20,7 @@ import {
    AuthTokenDto,
    SendResetPasswordCodeDto,
    ResetPasswordDto,
+   VerifyAccountDto,
 } from '@microservice/user/dto';
 import {
    BaseClientProxy,
@@ -82,7 +83,7 @@ export class UserController {
       summary: 'Activate the account by pass a verification code',
       statusCode: HttpStatus.OK,
    })
-   activateAccount(@Body() data: UserSignUpDto): Promise<EntityResult<UserEntity>> {
+   activateAccount(@Body() data: VerifyAccountDto): Promise<EntityResult<UserEntity>> {
       return this.userProxy.send(patterns.verifyAccount, data);
    }
 
