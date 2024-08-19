@@ -23,7 +23,7 @@ enum CommentStatus {
     Trashed
 }
 
-type User {
+type UserLite {
     id        String  @db.ObjectId
     name      String?
     username  String?
@@ -40,12 +40,17 @@ type Metadata {
     index       String?
 }
 
-type PostLike {
-    id       String  @db.ObjectId
+type PostLite {
+    id       String    @db.ObjectId
     name     String
     path     String
     imageUrl String?
-    author   User?
+    author   UserLite?
+}
+
+type CommentLite {
+    id   String @db.ObjectId
+    name String
 }
 
 model Category {
@@ -53,14 +58,20 @@ model Category {
     parentId    String?         @db.ObjectId
     status      AvailableStatus @default(Drafted)
     name        String
+    slug        String
     path        String
     description String?
     createdAt   DateTime        @default(now())
     updatedAt   DateTime?       @updatedAt
     metadata    Metadata?
-    author      User?
-    editor      User?
+    author      UserLite?
+    editor      UserLite?
     posts       Post[]
+    parent      Category?       @relation("NestedCategory", fields: [parentId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+    children    Category[]      @relation("NestedCategory")
+
+    @@unique([slug])
+    @@unique([path])
 }
 
 model Post {
@@ -69,15 +80,18 @@ model Post {
     category    Category?       @relation(fields: [categoryId], references: [id], onUpdate: Cascade, onDelete: Cascade)
     status      AvailableStatus @default(Drafted)
     name        String
+    slug        String
     path        String
     imageUrl    String?
     description String?
     metadata    Metadata?
     createdAt   DateTime        @default(now())
     updatedAt   DateTime?       @updatedAt
-    author      User?
-    editor      User?
-    postsTags   PostTag[]
+    author      UserLite?
+    editor      UserLite?
+
+    @@unique([slug])
+    @@unique([path])
 }
 
 model Tag {
@@ -86,29 +100,29 @@ model Tag {
     name      String          @unique
     createdAt DateTime        @default(now())
     updatedAt DateTime?       @updatedAt
-    author    User?
-    editor    User?
-    postsTags PostTag[]
-}
-
-model PostTag {
-    id     String @id @default(auto()) @map("_id") @db.ObjectId
-    postId String @db.ObjectId
-    post   Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-    tagId  String @db.ObjectId
-    tag    Tag    @relation(fields: [tagId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+    author    UserLite?
+    editor    UserLite?
 }
 
 model Comment {
     id        String        @id @default(auto()) @map("_id") @db.ObjectId
     status    CommentStatus @default(Pending)
-    post      PostLike
+    post      PostLite
     message   String
     createdAt DateTime      @default(now())
     updatedAt DateTime?     @updatedAt
-    author    User?
-    editor    User?
-    parentId  String?       @db.ObjectId
-    parent    Comment?      @relation(name: "NestedComment", fields: [parentId], references: [id], onUpdate: NoAction, onDelete: NoAction)
-    children  Comment[]     @relation(name: "NestedComment")
+    author    UserLite?
+    editor    UserLite?
+}
+
+model Reply {
+    id        String        @id @default(auto()) @map("_id") @db.ObjectId
+    status    CommentStatus @default(Pending)
+    post      PostLite
+    comment   CommentLite
+    message   String
+    createdAt DateTime      @default(now())
+    updatedAt DateTime?     @updatedAt
+    author    UserLite?
+    editor    UserLite?
 }

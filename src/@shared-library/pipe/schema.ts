@@ -43,3 +43,27 @@ export function ParseSchemaPipe(schema: BaseSchema) {
       }
    })();
 }
+
+export class ParseMongoIdPipe implements PipeTransform<any, string> {
+   transform(value: any): string {
+      const schema = Schema.mongoId();
+
+      if (!schema.check(value)) {
+         ThrowException(schema.getErrors());
+      }
+
+      return schema.getValue();
+   }
+}
+
+export class ParseIntIdPipe implements PipeTransform<any, string> {
+   transform(value: any): string {
+      const schema = Schema.uint(true);
+
+      if (!schema.check(value)) {
+         ThrowException(schema.getErrors());
+      }
+
+      return schema.getValue();
+   }
+}

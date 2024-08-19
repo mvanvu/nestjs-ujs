@@ -12,6 +12,9 @@ export class CreateCategoryDto {
    @(Schema.content().decorate())
    name: string;
 
+   @(Schema.content().format('slug').optional().decorate())
+   slug?: string;
+
    @(Schema.string().optional().decorate())
    description?: string;
 

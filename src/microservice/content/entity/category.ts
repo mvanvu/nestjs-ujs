@@ -7,8 +7,14 @@ export class CategoryRef {
    @(Schema.mongoId().decorate())
    id: string;
 
+   @(Schema.enum(AvailableStatus).decorate())
+   status: AvailableStatus;
+
    @(Schema.content().decorate())
    name: string;
+
+   @(Schema.content().format('slug').decorate())
+   slug: string;
 
    @(Schema.content().decorate())
    path: string;
@@ -24,7 +30,10 @@ export class CategoryEntity {
    @(Schema.content().decorate())
    name: string;
 
-   @(Schema.content().decorate())
+   @(Schema.content().format('slug').decorate())
+   slug: string;
+
+   @(Schema.content().format('path').decorate())
    path: string;
 
    @(Schema.string().optional().decorate())

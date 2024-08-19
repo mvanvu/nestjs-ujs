@@ -12,6 +12,9 @@ export class CreatePostDto {
    @(Schema.content().decorate())
    name: string;
 
+   @(Schema.content().format('slug').optional().decorate())
+   slug?: string;
+
    @(Schema.safeHTML().optional().decorate())
    description?: string;
 

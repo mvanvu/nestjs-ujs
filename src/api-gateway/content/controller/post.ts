@@ -1,5 +1,5 @@
 import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy, Permission } from '@gateway/@library';
-import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseTypePipe } from '@shared-library';
+import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseMongoIdPipe } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { CreatePostDto, UpdatePostDto } from '@microservice/content/dto';
 import { PostEntity } from '@microservice/content/entity';
@@ -28,7 +28,7 @@ export class ContentPostController {
    @Permission({ key: permissions.post.read, adminScope: true })
    @ApiEntityResponse(PostEntity, { summary: 'Get detail of the post' })
    @Get(':id')
-   read(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<PostEntity>> {
+   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<PostEntity>> {
       return this.postCRUD.read(id);
    }
 
@@ -42,17 +42,14 @@ export class ContentPostController {
    @Permission({ key: permissions.post.update, adminScope: true })
    @Patch(':id')
    @ApiEntityResponse(PostEntity, { summary: 'Update a post' })
-   update(
-      @Param('id', ParseTypePipe('mongoId')) id: string,
-      @Body() data: UpdatePostDto,
-   ): Promise<EntityResult<PostEntity>> {
+   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdatePostDto): Promise<EntityResult<PostEntity>> {
       return this.postCRUD.update(id, data);
    }
 
    @Permission({ key: permissions.post.delete, adminScope: true })
    @ApiEntityResponse(PostEntity, { summary: 'Delete a post' })
    @Delete(':id')
-   delete(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<PostEntity>> {
+   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<PostEntity>> {
       return this.postCRUD.delete(id);
    }
 }

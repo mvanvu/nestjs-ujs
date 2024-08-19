@@ -19,6 +19,7 @@ import {
    EntityResult,
    MessageMetaProvider,
    BaseEntity,
+   OnAfterTransaction,
 } from '@shared-library';
 import {
    ClassRefSchema,
@@ -32,6 +33,10 @@ import {
    Util,
 } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+
+export interface CreateCRUDService<TPrismaService extends { models: ObjectRecord }> {
+   createCRUDService(): CRUDService<TPrismaService>;
+}
 
 @Injectable()
 export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
@@ -48,6 +53,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    private events: {
       onBeforeExecute?: OnBeforeExecute<any, any, any>;
       onTransaction?: OnTransaction<any, any, any, any>;
+      onAfterTransaction?: OnAfterTransaction<any, any, any>;
       onEntity?: OnEntity<any, any>;
    } = {};
 
@@ -106,6 +112,14 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       cb: OnTransaction<TPrismaService, TRecord, TData, TContext>,
    ): this {
       this.events.onTransaction = cb;
+
+      return this;
+   }
+
+   afterTrabsaction<TRecord extends ObjectRecord, TData extends ObjectRecord, TContext extends CRUDExecuteContext>(
+      cb: OnAfterTransaction<TRecord, TData, TContext>,
+   ): this {
+      this.events.onAfterTransaction = cb;
 
       return this;
    }
@@ -531,6 +545,15 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          return item;
       });
 
+      if (Is.callable(this.events.onAfterTransaction)) {
+         // Trigger an event before return results
+         await Util.callAsync(this, this.events.onAfterTransaction, <OnTransactionOptions<TResult, TData, 'create'>>{
+            context: 'create',
+            record,
+            data,
+         });
+      }
+
       return {
          data: this.events.onEntity ? await this.callOnEntity(record, 'create') : record,
          message: this.meta.get('language')._('ITEM_CREATED'),
@@ -589,6 +612,15 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          return item;
       });
 
+      if (Is.callable(this.events.onAfterTransaction)) {
+         // Trigger an event before return results
+         await Util.callAsync(this, this.events.onAfterTransaction, <OnTransactionOptions<TResult, TData, 'update'>>{
+            context: 'update',
+            record,
+            data,
+         });
+      }
+
       if (onEntity) {
          record = await this.callOnEntity(record, 'update');
       }
@@ -637,11 +669,11 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          if (this.optionsCRUD?.softDelete === true) {
             await tx[this.model]['update']({
                select: { id: true },
-               data: { status: 'Trashed' },
+               data: { status: availableStatuses.Trashed },
                where: { id },
             });
 
-            record.status = 'Trashed';
+            record.status = availableStatuses.Trashed;
          } else {
             await tx[this.model]['delete']({ select: { id: true }, where: { id } });
          }
@@ -656,6 +688,16 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
             });
          }
       });
+
+      if (Is.callable(this.events.onAfterTransaction)) {
+         // Trigger an event before return results
+         await Util.callAsync(this, this.events.onAfterTransaction, <
+            OnTransactionOptions<TResult, undefined, 'delete'>
+         >{
+            context: 'delete',
+            record,
+         });
+      }
 
       return { data: record, message: language._('ITEM_DELETED') };
    }

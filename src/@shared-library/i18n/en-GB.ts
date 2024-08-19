@@ -22,4 +22,9 @@ export default {
    USER_DELETE_SELF_DENIED: `You can't delete yourself`,
    USER_DELETE_SAME_PERMIT_DENIED: `You can't delete the user who has the same permission with you`,
    USER_DELETE_GREATER_PERMIT_DENIED: `You can't delete the user who has the greater permissions than you`,
+
+   // Content
+   CONTENT_CATEGORY_$ID_NOT_EXISTS: `The category ID $id doesn't exists`,
+   CONTENT_$SLUG_READY_EXISTS: 'The slug[%slug%] has already exists',
+   CONTENT_EMPTY_SLUG_WARN: 'The slug must not be empty',
 };

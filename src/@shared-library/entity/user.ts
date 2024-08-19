@@ -161,16 +161,15 @@ export class UserEntity {
 }
 
 export class AuthTokenEntity {
-   @(Schema.jwt().decorate())
+   @(Schema.jwt().format('jwt').decorate())
    access: string;
 
-   @(Schema.jwt().decorate())
+   @(Schema.jwt().format('jwt').decorate())
    refresh: string;
 }
 
 export class AuthEntity {
    @(Schema.classRef(UserEntity).decorate())
-
    user: UserEntity;
 
    @(Schema.classRef(AuthTokenEntity).decorate())

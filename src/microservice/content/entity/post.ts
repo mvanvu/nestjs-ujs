@@ -14,7 +14,10 @@ export class PostEntity {
    @(Schema.content().decorate())
    name: string;
 
-   @(Schema.content().decorate())
+   @(Schema.content().format('slug').decorate())
+   slug: string;
+
+   @(Schema.content().format('path').decorate())
    path: string;
 
    @(Schema.string().optional().decorate())

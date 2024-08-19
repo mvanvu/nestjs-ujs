@@ -9,8 +9,7 @@ export { appConfig } from './config';
 import system from '@microservice/system/config';
 import user from '@microservice/user/config';
 import content from '@microservice/content/config';
-import order from '@microservice/order/config';
-const serviceConfigData = { system, user, content, order };
+const serviceConfigData = { system, user, content };
 // END TO LOAD THE MICROSERVICE CONFIGUARATION, DON'T REMOVE THIS LINE
 
 export const serviceConfig = Registry.from<typeof serviceConfigData>(serviceConfigData, { consistent: true });

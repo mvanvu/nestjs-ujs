@@ -1,14 +1,14 @@
-import { Controller, Inject } from '@nestjs/common';
-import { CategoryService } from '../provider';
 import { serviceConfig } from '@metadata';
+import { Controller, Inject } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { CRUDResult } from '@shared-library';
 import { CategoryEntity } from '../entity';
-const patterns = serviceConfig.get('order.patterns');
+import { CategoryService } from '../provider';
+const { patterns } = serviceConfig.get('content');
 
 @Controller()
 export class CategoryController {
-   @Inject(CategoryService) readonly categoryService: CategoryService;
+   @Inject(CategoryService) private readonly categoryService: CategoryService;
 
    @MessagePattern(patterns.categoryCRUD)
    executeCRUD(): Promise<CRUDResult<CategoryEntity>> {

@@ -6,7 +6,7 @@ import {
    EntityResult,
    PaginationQueryDto,
    PaginationResult,
-   ParseTypePipe,
+   ParseMongoIdPipe,
    RoleEntity,
 } from '@shared-library';
 import { serviceConfig } from '@metadata';
@@ -34,7 +34,7 @@ export class RoleController {
    @Permission({ key: permissions.role.read, adminScope: true })
    @ApiEntityResponse(RoleEntity, { summary: 'Get detail of roles' })
    @Get(':id')
-   read(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<RoleEntity>> {
+   read(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<RoleEntity>> {
       return this.roleCRUD.read(id);
    }
 
@@ -48,17 +48,14 @@ export class RoleController {
    @Permission({ key: permissions.role.update, adminScope: true })
    @Patch(':id')
    @ApiEntityResponse(RoleEntity, { summary: 'Update new role' })
-   update(
-      @Param('id', ParseTypePipe('mongoId')) id: string,
-      @Body() data: UpdateRoleDto,
-   ): Promise<EntityResult<RoleEntity>> {
+   update(@Param('id', ParseMongoIdPipe) id: string, @Body() data: UpdateRoleDto): Promise<EntityResult<RoleEntity>> {
       return this.roleCRUD.update(id, data);
    }
 
    @Permission({ key: permissions.role.delete, adminScope: true })
    @ApiEntityResponse(RoleEntity, { summary: 'Delete a role' })
    @Delete(':id')
-   delete(@Param('id', ParseTypePipe('mongoId')) id: string): Promise<EntityResult<RoleEntity>> {
+   delete(@Param('id', ParseMongoIdPipe) id: string): Promise<EntityResult<RoleEntity>> {
       return this.roleCRUD.delete(id);
    }
 }

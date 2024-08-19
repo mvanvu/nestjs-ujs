@@ -1,5 +1,5 @@
 import { EventEmitter, Is, Registry, Schema, Util } from '@mvanvu/ujs';
-import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import {
    BaseEntity,
@@ -10,6 +10,7 @@ import {
    PaginationQueryDto,
    PaginationResult,
    ServiceOptions,
+   ThrowException,
    UserRefEntity,
    eventConstant,
 } from '@shared-library';
@@ -132,12 +133,17 @@ export class BaseClientProxy {
             id: string,
             data: TData,
             optionsOverride?: ServiceOptions,
-         ): Promise<EntityResult<TEntity>> =>
-            this.send(
+         ): Promise<EntityResult<TEntity>> => {
+            if (Is.object(data) && !Object.entries(data).filter(([k, v]) => v !== undefined).length) {
+               ThrowException(this.language._('EMPTY_DATA_WARN'));
+            }
+
+            return this.send(
                patternCRUD,
                { id, data },
                { ...(options ?? {}), ...(optionsOverride ?? {}), meta: { method: 'PATCH' } },
-            ),
+            );
+         },
 
          delete: <TEntity>(id: string, optionsOverride?: ServiceOptions): Promise<EntityResult<TEntity>> =>
             this.send(patternCRUD, id, { ...(options ?? {}), ...(optionsOverride ?? {}), meta: { method: 'DELETE' } }),

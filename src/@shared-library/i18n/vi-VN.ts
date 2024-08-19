@@ -22,4 +22,9 @@ export default {
    USER_DELETE_SELF_DENIED: 'Không thể xoá chính mình',
    USER_DELETE_SAME_PERMIT_DENIED: 'Không thể xoá người dùng ngang quyền với mình',
    USER_DELETE_GREATER_PERMIT_DENIED: 'Không thể xoá người dùng có quyền cao hơn mình',
+
+   // Content
+   CONTENT_CATEGORY_$ID_NOT_EXISTS: 'Danh mục ID $id không tồn tại',
+   CONTENT_$SLUG_READY_EXISTS: 'Định danh [%slug%] đã tồn tại',
+   CONTENT_EMPTY_SLUG_WARN: 'Định danh slug không được rỗng',
 };

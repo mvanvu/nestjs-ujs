@@ -7,12 +7,12 @@ export function ThrowException(error: string | ObjectRecord, statusCode?: HttpSt
    statusCode = statusCode ?? HttpStatus.BAD_REQUEST;
 
    if (isGateway()) {
-      throw new HttpException({ error }, statusCode);
+      throw new HttpException({ error }, statusCode ?? HttpStatus.BAD_REQUEST);
    } else {
       error = typeof error === 'string' ? { error } : error;
 
       if (error?.statusCode === undefined) {
-         error.statusCode = statusCode;
+         error.statusCode = statusCode ?? HttpStatus.BAD_REQUEST;
       }
 
       throw new RpcException(error);

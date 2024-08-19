@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { createMetaProvider, createMicroserviceApp } from '../@library';
 import { serviceConfig } from '@metadata';
-import { PrismaService } from './provider';
+import { CategoryService, PrismaService } from './provider';
+import { CategoryController } from './controller';
 @Module({
-   providers: [createMetaProvider(), PrismaService],
+   controllers: [CategoryController],
+   providers: [createMetaProvider(), PrismaService, CategoryService],
 })
 export class AppModule {
    static bootstrap(): Promise<void> {

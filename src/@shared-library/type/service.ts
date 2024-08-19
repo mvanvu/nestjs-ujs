@@ -118,6 +118,12 @@ export type OnTransaction<
    TContext extends CRUDExecuteContext,
 > = (tx: TX, options: OnTransactionOptions<TRecord, TData, TContext>) => any | Promise<any>;
 
+export type OnAfterTransaction<
+   TRecord extends ObjectRecord,
+   TData extends ObjectRecord,
+   TContext extends CRUDExecuteContext,
+> = (options: OnTransactionOptions<TRecord, TData, TContext>) => any | Promise<any>;
+
 export type OnEntity<TEntity extends ObjectRecord, TContext extends CRUDContext> =
    | ClassConstructor<TEntity>
    | ((record: TEntity, options: OnEntityOptions<TContext>) => any | Promise<any>);
