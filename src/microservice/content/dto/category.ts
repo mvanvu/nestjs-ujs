@@ -10,7 +10,7 @@ export class CreateCategoryDto {
    status?: AvailableStatus;
 
    @(Schema.content().decorate())
-   name: string;
+   title: string;
 
    @(Schema.content().format('slug').optional().decorate())
    slug?: string;

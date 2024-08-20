@@ -41,23 +41,32 @@ type Metadata {
 }
 
 type PostLite {
-    id       String    @db.ObjectId
-    name     String
+    id       String          @db.ObjectId
+    title    String
+    slug     String
     path     String
     imageUrl String?
     author   UserLite?
+    status   AvailableStatus
 }
 
 type CommentLite {
-    id   String @db.ObjectId
-    name String
+    id      String        @db.ObjectId
+    message String
+    status  CommentStatus
+}
+
+type TagLite {
+    id     String          @db.ObjectId
+    title  String
+    status AvailableStatus
 }
 
 model Category {
     id          String          @id @default(auto()) @map("_id") @db.ObjectId
     parentId    String?         @db.ObjectId
     status      AvailableStatus @default(Drafted)
-    name        String
+    title       String
     slug        String
     path        String
     description String?
@@ -79,7 +88,7 @@ model Post {
     categoryId  String?         @db.ObjectId
     category    Category?       @relation(fields: [categoryId], references: [id], onUpdate: Cascade, onDelete: Cascade)
     status      AvailableStatus @default(Drafted)
-    name        String
+    title       String
     slug        String
     path        String
     imageUrl    String?
@@ -89,6 +98,7 @@ model Post {
     updatedAt   DateTime?       @updatedAt
     author      UserLite?
     editor      UserLite?
+    tags        TagLite[]
 
     @@unique([slug])
     @@unique([path])
@@ -97,7 +107,7 @@ model Post {
 model Tag {
     id        String          @id @default(auto()) @map("_id") @db.ObjectId
     status    AvailableStatus @default(Drafted)
-    name      String          @unique
+    title     String          @unique
     createdAt DateTime        @default(now())
     updatedAt DateTime?       @updatedAt
     author    UserLite?

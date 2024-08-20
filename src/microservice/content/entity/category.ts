@@ -11,7 +11,7 @@ export class CategoryRef {
    status: AvailableStatus;
 
    @(Schema.content().decorate())
-   name: string;
+   title: string;
 
    @(Schema.content().format('slug').decorate())
    slug: string;
@@ -28,7 +28,7 @@ export class CategoryEntity {
    status: AvailableStatus;
 
    @(Schema.content().decorate())
-   name: string;
+   title: string;
 
    @(Schema.content().format('slug').decorate())
    slug: string;

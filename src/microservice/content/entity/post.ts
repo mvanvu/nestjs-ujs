@@ -3,6 +3,7 @@ import { UserRefEntity } from '@shared-library';
 import { CategoryRef } from './category';
 import { MetadataEntity } from './metadata';
 import { Schema } from '@mvanvu/ujs';
+import { TagRef } from './tag';
 
 export class PostEntity {
    @(Schema.mongoId().decorate())
@@ -12,7 +13,7 @@ export class PostEntity {
    status: AvailableStatus;
 
    @(Schema.content().decorate())
-   name: string;
+   title: string;
 
    @(Schema.content().format('slug').decorate())
    slug: string;
@@ -43,4 +44,7 @@ export class PostEntity {
 
    @(Schema.classRef(MetadataEntity).optional().decorate())
    metadata?: MetadataEntity;
+
+   @(Schema.classRef(TagRef).array().decorate())
+   tags: TagRef[];
 }

@@ -15,8 +15,9 @@ export class PostService extends BaseService implements CreateCRUDService<Prisma
       return this.prisma
          .createCRUDService('Post')
          .entityResponse(PostEntity)
+         .options({ list: { searchFields: ['title', 'description'] } })
          .include<Prisma.PostInclude>({
-            category: { select: { id: true, status: true, name: true, slug: true, path: true } },
+            category: { select: { id: true, status: true, title: true, slug: true, path: true } },
          })
          .beforeExecute<PostEntity, UpdatePostDto, 'create' | 'update'>(async ({ context, record, data }) => {
             if (context !== 'create' && context !== 'update') {
@@ -26,8 +27,8 @@ export class PostService extends BaseService implements CreateCRUDService<Prisma
             const fieldsException = new FieldsException();
             const isUpdate = context === 'update';
 
-            if (!data.slug && !isUpdate) {
-               data.slug = Transform.toPath(data.name).toLowerCase().replace(/\/+/, '-');
+            if (!data.slug) {
+               data.slug = isUpdate ? record.slug : Transform.toSlug(data.title);
             }
 
             if (Is.empty(data.slug)) {
@@ -60,6 +61,30 @@ export class PostService extends BaseService implements CreateCRUDService<Prisma
                }
             } else if (isUpdate && data.categoryId === null) {
                category = undefined;
+            }
+
+            // Tags validation
+            if (data.tags?.length) {
+               const tags = await this.prisma.tag.findMany({
+                  where: { id: { in: data.tags } },
+                  select: { id: true, title: true, status: true },
+               });
+
+               for (let i = 0, n = data.tags.length; i < n; i++) {
+                  const tagId = data.tags[i];
+
+                  if (!tags.find((tag) => tag.id === tagId)) {
+                     fieldsException.add(
+                        `tags[${i}]`,
+                        FieldsException.NOT_FOULND,
+                        this.language._('CONTENT_TAG_$ID_NOT_EXISTS', { id: tagId }),
+                     );
+                  }
+               }
+
+               Object.assign(data, { tags });
+            } else if (data.tags === null) {
+               data.tags = [];
             }
 
             fieldsException.validate();

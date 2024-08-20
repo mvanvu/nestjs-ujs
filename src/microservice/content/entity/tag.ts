@@ -1,5 +1,5 @@
 import { AvailableStatus } from '.prisma/content';
-import { Schema } from '@mvanvu/ujs';
+import { ClassRefSchema, Schema } from '@mvanvu/ujs';
 import { UserRefEntity } from '@shared-library';
 
 export class TagEntity {
@@ -10,7 +10,7 @@ export class TagEntity {
    status: AvailableStatus;
 
    @(Schema.content().decorate())
-   name: string;
+   title: string;
 
    @(Schema.classRef(UserRefEntity).optional().decorate())
    author?: UserRefEntity;
@@ -24,3 +24,5 @@ export class TagEntity {
    @(Schema.dateTime().optional().decorate())
    updatedAt?: Date;
 }
+
+export class TagRef extends ClassRefSchema.Pick(TagEntity, ['id', 'title', 'status']) {}

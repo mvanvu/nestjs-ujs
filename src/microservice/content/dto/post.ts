@@ -10,7 +10,7 @@ export class CreatePostDto {
    categoryId?: string;
 
    @(Schema.content().decorate())
-   name: string;
+   title: string;
 
    @(Schema.content().format('slug').optional().decorate())
    slug?: string;
@@ -23,6 +23,9 @@ export class CreatePostDto {
 
    @(Schema.classRef(MetadataDto).optional().decorate())
    metadata?: MetadataDto;
+
+   @(Schema.mongoId().array().unique().optional().decorate())
+   tags?: string[];
 }
 
 export class UpdatePostDto extends ClassRefSchema.Partial(CreatePostDto) {}

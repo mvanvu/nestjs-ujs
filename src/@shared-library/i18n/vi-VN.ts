@@ -27,4 +27,5 @@ export default {
    CONTENT_CATEGORY_$ID_NOT_EXISTS: 'Danh mục ID $id không tồn tại',
    CONTENT_$SLUG_READY_EXISTS: 'Định danh [%slug%] đã tồn tại',
    CONTENT_EMPTY_SLUG_WARN: 'Định danh slug không được rỗng',
+   CONTENT_TAG_$ID_NOT_EXISTS: `Nhãn ID %id% không tồn tại`,
 };

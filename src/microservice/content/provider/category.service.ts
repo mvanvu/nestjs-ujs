@@ -52,8 +52,9 @@ export class CategoryService extends BaseService implements CreateCRUDService<Pr
       return this.prisma
          .createCRUDService('Category')
          .entityResponse(CategoryEntity)
+         .options({ list: { searchFields: ['title', 'description'] } })
          .include<Prisma.CategoryInclude>({
-            parent: { select: { id: true, status: true, name: true, slug: true, path: true } },
+            parent: { select: { id: true, status: true, title: true, slug: true, path: true } },
          })
          .beforeExecute<CategoryEntity, UpdateCategoryDto, 'create' | 'update'>(async ({ context, record, data }) => {
             if (context !== 'create' && context !== 'update') {
@@ -63,7 +64,7 @@ export class CategoryService extends BaseService implements CreateCRUDService<Pr
             const fieldsException = new FieldsException();
 
             if (!data.slug && context === 'create') {
-               data.slug = Transform.toPath(data.name).toLowerCase().replace(/\/+/, '-');
+               data.slug = Transform.toSlug(data.title);
             }
 
             if (Is.empty(data.slug)) {

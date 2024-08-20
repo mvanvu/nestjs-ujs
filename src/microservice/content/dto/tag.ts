@@ -6,7 +6,7 @@ export class CreateTagDto {
    status?: AvailableStatus;
 
    @(Schema.content().decorate())
-   name: string;
+   title: string;
 }
 
 export class UpdateTagDto extends ClassRefSchema.Partial(CreateTagDto) {}
