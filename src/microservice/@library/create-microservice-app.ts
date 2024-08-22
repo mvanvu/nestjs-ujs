@@ -1,5 +1,5 @@
-import { ClassConstructor, ValidationPipe, ExceptionFilter, TransformInterceptor } from '@shared-library';
-import { Callable, Util } from '@mvanvu/ujs';
+import { ValidationPipe, ExceptionFilter, TransformInterceptor } from '@shared-library';
+import { Callable, ClassConstructor, Util } from '@mvanvu/ujs';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { appConfig, bootstrap } from '@metadata';

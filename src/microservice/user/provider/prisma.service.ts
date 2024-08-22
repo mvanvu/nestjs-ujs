@@ -4,6 +4,6 @@ import { CreatePrismaService } from '@microservice/@library';
 import { MessageMetaProvider } from '@shared-library';
 
 @Injectable()
-export class PrismaService extends CreatePrismaService(PrismaClient, Prisma.dmmf.datamodel.models as any[]) {
-   @Inject(MessageMetaProvider) protected readonly meta: MessageMetaProvider;
+export class PrismaService extends CreatePrismaService(PrismaClient, Prisma.dmmf.datamodel.models) {
+   @Inject(MessageMetaProvider) readonly meta: MessageMetaProvider;
 }

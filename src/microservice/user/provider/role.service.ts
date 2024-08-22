@@ -1,29 +1,26 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { CreateRoleDto, UpdateRoleDto } from '../dto';
-import { BaseService, CRUDService } from '@microservice/@library';
-import { CRUDExecuteContext, RoleEntity, ThrowException } from '@shared-library';
+import { BaseService } from '@microservice/@library';
+import { RoleEntity, ThrowException } from '@shared-library';
 
 @Injectable()
 export class RoleService extends BaseService {
    @Inject(PrismaService) readonly prisma: PrismaService;
 
-   createCRUDService(): CRUDService<PrismaService> {
+   createCRUDService() {
       return this.prisma
-         .createCRUDService('Role')
-         .validateDTOPipe(CreateRoleDto, UpdateRoleDto)
-         .entityResponse(RoleEntity)
-         .beforeExecute<RoleEntity, UpdateRoleDto, CRUDExecuteContext>(async ({ data, record, context }) => {
-            if (!data.permissions && context === 'create') {
+         .createCRUDService('role', { entity: RoleEntity, createDto: CreateRoleDto, updateDto: UpdateRoleDto })
+         .beforeCreate(({ data }) => {
+            if (!data.permissions) {
                data.permissions = [];
             }
+         })
+         .beforeDelete(async ({ tx, record }) => {
+            const hasSomeUsers = await tx.group.count({ where: { roles: { some: { id: record.id } } } });
 
-            if (context === 'delete') {
-               const hasSomeUsers = await this.prisma.group.count({ where: { roles: { some: { id: record.id } } } });
-
-               if (hasSomeUsers) {
-                  ThrowException(`The role name(${record.name}) has been assigned to some groups, can't delete`);
-               }
+            if (hasSomeUsers) {
+               ThrowException(this.language._('USER_$ROLE_HAS_USERS_CANT_DELETE', { name: record.name }));
             }
          });
    }

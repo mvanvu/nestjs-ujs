@@ -1,4 +1,4 @@
-import { ObjectRecord } from '@mvanvu/ujs';
+import { ClassConstructor, ObjectRecord } from '@mvanvu/ujs';
 import { HttpStatus, RequestMethod } from '@nestjs/common';
 import { Type, VersionValue } from '@nestjs/common/interfaces';
 import { type UserEntity } from '../entity/user';
@@ -26,8 +26,6 @@ export interface HttpRequest extends Request {
    cacheRefKeys?: HttpCacheOptions['cacheRefKeys'];
    user?: UserEntity;
 }
-
-export type ClassConstructor<T> = new (...arg: any[]) => T;
 
 export type ExecuteOptions<TInput> = {
    messagePattern: string;

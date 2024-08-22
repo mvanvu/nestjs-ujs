@@ -5,12 +5,11 @@ import { Prisma, UserStatus, VerifyCode } from '.prisma/user';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is, JWTError, Schema } from '@mvanvu/ujs';
 import { appConfig, serviceConfig } from '@metadata';
-import { BaseService, CRUDService } from '@microservice/@library';
+import { BaseService } from '@microservice/@library';
 import {
    FieldsException,
    ThrowException,
    DataMetaResult,
-   CRUDExecuteContext,
    UserEntity,
    AuthTokenEntity,
    AuthEntity,
@@ -25,7 +24,11 @@ export class UserService extends BaseService {
       group: { select: { id: true, name: true, roles: true, groups: true } },
    };
 
-   private async validateUserDto(dto: Partial<UserSignUpDto & CreateUserDto & UpdateUserDto>, id?: string) {
+   private async validateUserDto(
+      tx: Partial<PrismaService>,
+      dto: Partial<UserSignUpDto & CreateUserDto & UpdateUserDto>,
+      id?: string,
+   ) {
       const fieldsError = new FieldsException();
       let { username, email } = dto;
       const OR: Prisma.UserWhereInput['OR'] = [];
@@ -40,13 +43,13 @@ export class UserService extends BaseService {
          OR.push({ email });
       }
 
-      const existsUser = await this.prisma.user.findFirst({
+      const existsUser = await tx.user.findFirst({
          where: { OR, id: id ? { not: id } : undefined },
          select: { username: true, email: true },
       });
 
       if (dto.groupId) {
-         const group = await this.prisma.group.findUnique({
+         const group = await tx.group.findUnique({
             where: { id: dto.groupId },
             select: { id: true },
          });
@@ -70,7 +73,7 @@ export class UserService extends BaseService {
    }
 
    async signUp(data: UserSignUpDto): Promise<DataMetaResult<UserEntity>> {
-      await this.validateUserDto(data);
+      await this.validateUserDto(this.prisma, data);
       const { name, username, email, password } = data;
       const newUser = await this.prisma.user
          .create({
@@ -233,32 +236,24 @@ export class UserService extends BaseService {
       return false;
    }
 
-   createCRUDService(): CRUDService<PrismaService> {
+   createCRUDService() {
       return this.prisma
-         .createCRUDService('User')
+         .createCRUDService('user', { entity: UserEntity, createDto: CreateUserDto, updateDto: UpdateUserDto })
          .options({
             softDelete: !appConfig.is('nodeEnv', 'test'),
             list: { searchFields: ['name', 'username', 'email'], filterFields: ['username', 'email'] },
          })
-         .entityResponse(UserEntity)
          .include(this.userInclude)
-         .validateDTOPipe(CreateUserDto, UpdateUserDto)
-         .beforeExecute<UserEntity, UpdateUserDto, CRUDExecuteContext>(async ({ data, record: user, context }) => {
-            if (!['create', 'update'].includes(context)) {
-               return;
+         .beforeCreate(async ({ tx, data }) => {
+            await this.validateUserDto(tx, data);
+
+            if (data.password) {
+               data.password = await argon2.hash(data.password);
             }
-
-            switch (context) {
-               case 'create':
-                  await this.validateUserDto(data);
-                  break;
-
-               case 'update':
-                  if (data.email || data.username || data.groupId) {
-                     await this.validateUserDto(data, user.id);
-                  }
-
-                  break;
+         })
+         .beforeUpdate(async ({ tx, data, record }) => {
+            if (data.email || data.username || data.groupId) {
+               await this.validateUserDto(tx, data, record.id);
             }
 
             if (data.password) {

@@ -4,7 +4,7 @@ import { PrismaService } from './prisma.service';
 import { BaseEntity, SystemConfigDto, UserRefEntity } from '@shared-library';
 import { ActivityLogDto, FinalUploadDto } from '../dto';
 import { ActivityLogEntity, FileEntity } from '../entity';
-import { BaseService, CRUDService, getSystemConfig, updateSystemConfig } from '@microservice/@library';
+import { BaseService, getSystemConfig, updateSystemConfig } from '@microservice/@library';
 
 @Injectable()
 export class SystemService extends BaseService {
@@ -49,11 +49,8 @@ export class SystemService extends BaseService {
       );
    }
 
-   createCRUDService(): CRUDService<PrismaService> {
-      return this.prisma
-         .createCRUDService('ActivityLog')
-         .validateDTOPipe(ActivityLogDto)
-         .entityResponse(ActivityLogEntity);
+   createCRUDService() {
+      return this.prisma.createCRUDService('activityLog', { entity: ActivityLogEntity, createDto: ActivityLogDto });
    }
 
    async upload(data: FinalUploadDto): Promise<FileEntity> {

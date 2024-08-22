@@ -1,14 +1,14 @@
-import { BaseService, CRUDService, CreateCRUDService } from '@microservice/@library';
+import { BaseService } from '@microservice/@library';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { FieldsException } from '@shared-library';
 import { Is, Transform } from '@mvanvu/ujs';
 import { CategoryEntity } from '../entity';
-import { UpdateCategoryDto } from '../dto';
+import { CreateCategoryDto, UpdateCategoryDto } from '../dto';
 import { Prisma, Category } from '.prisma/content';
 
 @Injectable()
-export class CategoryService extends BaseService implements CreateCRUDService<PrismaService> {
+export class CategoryService extends BaseService {
    @Inject(PrismaService) readonly prisma: PrismaService;
 
    async rebuildPath(): Promise<Array<Category & { paths: string[] }>> {
@@ -48,31 +48,64 @@ export class CategoryService extends BaseService implements CreateCRUDService<Pr
       return categories as Array<Category & { paths: string[] }>;
    }
 
-   createCRUDService(): CRUDService<PrismaService> {
+   createCRUDService() {
       return this.prisma
-         .createCRUDService('Category')
-         .entityResponse(CategoryEntity)
+         .createCRUDService('category', {
+            entity: CategoryEntity,
+            createDto: CreateCategoryDto,
+            updateDto: UpdateCategoryDto,
+         })
          .options({ list: { searchFields: ['title', 'description'] } })
          .include<Prisma.CategoryInclude>({
             parent: { select: { id: true, status: true, title: true, slug: true, path: true } },
          })
-         .beforeExecute<CategoryEntity, UpdateCategoryDto, 'create' | 'update'>(async ({ context, record, data }) => {
-            if (context !== 'create' && context !== 'update') {
-               return;
-            }
-
+         .beforeCreate(async ({ data }) => {
             const fieldsException = new FieldsException();
 
-            if (!data.slug && context === 'create') {
+            if (!data.slug) {
                data.slug = Transform.toSlug(data.title);
             }
 
             if (Is.empty(data.slug)) {
                fieldsException.add('slug', FieldsException.BAD_REQUEST, this.language._('CONTENT_EMPTY_SLUG_WARN'));
             } else {
-               const findBySlug = await this.prisma.category.findFirst({
-                  where: { slug: data.slug, id: context === 'update' ? { not: record.id } : undefined },
+               const findBySlug = await this.prisma.category.findFirst({ where: { slug: data.slug } });
+
+               if (findBySlug) {
+                  fieldsException.add(
+                     'slug',
+                     FieldsException.ALREADY_EXISTS,
+                     this.language._('CONTENT_$SLUG_READY_EXISTS', { slug: data.slug }),
+                  );
+               }
+            }
+
+            if (data.parentId) {
+               const parent = await this.prisma.category.findUnique({
+                  where: { id: data.parentId },
+                  select: { path: true },
                });
+
+               if (parent) {
+                  Object.assign(data, { path: parent.path + '/' + data.slug });
+               } else {
+                  fieldsException.add(
+                     'parentId',
+                     FieldsException.NOT_FOULND,
+                     this.language._('CONTENT_CATEGORY_$ID_NOT_EXISTS', { id: data.parentId }),
+                  );
+               }
+            } else {
+               Object.assign(data, { path: data.slug });
+            }
+
+            fieldsException.validate();
+         })
+         .beforeUpdate(async ({ data, record }) => {
+            const fieldsException = new FieldsException();
+
+            if (data.slug && data.slug !== record.slug) {
+               const findBySlug = await this.prisma.category.findFirst({ where: { slug: data.slug } });
 
                if (findBySlug) {
                   fieldsException.add(
@@ -93,7 +126,7 @@ export class CategoryService extends BaseService implements CreateCRUDService<Pr
 
             fieldsException.validate();
          })
-         .afterTrabsaction(async ({ record }) => {
+         .afterUpdate(async ({ record }) => {
             const target = (await this.rebuildPath()).find(({ id }) => id === record.id);
             record.path = target.paths.reverse().join('/');
          });

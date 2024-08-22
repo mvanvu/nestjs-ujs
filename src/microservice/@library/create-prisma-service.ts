@@ -1,40 +1,40 @@
-import { ObjectRecord } from '@mvanvu/ujs';
-import { ClassConstructor, ThrowException } from '@shared-library';
-import { HttpStatus, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
-import { CRUDService } from './service.crud';
-import { PrismaClient } from '@prisma/client';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { CRUDService } from '@microservice/@library';
+import { CRUDParamsConstructor, PrismaModelName, ThrowException } from '@shared-library';
+import { ClassConstructor } from '@mvanvu/ujs';
+import { DMMF } from '@prisma/client/runtime/library';
 
-export function CreatePrismaService<
-   TClientRef extends ClassConstructor<PrismaClient>,
-   TDataModel extends ObjectRecord[],
->(PrismaClientRef: TClientRef, prismaModels: TDataModel) {
-   const dataModels: Record<string, any> = {};
-   prismaModels.forEach((model) => (dataModels[model.name] = model));
-
-   class BasePrismaService extends PrismaClientRef implements OnModuleInit, OnApplicationShutdown {
-      get models(): Record<string, any> {
-         return dataModels;
-      }
-
+export function CreatePrismaService<TPrismaClient extends ClassConstructor<any>>(
+   PrismaClientRef: TPrismaClient,
+   models: DMMF.Datamodel['models'],
+) {
+   class BasePrismaService extends PrismaClientRef {
       async onModuleInit() {
-         process.on('beforeExit', this.onApplicationShutdown);
-         await this.$connect().catch(console.debug);
+         await this.$connect();
       }
 
       async onApplicationShutdown() {
          await this.$disconnect();
       }
 
-      createCRUDService(model: string): CRUDService<this> {
-         if (!this.models[model]) {
-            ThrowException(`The model(${model}) doesn't exists`, HttpStatus.NOT_IMPLEMENTED);
+      createCRUDService<
+         TEntity extends ClassConstructor<any>,
+         TCreateDTO extends ClassConstructor<any>,
+         TUpdateDTO extends ClassConstructor<any>,
+      >(
+         modelName: PrismaModelName<InstanceType<typeof PrismaClientRef>>,
+         options: Omit<CRUDParamsConstructor<TEntity, TCreateDTO, TUpdateDTO>, 'meta' | 'modelName' | 'dataModels'>,
+      ): CRUDService<InstanceType<typeof PrismaClientRef>, TEntity, TCreateDTO, TUpdateDTO> {
+         if (!this[modelName]) {
+            ThrowException(`The model(${modelName}) doesn't exists`, HttpStatus.NOT_IMPLEMENTED);
          }
 
-         return new CRUDService(this, <string>model, this['meta']);
+         const dataModels = {};
+         models.forEach((model) => (dataModels[model.name] = model));
+
+         return new CRUDService(this as any, { ...options, modelName, dataModels, meta: this['meta'] });
       }
    }
-
-   Object.defineProperty(BasePrismaService, 'name', { value: BasePrismaService.name });
 
    return BasePrismaService;
 }

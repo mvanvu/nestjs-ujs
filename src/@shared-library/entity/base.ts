@@ -1,31 +1,47 @@
-import { BaseSchemaOptions, ClassConstructor } from '../type';
-import { validateDTO } from '../pipe/validation';
-import { Is, UJS_CLASS_PROPERTIES, Util } from '@mvanvu/ujs';
+import { ArraySchema, BaseSchema, ClassConstructor, Is, ObjectSchema, UJS_CLASS_PROPERTIES, Util } from '@mvanvu/ujs';
 
 export class BaseEntity {
-   static bindToClass<T>(data: any, ClassRef: ClassConstructor<T>, options?: { validateSchema?: boolean }): T {
-      if (options?.validateSchema === true) {
-         validateDTO(data, ClassRef);
-      }
-
-      const autoNull = options?.validateSchema !== false;
+   static bindToClass<T>(data: any, ClassRef: ClassConstructor<T>): T {
       const entity = new ClassRef();
 
       if (Is.object(data)) {
          const props = Reflect.getMetadata(UJS_CLASS_PROPERTIES, ClassRef.prototype) || {};
+         const cloneData = Util.clone(data);
+         const markAllWhiteList = (schema: BaseSchema) => {
+            if (schema instanceof ObjectSchema) {
+               schema.whiteList();
+               const properties = schema.getProperties();
 
-         for (const prop in props) {
-            if (data[prop] !== undefined) {
-               entity[prop] = data[prop];
-            }
+               if (properties) {
+                  Object.entries(properties).forEach(([, sc]) => markAllWhiteList(sc));
+               }
+            } else if (schema instanceof ArraySchema) {
+               const items = schema.getItems();
 
-            if (entity[prop] === undefined && autoNull && !Is.empty(props[prop]?.options)) {
-               const { optional, nullable } = props[prop].options as BaseSchemaOptions;
-
-               if (nullable === true || (nullable === undefined && optional === true)) {
-                  entity[prop] = null;
+               if (items) {
+                  if (Is.array(items)) {
+                     items.forEach((item) => markAllWhiteList(item));
+                  } else {
+                     markAllWhiteList(items);
+                  }
                }
             }
+         };
+
+         for (const prop in props) {
+            const schema = (props[prop] as BaseSchema)?.clone()?.default(undefined);
+            const nothing = cloneData[prop] === undefined;
+            markAllWhiteList(schema);
+
+            if (nothing || !schema?.check(cloneData[prop])) {
+               if (nothing && schema?.isNullable()) {
+                  entity[prop] = null;
+               }
+
+               continue;
+            }
+
+            entity[prop] = schema.getValue();
          }
 
          if (Is.func(entity['bind'])) {

@@ -1,4 +1,4 @@
-import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy, Permission } from '@gateway/@library';
+import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy, HttpCache, Permission } from '@gateway/@library';
 import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseMongoIdPipe } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
@@ -11,6 +11,7 @@ const { name, permissions, patterns } = serviceConfig.get('content');
 @ApiBearerAuth()
 @ApiTags('Contents')
 @Controller('content/tags')
+@HttpCache({ cacheRefKeys: /\/posts\// }) // Purge posts caching when the method is not GET
 export class ContentTagController {
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 

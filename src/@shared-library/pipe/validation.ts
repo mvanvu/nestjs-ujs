@@ -1,6 +1,5 @@
 import { ArgumentMetadata, HttpStatus, Injectable, PipeTransform } from '@nestjs/common';
-import { BaseSchema, ClassRefSchema, Is } from '@mvanvu/ujs';
-import { ClassConstructor } from '../type/common';
+import { BaseSchema, ClassConstructor, ClassRefSchema, Is } from '@mvanvu/ujs';
 import { ThrowException } from '../exception/throw';
 
 export function validateDTO(data: any, dtoClassRef: ClassConstructor<any>): any {

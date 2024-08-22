@@ -11,10 +11,10 @@ export class CreateGroupDto {
    @(Schema.enum($Enums.AvailableStatus).decorate())
    status?: $Enums.AvailableStatus;
 
-   @(Schema.mongoId().array().optional().decorate())
+   @(Schema.mongoId().array().optional().nullable(false).decorate())
    groups?: string[];
 
-   @(Schema.mongoId().array().optional().decorate())
+   @(Schema.mongoId().array().optional().nullable(false).decorate())
    roles?: string[];
 }
 

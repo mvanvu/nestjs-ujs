@@ -5,23 +5,17 @@ import {
    PaginationResult,
    UpdateResult,
    CRUDResult,
-   ClassConstructor,
    validateDTO,
    availableStatuses,
-   OnEntity,
-   OnTransaction,
    CRUDContext,
-   OnTransactionOptions,
-   OnEntityOptions,
-   OnBeforeExecute,
-   OnBeforeExecuteOptions,
-   CRUDExecuteContext,
    EntityResult,
-   MessageMetaProvider,
    BaseEntity,
-   OnAfterTransaction,
+   CRUDParamsConstructor,
+   MessageMetaProvider,
 } from '@shared-library';
 import {
+   Callable,
+   ClassConstructor,
    ClassRefSchema,
    DateTime,
    Is,
@@ -33,28 +27,29 @@ import {
    Util,
 } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-
-export interface CreateCRUDService<TPrismaService extends { models: ObjectRecord }> {
-   createCRUDService(): CRUDService<TPrismaService>;
-}
+import { app } from '@metadata';
 
 @Injectable()
-export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
+export class CRUDService<
+   TPrismaService extends object,
+   TEntity extends ClassConstructor<any>,
+   TCreateDTO extends ClassConstructor<any>,
+   TUpdateDTO extends ClassConstructor<any>,
+> {
    readonly logger: Logger;
 
    private prismaSelect?: ObjectRecord;
 
    private prismaInclude?: ObjectRecord;
 
-   private createDTO?: ClassConstructor<any>;
-
-   private updateDTO?: ClassConstructor<any>;
-
    private events: {
-      onBeforeExecute?: OnBeforeExecute<any, any, any>;
-      onTransaction?: OnTransaction<any, any, any, any>;
-      onAfterTransaction?: OnAfterTransaction<any, any, any>;
-      onEntity?: OnEntity<any, any>;
+      onBoot?: Callable;
+      onBeforeCreate?: Callable;
+      onAfterCreate?: Callable;
+      onBeforeUpdate?: Callable;
+      onAfterUpdate?: Callable;
+      onBeforeDelete?: Callable;
+      onAfterDelete?: Callable;
    } = {};
 
    private optionsCRUD?: {
@@ -70,8 +65,7 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
 
    constructor(
       private readonly prisma: TPrismaService,
-      private readonly model: string,
-      private readonly meta: MessageMetaProvider,
+      private readonly params: CRUDParamsConstructor<TEntity, TCreateDTO, TUpdateDTO>,
    ) {
       this.logger = new Logger(this.constructor.name);
    }
@@ -94,42 +88,63 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       return this;
    }
 
-   entityResponse<TEntity, TContext extends CRUDContext>(cb: OnEntity<TEntity, TContext>): this {
-      this.events.onEntity = cb;
+   boot<TData>(cb: (options?: { data?: TData; context: CRUDContext }) => any | Promise<any>): this {
+      this.events.onBoot = cb as Callable;
 
       return this;
    }
 
-   beforeExecute<TRecord extends ObjectRecord, TData extends ObjectRecord, TContext extends CRUDExecuteContext>(
-      cb: OnBeforeExecute<TRecord, TData, TContext>,
-   ): this {
-      this.events.onBeforeExecute = cb;
+   beforeCreate(cb: (options: { data: InstanceType<TCreateDTO>; tx: TPrismaService }) => any | Promise<any>): this {
+      this.events.onBeforeCreate = cb as Callable;
 
       return this;
    }
 
-   transaction<TRecord extends ObjectRecord, TData extends ObjectRecord, TContext extends CRUDExecuteContext>(
-      cb: OnTransaction<TPrismaService, TRecord, TData, TContext>,
+   afterCreate(
+      cb: (options: {
+         record: InstanceType<TEntity>;
+         data: InstanceType<TCreateDTO>;
+         tx: TPrismaService;
+      }) => any | Promise<any>,
    ): this {
-      this.events.onTransaction = cb;
+      this.events.onAfterCreate = cb as Callable;
 
       return this;
    }
 
-   afterTrabsaction<TRecord extends ObjectRecord, TData extends ObjectRecord, TContext extends CRUDExecuteContext>(
-      cb: OnAfterTransaction<TRecord, TData, TContext>,
+   beforeUpdate(
+      cb: (options: {
+         record: InstanceType<TEntity>;
+         data: InstanceType<TUpdateDTO>;
+         tx: TPrismaService;
+      }) => any | Promise<any>,
    ): this {
-      this.events.onAfterTransaction = cb;
+      this.events.onBeforeUpdate = cb as Callable;
 
       return this;
    }
 
-   validateDTOPipe<TCreateDTO extends ClassConstructor<any>, TUpdateDTO extends ClassConstructor<any> | undefined>(
-      createDTO: TCreateDTO,
-      updateDTO?: TUpdateDTO,
+   afterUpdate(
+      cb: (options: {
+         previous: InstanceType<TEntity>;
+         record: InstanceType<TEntity>;
+         data: InstanceType<TUpdateDTO>;
+         tx: TPrismaService;
+      }) => any | Promise<any>,
    ): this {
-      this.createDTO = createDTO;
-      this.updateDTO = updateDTO;
+      this.events.onAfterUpdate = cb as Callable;
+
+      return this;
+   }
+
+   beforeDelete(cb: (options: { record: InstanceType<TEntity>; tx: TPrismaService }) => any | Promise<any>): this {
+      this.events.onBeforeDelete = cb as Callable;
+
+      return this;
+   }
+
+   afterDelete(cb: (options: { record: InstanceType<TEntity>; tx: TPrismaService }) => any | Promise<any>): this {
+      this.events.onAfterDelete = cb as Callable;
 
       return this;
    }
@@ -215,9 +230,9 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
 
       // Check to set default ordering
       if (!modelParams.orderBy.length) {
-         const model = this.prisma.models[this.model];
-
-         if (model.fields.find(({ name }) => name === 'createdAt')) {
+         if (
+            this.params.dataModels[Util.uFirst(this.params.modelName)].fields.find(({ name }) => name === 'createdAt')
+         ) {
             modelParams.orderBy.push({ createdAt: 'desc' });
          }
       }
@@ -395,20 +410,22 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       Object.assign(query, { page, limit, q });
 
       // Prisma model
-      const model = this.prisma[this.model];
+      const model = this.prisma[this.params.modelName];
       const [items, totalCount] = await Promise.all([
          model['findMany'](modelParams),
          model['count']({ where: modelParams.where }),
       ]);
       let data = items;
 
-      if (this.events.onEntity) {
+      if (this.params.entity) {
          data = await Promise.all(items.map((item: T) => this.callOnEntity(item, 'read', true)));
       }
 
-      const message = this.meta.get('language')._(`RESULT_FOUND_${totalCount > 1 ? 'N' : totalCount > 0 ? '1' : '0'}`, {
-         count: totalCount,
-      });
+      const message = this.params.meta
+         .get('language')
+         ._(`RESULT_FOUND_${totalCount > 1 ? 'N' : totalCount > 0 ? '1' : '0'}`, {
+            count: totalCount,
+         });
 
       return { message, data, meta: { totalCount, page, limit } };
    }
@@ -418,14 +435,11 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       context: TContext,
       isList?: boolean,
    ): Promise<T> {
-      if (Is.class(this.events.onEntity)) {
-         return BaseEntity.bindToClass(item, this.events.onEntity);
+      if (Is.class(this.params.entity)) {
+         return BaseEntity.bindToClass(item, this.params.entity);
       }
 
-      return await Util.callAsync<T>(this, this.events.onEntity, item, <OnEntityOptions<TContext>>{
-         context,
-         isList,
-      });
+      return await Util.callAsync<T>(this, this.params.entity, item, { context, isList });
    }
 
    async read<T>(id: string, where?: Record<string, any>): Promise<EntityResult<T>> {
@@ -435,28 +449,28 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          where['status'] = { not: availableStatuses.Trashed };
       }
 
-      const record = await this.prisma[this.model]['findFirst']({
+      const record = await this.prisma[this.params.modelName]['findFirst']({
          where,
          select: this.prismaSelect,
          include: this.prismaInclude,
       });
-      const language = this.meta.get('language');
+      const language = this.params.meta.get('language');
 
       if (!record) {
          ThrowException(language._('ITEM_ID_NOT_FOUND', { id }), HttpStatus.NOT_FOUND);
       }
 
       return {
-         data: this.events.onEntity ? await this.callOnEntity(record, 'read') : record,
+         data: this.params.entity ? await this.callOnEntity(record, 'read') : record,
          message: language._('RESULT_FOUND_1'),
       };
    }
 
    async validate<TData extends ObjectRecord>(dto: TData, id?: string): Promise<void> {
-      const language = this.meta.get('language');
-      const modelName = Util.uFirst(this.model as string);
-      const entityModel = this.prisma[this.model];
-      const model = this.prisma.models[modelName];
+      const language = this.params.meta.get('language');
+      const modelName = Util.uFirst(this.params.modelName);
+      const entityModel = this.prisma[this.params.modelName];
+      const model = this.params.dataModels[modelName];
 
       // Remove unknown fields
       for (const fieldName in dto) {
@@ -515,121 +529,83 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    }
 
    async create<TResult, TData extends ObjectRecord>(data: TData): Promise<EntityResult<TResult>> {
-      if (Is.callable(this.events.onBeforeExecute)) {
-         // Trigger an event before handle
-         await Util.callAsync(this, this.events.onBeforeExecute, <OnBeforeExecuteOptions<undefined, TData, 'create'>>{
-            context: 'create',
-            data,
-         });
-      }
-
       // Validate data
       await this.validate(data);
 
       const record = await this.prisma['$transaction'](async (tx: TPrismaService) => {
-         const item = await tx[this.model]['create']({
+         if (Is.callable(this.events.onBeforeCreate)) {
+            // Trigger an event before return results
+            await Util.callAsync(this, this.events.onBeforeCreate, { tx, data });
+         }
+
+         const record = await tx[this.params.modelName]['create']({
             data,
             select: this.prismaSelect,
             include: this.prismaInclude,
          });
 
-         if (Is.callable(this.events.onTransaction)) {
+         if (Is.callable(this.events.onAfterCreate)) {
             // Trigger an event before return results
-            await Util.callAsync(this, this.events.onTransaction, tx, <OnTransactionOptions<TResult, TData, 'create'>>{
-               context: 'create',
-               record: item,
-               data,
-            });
+            await Util.callAsync(this, this.events.onAfterCreate, { tx, record, data });
          }
 
-         return item;
+         return record;
       });
 
-      if (Is.callable(this.events.onAfterTransaction)) {
-         // Trigger an event before return results
-         await Util.callAsync(this, this.events.onAfterTransaction, <OnTransactionOptions<TResult, TData, 'create'>>{
-            context: 'create',
-            record,
-            data,
-         });
-      }
-
       return {
-         data: this.events.onEntity ? await this.callOnEntity(record, 'create') : record,
-         message: this.meta.get('language')._('ITEM_CREATED'),
+         data: this.params.entity ? await this.callOnEntity(record, 'create') : record,
+         message: this.params.meta.get('language')._('ITEM_CREATED'),
       };
    }
 
    async update<TResult, TData extends ObjectRecord>(id: string, data: TData): Promise<UpdateResult<TResult>> {
-      const model = this.prisma[this.model];
-      const language = this.meta.get('language');
-      let oldRecord = await model['findFirst']({
+      const language = this.params.meta.get('language');
+      let previous = await this.prisma[this.params.modelName]['findFirst']({
          where: { id },
          select: this.prismaSelect,
          include: this.prismaInclude,
       });
 
-      if (!oldRecord) {
+      if (!previous) {
          ThrowException(language._('ITEM_ID_NOT_FOUND', { id }), HttpStatus.NOT_FOUND);
       }
 
-      const { onEntity } = this.events;
-
-      if (onEntity) {
-         oldRecord = await this.callOnEntity(oldRecord, 'update');
-      }
-
-      if (this.events.onBeforeExecute) {
-         // Trigger an event before handle
-         await Util.callAsync(this, this.events.onBeforeExecute, <OnBeforeExecuteOptions<TResult, TData, 'update'>>{
-            context: 'update',
-            data,
-            record: oldRecord,
-         });
+      if (this.params.entity) {
+         previous = await this.callOnEntity(previous, 'update');
       }
 
       // Validate
       await this.validate(data, id);
+      const record = await this.prisma['$transaction'](async (tx: TPrismaService) => {
+         if (Is.callable(this.events.onBeforeUpdate)) {
+            // Trigger an event before return results
+            await Util.callAsync(this, this.events.onBeforeUpdate, { tx, data, record: previous });
+         }
 
-      let record = await this.prisma['$transaction'](async (tx: TPrismaService) => {
-         const item = await tx[this.model]['update']({
+         let record = await tx[this.params.modelName]['update']({
             data,
             select: this.prismaSelect,
             include: this.prismaInclude,
             where: { id },
          });
 
-         if (Is.callable(this.events.onTransaction)) {
-            // Trigger an event before return results
-            await Util.callAsync(this, this.events.onTransaction, tx, <OnTransactionOptions<TResult, TData, 'update'>>{
-               context: 'update',
-               record: item,
-               oldRecord,
-               data,
-            });
+         if (this.params.entity) {
+            record = await this.callOnEntity(record, 'update');
          }
 
-         return item;
+         if (Is.callable(this.events.onAfterUpdate)) {
+            // Trigger an event before return results
+            await Util.callAsync(this, this.events.onAfterUpdate, { tx, data, previous, record });
+         }
+
+         return record;
       });
-
-      if (Is.callable(this.events.onAfterTransaction)) {
-         // Trigger an event before return results
-         await Util.callAsync(this, this.events.onAfterTransaction, <OnTransactionOptions<TResult, TData, 'update'>>{
-            context: 'update',
-            record,
-            data,
-         });
-      }
-
-      if (onEntity) {
-         record = await this.callOnEntity(record, 'update');
-      }
 
       // Parse diff data
       const diff: UpdateResult<TResult>['meta']['diff'] = {};
 
-      for (const field in oldRecord) {
-         const oldValue = oldRecord[field];
+      for (const field in previous) {
+         const oldValue = previous[field];
          const newValue = record[field];
 
          if (!Is.equals(oldValue, newValue)) {
@@ -641,9 +617,8 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
    }
 
    async delete<TResult>(id: string): Promise<EntityResult<TResult>> {
-      const language = this.meta.get('language');
-
-      let record = await this.prisma[this.model]['findFirst']({
+      const language = this.params.meta.get('language');
+      let record = await this.prisma[this.params.modelName]['findFirst']({
          where: { id },
          select: this.prismaSelect,
          include: this.prismaInclude,
@@ -653,21 +628,18 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
          ThrowException(language._('ITEM_ID_NOT_FOUND', { id }), HttpStatus.NOT_FOUND);
       }
 
-      if (this.events.onEntity) {
+      if (this.params.entity) {
          record = await this.callOnEntity(record, 'delete');
       }
 
-      if (this.events.onBeforeExecute) {
-         // Trigger an event before handle
-         await Util.callAsync(this, this.events.onBeforeExecute, <OnBeforeExecuteOptions<TResult, undefined, 'delete'>>{
-            context: 'delete',
-            record,
-         });
-      }
-
       await this.prisma['$transaction'](async (tx: TPrismaService) => {
+         if (this.events.onBeforeDelete) {
+            // Trigger an event before handle
+            await Util.callAsync(this, this.events.onBeforeDelete, { tx, record });
+         }
+
          if (this.optionsCRUD?.softDelete === true) {
-            await tx[this.model]['update']({
+            await tx[this.params.modelName]['update']({
                select: { id: true },
                data: { status: availableStatuses.Trashed },
                where: { id },
@@ -675,38 +647,42 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
 
             record.status = availableStatuses.Trashed;
          } else {
-            await tx[this.model]['delete']({ select: { id: true }, where: { id } });
+            await tx[this.params.modelName]['delete']({ select: { id: true }, where: { id } });
          }
 
-         if (Is.callable(this.events.onTransaction)) {
+         if (Is.callable(this.events.onAfterDelete)) {
             // Trigger an event before return results
-            await Util.callAsync(this, this.events.onTransaction, tx, <
-               OnTransactionOptions<TResult, undefined, 'delete'>
-            >{
-               context: 'delete',
-               record,
-            });
+            await Util.callAsync(this, this.events.onAfterDelete, { tx, record });
          }
       });
-
-      if (Is.callable(this.events.onAfterTransaction)) {
-         // Trigger an event before return results
-         await Util.callAsync(this, this.events.onAfterTransaction, <
-            OnTransactionOptions<TResult, undefined, 'delete'>
-         >{
-            context: 'delete',
-            record,
-         });
-      }
 
       return { data: record, message: language._('ITEM_DELETED') };
    }
 
    async execute<TResult>(): Promise<CRUDResult<TResult>> {
-      const meta = this.meta;
+      const meta = this.params.meta;
       const method = meta.get('method');
       const dto = meta.get('ctx').getData();
       const isMongoId = Schema.mongoId().check(dto);
+      const context =
+         method === 'GET'
+            ? 'read'
+            : method === 'POST'
+              ? 'create'
+              : method === 'PATCH'
+                ? 'update'
+                : method === 'DELETE'
+                  ? 'delete'
+                  : 'unknown';
+
+      if (context === 'unknown') {
+         ThrowException('CRUD request wrong method or data', HttpStatus.NOT_IMPLEMENTED);
+      }
+
+      if (Is.callable(this.events.onBoot)) {
+         // Trigger an event before handle
+         await Util.callAsync(this, this.events.onBoot, { context, data: dto });
+      }
 
       if (method === 'GET') {
          return isMongoId ? this.read<TResult>(dto) : this.paginate<TResult>(dto);
@@ -719,13 +695,13 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       const userRef = meta.get('user', null);
 
       if (method === 'PATCH' && Is.object(dto) && Schema.mongoId().check(dto.id) && Is.object(dto.data)) {
-         const DTOClassRef: ClassConstructor<any> =
-            this.updateDTO ?? (this.createDTO ? ClassRefSchema.Partial(this.createDTO) : undefined);
-         const data = DTOClassRef ? validateDTO(dto.data, DTOClassRef) : dto.data;
+         const dtoClassRef =
+            this.params.updateDto ??
+            (this.params.updateDto ? ClassRefSchema.Partial(this.params.createDto) : undefined);
+         const data = dtoClassRef ? validateDTO(dto.data, dtoClassRef) : dto.data;
 
          if (userRef) {
             // Append some dynamic user data
-            data.updatedBy = userRef.id;
             data.editor = userRef;
          }
 
@@ -733,11 +709,10 @@ export class CRUDService<TPrismaService extends { models: ObjectRecord }> {
       }
 
       if (method === 'POST' && Is.object(dto)) {
-         const data = this.createDTO ? validateDTO(dto, this.createDTO) : dto;
+         const data = this.params.createDto ? validateDTO(dto, this.params.createDto) : dto;
 
          if (userRef) {
             // Append some dynamic user data
-            data.createdBy = userRef.id;
             data.author = userRef;
          }
 

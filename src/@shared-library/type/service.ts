@@ -1,15 +1,10 @@
-import { ClassConstructor, HttpRequest, ServiceOptions } from './common';
-import { IsEqual, ObjectRecord, Registry } from '@mvanvu/ujs';
+import { HttpRequest, ServiceOptions } from './common';
+import { ClassConstructor, ObjectRecord, Registry } from '@mvanvu/ujs';
 import { DMMF } from '@prisma/client/runtime/library';
 import { type PaginationQueryDto } from '../dto/pagination-query';
 import { type UserRefEntity } from '../entity/user';
 import { type Language } from '../i18n';
 import { RequestContext } from '@nestjs/microservices';
-export type PrismaModels = Record<string, DMMF.Model>;
-
-export interface GetPrismaModels {
-   get models(): PrismaModels;
-}
 
 export type PrismaModelName<PrismaService> = keyof Omit<
    PrismaService,
@@ -21,11 +16,10 @@ export type PrismaModelName<PrismaService> = keyof Omit<
    | '$runCommandRaw'
    | '$extends'
    | 'enums'
-   | 'models'
-   | '_models'
    | 'onModuleInit'
    | 'onApplicationShutdown'
    | symbol
+   | number
 >;
 
 export type OrderDirection = 'asc' | 'desc';
@@ -79,54 +73,18 @@ export type CRUDContext = 'read' | 'create' | 'update' | 'delete';
 
 export type CRUDExecuteContext = 'create' | 'update' | 'delete';
 
-export type OnTransactionOptions<
-   TRecord extends ObjectRecord,
-   TData extends ObjectRecord,
-   TContext extends CRUDExecuteContext,
+export type CRUDParamsConstructor<
+   TEntity extends ClassConstructor<any>,
+   TCreateDTO extends ClassConstructor<any>,
+   TUpdateDTO extends ClassConstructor<any>,
 > = {
-   context: TContext;
-   data: TContext extends 'create' | 'update' ? TData : never;
-   record: TRecord;
-   oldRecord: TContext extends 'update' ? TRecord : never;
+   modelName: string;
+   dataModels: Record<string, DMMF.Model>;
+   meta: MessageMetaProvider;
+   entity?: TEntity;
+   createDto?: TCreateDTO;
+   updateDto?: TUpdateDTO;
 };
-
-export type OnBeforeExecuteOptions<
-   TRecord extends ObjectRecord,
-   TData extends ObjectRecord,
-   TContext extends CRUDExecuteContext,
-> = {
-   context: TContext;
-   data: TContext extends 'create' | 'update' ? TData : never;
-   record: TContext extends 'delete' | 'update' ? TRecord : never;
-};
-
-export type OnEntityOptions<TContext extends CRUDContext> = {
-   context: TContext;
-   isList: IsEqual<TContext, 'read' extends true ? boolean : never>;
-};
-
-export type OnBeforeExecute<
-   TRecord extends ObjectRecord,
-   TData extends ObjectRecord,
-   TContext extends CRUDExecuteContext,
-> = (options: OnBeforeExecuteOptions<TRecord, TData, TContext>) => any | Promise<any>;
-
-export type OnTransaction<
-   TX,
-   TRecord extends ObjectRecord,
-   TData extends ObjectRecord,
-   TContext extends CRUDExecuteContext,
-> = (tx: TX, options: OnTransactionOptions<TRecord, TData, TContext>) => any | Promise<any>;
-
-export type OnAfterTransaction<
-   TRecord extends ObjectRecord,
-   TData extends ObjectRecord,
-   TContext extends CRUDExecuteContext,
-> = (options: OnTransactionOptions<TRecord, TData, TContext>) => any | Promise<any>;
-
-export type OnEntity<TEntity extends ObjectRecord, TContext extends CRUDContext> =
-   | ClassConstructor<TEntity>
-   | ((record: TEntity, options: OnEntityOptions<TContext>) => any | Promise<any>);
 
 export type CRUDClient = {
    read: <TEntity>(id: string, optionsOveride?: ServiceOptions) => Promise<EntityResult<TEntity>>;

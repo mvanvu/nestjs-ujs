@@ -22,6 +22,10 @@ export default {
    USER_DELETE_SELF_DENIED: `You can't delete yourself`,
    USER_DELETE_SAME_PERMIT_DENIED: `You can't delete the user who has the same permission with you`,
    USER_DELETE_GREATER_PERMIT_DENIED: `You can't delete the user who has the greater permissions than you`,
+   USER_GROUP_$ID_NOT_EXISTS: `The group ID %id% doesn't exists`,
+   USER_ROLE_$ID_NOT_EXISTS: `The role ID %id% doesn't exists`,
+   USER_$GROUP_HAS_USERS_CANT_DELETE: `The group[%group%] has some users who assigned to it, can't delete`,
+   USER_$ROLE_HAS_USERS_CANT_DELETE: `The role[%role%] has some users who assigned to it, can't delete`,
 
    // Content
    CONTENT_CATEGORY_$ID_NOT_EXISTS: `The category ID %id% doesn't exists`,

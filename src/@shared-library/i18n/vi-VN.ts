@@ -22,6 +22,10 @@ export default {
    USER_DELETE_SELF_DENIED: 'Không thể xoá chính mình',
    USER_DELETE_SAME_PERMIT_DENIED: 'Không thể xoá người dùng ngang quyền với mình',
    USER_DELETE_GREATER_PERMIT_DENIED: 'Không thể xoá người dùng có quyền cao hơn mình',
+   USER_GROUP_$ID_NOT_EXISTS: `Nhóm người dùng ID %id% không tồn tại`,
+   USER_ROLE_$ID_NOT_EXISTS: `Vai trò ID %id% không tồn tại`,
+   USER_$GROUP_HAS_USERS_CANT_DELETE: `Có một số người dùng đang thuộc nhóm %group%, không thể xoá`,
+   USER_$ROLE_HAS_USERS_CANT_DELETE: `Có một số người dùng đang thuộc vai trò %role%, không thể xoá`,
 
    // Content
    CONTENT_CATEGORY_$ID_NOT_EXISTS: 'Danh mục ID $id không tồn tại',
