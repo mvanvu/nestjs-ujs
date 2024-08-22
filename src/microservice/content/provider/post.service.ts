@@ -80,6 +80,14 @@ export class PostService extends BaseService {
             }
 
             await this.validateData(fieldsException, data);
+
+            if (!data['path']) {
+               Object.assign(data, { path: data.slug });
+            }
+
+            if (!data['tags']) {
+               Object.assign(data, { tags: [] });
+            }
          })
          .beforeUpdate(async ({ data, record }) => {
             if (data.slug && data.slug === record.slug) {

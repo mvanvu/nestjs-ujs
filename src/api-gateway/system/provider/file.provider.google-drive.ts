@@ -2,7 +2,7 @@ import { ThrowException } from '@shared-library';
 import { FileProviderInterface } from './file.provider.interface';
 import { google, drive_v3 as v3 } from 'googleapis';
 import { Readable } from 'stream';
-import { Provider } from '.prisma/storage';
+import { StorageProvider } from '.prisma/system';
 import { StreamableFile } from '@nestjs/common';
 import { serviceConfig } from '@metadata';
 import { FinalUploadDto, UploadDto } from '@microservice/system/dto';
@@ -48,7 +48,7 @@ export class FileProviderGoogleDrive implements FileProviderInterface {
             name: fileMetadata.name,
             mime: fileMetadata.mimeType,
             size: dto.file.size,
-            provider: Provider.GoogleDrive,
+            provider: StorageProvider.GoogleDrive,
             providerId: response.data.id,
             isPublic: dto.isPublic,
          };
@@ -68,7 +68,7 @@ export class FileProviderGoogleDrive implements FileProviderInterface {
    }
 
    async stream(file: FileEntity): Promise<StreamableFile> {
-      if (file.provider !== Provider.GoogleDrive) {
+      if (file.provider !== StorageProvider.GoogleDrive) {
          throw new ThrowException(`The provider of file[${file.name}] is ${file.provider} not Google Drive`);
       }
 

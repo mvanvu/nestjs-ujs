@@ -38,7 +38,7 @@ model ActivityLog {
     author         User?
 }
 
-enum SorageProvider {
+enum StorageProvider {
     Local
     GoogleDrive
 }
@@ -52,14 +52,14 @@ enum FileType {
 }
 
 model File {
-    id         String         @id @default(auto()) @map("_id") @db.ObjectId
+    id         String          @id @default(auto()) @map("_id") @db.ObjectId
     name       String
     type       FileType
     mime       String
-    size       Int            @db.Long
+    size       Int             @db.Long
     isPublic   Boolean
-    provider   SorageProvider
+    provider   StorageProvider
     providerId String
-    createdAt  DateTime       @default(now())
+    createdAt  DateTime        @default(now())
     author     User?
 }

@@ -1,7 +1,7 @@
 import { Injectable, StreamableFile } from '@nestjs/common';
 import { FileProviderLocal } from './file.provider.local';
 import { FileProviderGoogleDrive } from './file.provider.google-drive';
-import { Provider } from '.prisma/storage';
+import { StorageProvider } from '.prisma/system';
 import { FileProviderInterface } from './file.provider.interface';
 import { Transform } from '@mvanvu/ujs';
 import { serviceConfig } from '@metadata';
@@ -13,18 +13,18 @@ const storageConfig = serviceConfig.get('system');
 
 @Injectable()
 export class FileProvider {
-   getStorageDriver(provider?: Provider): FileProviderInterface {
+   getStorageDriver(provider?: StorageProvider): FileProviderInterface {
       provider = provider ?? storageConfig.upload.provider;
 
       switch (provider) {
-         case Provider.GoogleDrive:
+         case StorageProvider.GoogleDrive:
             return new FileProviderGoogleDrive();
 
-         case Provider.Local:
+         case StorageProvider.Local:
             return new FileProviderLocal();
 
          default:
-            ThrowException(`The media storage must be in (${Object.values(Provider)})`);
+            ThrowException(`The media storage must be in (${Object.values(StorageProvider)})`);
       }
    }
 

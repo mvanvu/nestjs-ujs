@@ -529,14 +529,14 @@ export class CRUDService<
    }
 
    async create<TResult, TData extends ObjectRecord>(data: TData): Promise<EntityResult<TResult>> {
-      // Validate data
-      await this.validate(data);
-
       const record = await this.prisma['$transaction'](async (tx: TPrismaService) => {
          if (Is.callable(this.events.onBeforeCreate)) {
             // Trigger an event before return results
             await Util.callAsync(this, this.events.onBeforeCreate, { tx, data });
          }
+
+         // Validate data
+         await this.validate(data);
 
          const record = await tx[this.params.modelName]['create']({
             data,
@@ -574,13 +574,14 @@ export class CRUDService<
          previous = await this.callOnEntity(previous, 'update');
       }
 
-      // Validate
-      await this.validate(data, id);
       const record = await this.prisma['$transaction'](async (tx: TPrismaService) => {
          if (Is.callable(this.events.onBeforeUpdate)) {
             // Trigger an event before return results
             await Util.callAsync(this, this.events.onBeforeUpdate, { tx, data, record: previous });
          }
+
+         // Validate data
+         await this.validate(data, id);
 
          let record = await tx[this.params.modelName]['update']({
             data,

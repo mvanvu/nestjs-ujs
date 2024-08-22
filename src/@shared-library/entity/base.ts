@@ -1,4 +1,4 @@
-import { ArraySchema, BaseSchema, ClassConstructor, Is, ObjectSchema, UJS_CLASS_PROPERTIES, Util } from '@mvanvu/ujs';
+import { BaseSchema, ClassConstructor, Is, ObjectSchema, UJS_CLASS_PROPERTIES, Util } from '@mvanvu/ujs';
 
 export class BaseEntity {
    static bindToClass<T>(data: any, ClassRef: ClassConstructor<T>): T {
@@ -7,31 +7,14 @@ export class BaseEntity {
       if (Is.object(data)) {
          const props = Reflect.getMetadata(UJS_CLASS_PROPERTIES, ClassRef.prototype) || {};
          const cloneData = Util.clone(data);
-         const markAllWhiteList = (schema: BaseSchema) => {
-            if (schema instanceof ObjectSchema) {
-               schema.whiteList();
-               const properties = schema.getProperties();
-
-               if (properties) {
-                  Object.entries(properties).forEach(([, sc]) => markAllWhiteList(sc));
-               }
-            } else if (schema instanceof ArraySchema) {
-               const items = schema.getItems();
-
-               if (items) {
-                  if (Is.array(items)) {
-                     items.forEach((item) => markAllWhiteList(item));
-                  } else {
-                     markAllWhiteList(items);
-                  }
-               }
-            }
-         };
 
          for (const prop in props) {
             const schema = (props[prop] as BaseSchema)?.clone()?.default(undefined);
             const nothing = cloneData[prop] === undefined;
-            markAllWhiteList(schema);
+
+            if (schema instanceof ObjectSchema) {
+               schema.whiteList('deep');
+            }
 
             if (nothing || !schema?.check(cloneData[prop])) {
                if (nothing && schema?.isNullable()) {

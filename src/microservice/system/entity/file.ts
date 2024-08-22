@@ -1,4 +1,4 @@
-import { $Enums } from '.prisma/system';
+import { FileType, StorageProvider } from '.prisma/system';
 import { Schema } from '@mvanvu/ujs';
 
 export class FileEntity {
@@ -14,14 +14,14 @@ export class FileEntity {
    @(Schema.boolean().decorate())
    isPublic: boolean;
 
-   @(Schema.enum(Object.values($Enums.FileType)).decorate())
-   type: $Enums.FileType;
+   @(Schema.enum(Object.values(FileType)).decorate())
+   type: FileType;
 
    @(Schema.content().decorate())
    mime: string;
 
-   @(Schema.enum(Object.values($Enums.SorageProvider)).decorate())
-   provider: $Enums.SorageProvider;
+   @(Schema.enum(Object.values(StorageProvider)).decorate())
+   provider: StorageProvider;
 
    @(Schema.content().decorate())
    providerId: string;

@@ -1,4 +1,4 @@
-import { $Enums } from '.prisma/storage';
+import { $Enums } from '.prisma/system';
 import { FileEntity } from '../entity';
 import { ClassRefSchema, Schema } from '@mvanvu/ujs';
 
