@@ -10,7 +10,7 @@ const { name, permissions, patterns } = serviceConfig.get('content');
 
 @ApiBearerAuth()
 @ApiTags('Contents')
-@Controller('content/tags')
+@Controller('tags')
 @HttpCache({ cacheRefKeys: /\/posts\// }) // Purge posts caching when the method is not GET
 export class ContentTagController {
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;

@@ -64,7 +64,7 @@ export class PostService extends BaseService {
    createCRUDService() {
       return this.prisma
          .createCRUDService('post', { entity: PostEntity, createDto: CreatePostDto, updateDto: UpdatePostDto })
-         .options({ list: { searchFields: ['title', 'description'] } })
+         .config({ list: { searchFields: ['title', 'description'], filterFields: ['tag[tags.some.title]'] } })
          .include<Prisma.PostInclude>({
             category: { select: { id: true, status: true, title: true, slug: true, path: true } },
          })

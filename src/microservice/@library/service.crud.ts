@@ -11,7 +11,6 @@ import {
    EntityResult,
    BaseEntity,
    CRUDParamsConstructor,
-   MessageMetaProvider,
 } from '@shared-library';
 import {
    Callable,
@@ -27,7 +26,6 @@ import {
    Util,
 } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { app } from '@metadata';
 
 @Injectable()
 export class CRUDService<
@@ -44,6 +42,7 @@ export class CRUDService<
 
    private events: {
       onBoot?: Callable;
+      onBeforePaginate?: Callable;
       onBeforeCreate?: Callable;
       onAfterCreate?: Callable;
       onBeforeUpdate?: Callable;
@@ -52,7 +51,7 @@ export class CRUDService<
       onAfterDelete?: Callable;
    } = {};
 
-   private optionsCRUD?: {
+   private configCRUD?: {
       softDelete?: boolean;
       list?: {
          orderFields?: string[];
@@ -82,14 +81,31 @@ export class CRUDService<
       return this;
    }
 
-   options(options?: typeof this.optionsCRUD): this {
-      this.optionsCRUD = options;
+   config(configCRUD?: typeof this.configCRUD): this {
+      this.configCRUD = configCRUD;
 
       return this;
    }
 
    boot<TData>(cb: (options?: { data?: TData; context: CRUDContext }) => any | Promise<any>): this {
       this.events.onBoot = cb as Callable;
+
+      return this;
+   }
+
+   beforePaginate(
+      cb: (options: {
+         modelParams: {
+            select?: any;
+            include?: any;
+            where?: ObjectRecord;
+            orderBy?: OrderBy[];
+            take?: number;
+            skip?: number;
+         };
+      }) => any | Promise<any>,
+   ): this {
+      this.events.onBeforePaginate = cb as Callable;
 
       return this;
    }
@@ -187,8 +203,8 @@ export class CRUDService<
                }
 
                if (['asc', 'desc'].includes(direction)) {
-                  if (this.optionsCRUD?.list?.orderFields?.length) {
-                     for (const orderField of this.optionsCRUD.list.orderFields) {
+                  if (this.configCRUD?.list?.orderFields?.length) {
+                     for (const orderField of this.configCRUD.list.orderFields) {
                         const regex = /\[([a-z0-9_.,]+)\]/gi;
                         let fieldName = orderField;
                         let queryName = fieldName;
@@ -240,7 +256,7 @@ export class CRUDService<
       // Take care search
       const q = (query.q || '').toString().trim();
 
-      if (q && this.optionsCRUD?.list?.searchFields?.length) {
+      if (q && this.configCRUD?.list?.searchFields?.length) {
          const where: Record<string, any>[] = [];
          const mode = 'insensitive';
          let searchCondition: Record<string, any> = { contains: q, mode };
@@ -280,7 +296,7 @@ export class CRUDService<
             }
          }
 
-         for (const searchField of this.optionsCRUD.list.searchFields) {
+         for (const searchField of this.configCRUD.list.searchFields) {
             where.push({ [searchField]: searchCondition });
          }
 
@@ -288,7 +304,7 @@ export class CRUDService<
       }
 
       // Take care filter
-      const filterFields = this.optionsCRUD?.list?.filterFields || [];
+      const filterFields = this.configCRUD?.list?.filterFields || [];
 
       if (filterFields.length) {
          for (const field of filterFields) {
@@ -364,11 +380,11 @@ export class CRUDService<
                });
 
                if (inValues.length) {
-                  orWhere.push({ [fieldName]: { in: inValues } });
+                  orWhere.push(Registry.from().set(fieldName, { in: inValues }).valueOf());
                }
 
                if (notInValues.length) {
-                  orWhere.push({ [fieldName]: { notIn: notInValues } });
+                  orWhere.push(Registry.from().set(fieldName, { notIn: notInValues }).valueOf());
                }
 
                modelParams.where.AND.push(orWhere.length > 1 ? { OR: orWhere } : orWhere[0]);
@@ -389,13 +405,13 @@ export class CRUDService<
          }
       }
 
-      if (this.optionsCRUD?.softDelete === true && !hasFilterByStatus) {
+      if (this.configCRUD?.softDelete === true && !hasFilterByStatus) {
          modelParams.where['status'] = { not: availableStatuses.Trashed };
       }
 
       // Take care pagination
-      const defaultLimit = this.optionsCRUD?.list?.defaultLimit ?? 25;
-      const maxLimit = this.optionsCRUD?.list?.maxLimit ?? 1000;
+      const defaultLimit = this.configCRUD?.list?.defaultLimit ?? 25;
+      const maxLimit = this.configCRUD?.list?.maxLimit ?? 1000;
       let limit: number =
          query.limit === undefined || !query.limit.toString().match(/^[0-9]+$/)
             ? defaultLimit
@@ -408,6 +424,10 @@ export class CRUDService<
       modelParams.take = limit;
       modelParams.skip = (page - 1) * limit;
       Object.assign(query, { page, limit, q });
+
+      if (Is.callable(this.events.onBeforePaginate)) {
+         await Util.call(this, this.events.onBeforePaginate, { modelParams });
+      }
 
       // Prisma model
       const model = this.prisma[this.params.modelName];
@@ -445,7 +465,7 @@ export class CRUDService<
    async read<T>(id: string, where?: Record<string, any>): Promise<EntityResult<T>> {
       where = { ...(where ?? {}), id };
 
-      if (this.optionsCRUD?.softDelete === true && where['status'] === undefined) {
+      if (this.configCRUD?.softDelete === true && where['status'] === undefined) {
          where['status'] = { not: availableStatuses.Trashed };
       }
 
@@ -639,7 +659,7 @@ export class CRUDService<
             await Util.callAsync(this, this.events.onBeforeDelete, { tx, record });
          }
 
-         if (this.optionsCRUD?.softDelete === true) {
+         if (this.configCRUD?.softDelete === true) {
             await tx[this.params.modelName]['update']({
                select: { id: true },
                data: { status: availableStatuses.Trashed },

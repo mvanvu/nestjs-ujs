@@ -55,7 +55,7 @@ export class CategoryService extends BaseService {
             createDto: CreateCategoryDto,
             updateDto: UpdateCategoryDto,
          })
-         .options({ list: { searchFields: ['title', 'description'] } })
+         .config({ list: { searchFields: ['title', 'description'] } })
          .include<Prisma.CategoryInclude>({
             parent: { select: { id: true, status: true, title: true, slug: true, path: true } },
          })

@@ -6,7 +6,7 @@
       }
    },
    "microservice": {
-      "list": ["user", "system", "content", "order"],
+      "list": ["user", "system", "content"],
       "dependencies": {
          "exclude": [
             "helmet",
@@ -28,8 +28,6 @@
       "api-gateway": {},
       "user": {},
       "system": {},
-      "content": {},
-      "mailer": {},
-      "order": {}
+      "content": {}
    }
 }

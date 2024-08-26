@@ -11,7 +11,7 @@ export class TagService extends BaseService {
    createCRUDService() {
       return this.prisma
          .createCRUDService('tag', { entity: TagEntity, createDto: CreateTagDto, updateDto: UpdateTagDto })
-         .options({ list: { searchFields: ['title'] } })
+         .config({ list: { searchFields: ['title'] } })
          .afterUpdate(async ({ tx, record }) => {
             await tx.post.updateMany({
                data: {
