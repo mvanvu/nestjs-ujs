@@ -29,7 +29,7 @@ export class HttpCacheInterceptor extends CacheInterceptor {
       const reqUserId = request.user?.id;
       let cacheKey = cacheKeybase;
 
-      if (cacheMetadata?.withUserIdPrefix && reqUserId) {
+      if (reqUserId) {
          cacheKey = `${reqUserId}:${cacheKey}`;
       }
 

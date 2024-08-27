@@ -9,7 +9,7 @@ export class PurgeCacheProvider {
    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache;
 
    @OnEvent(eventConstant.onServiceResponse)
-   async purgeHttpCaching({ httpRequest, messagePattern, responseData, success }: OnServiceResponse): Promise<void> {
+   async purgeHttpCaching({ httpRequest, success }: OnServiceResponse): Promise<void> {
       // Check to purge HTTP caching
       if (httpRequest.method === 'GET') {
          return;
@@ -38,13 +38,13 @@ export class PurgeCacheProvider {
 
          if (success) {
             for (const key of keys) {
-               const [userId, cacheKey] = /^[0-9a-fA-F]{24}:/.test(key) ? key.split(':') : [null, key];
-               const cacheKeyWithoutSuffix = cacheKey.replace(/\/?\?.*$/g, '');
+               const [, cacheKey] = /^[0-9a-fA-F]{24}:/.test(key) ? key.split(':') : [null, key];
+               const replaceReg = /^\/api\/v\d+\/|\??.*$/g;
+               const rootKeyPath = cacheKey.replace(replaceReg, '');
+               const rootEndpointPath = requestUrlWithoutParams.replace(replaceReg, '');
 
                if (
-                  (messagePattern.startsWith('user.') && responseData?.data?.id === userId) ||
-                  cacheKey.startsWith(requestUrlWithoutParams) ||
-                  requestUrlWithoutParams.startsWith(cacheKeyWithoutSuffix) ||
+                  rootKeyPath === rootEndpointPath ||
                   isRelatedCacheKey(cacheKey) ||
                   cacheKey.includes(activityLogsBaseKey)
                ) {

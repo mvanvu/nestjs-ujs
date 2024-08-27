@@ -113,26 +113,3 @@ model Tag {
     author    UserLite?
     editor    UserLite?
 }
-
-model Comment {
-    id        String        @id @default(auto()) @map("_id") @db.ObjectId
-    status    CommentStatus @default(Pending)
-    post      PostLite
-    message   String
-    createdAt DateTime      @default(now())
-    updatedAt DateTime?     @updatedAt
-    author    UserLite?
-    editor    UserLite?
-}
-
-model Reply {
-    id        String        @id @default(auto()) @map("_id") @db.ObjectId
-    status    CommentStatus @default(Pending)
-    post      PostLite
-    comment   CommentLite
-    message   String
-    createdAt DateTime      @default(now())
-    updatedAt DateTime?     @updatedAt
-    author    UserLite?
-    editor    UserLite?
-}

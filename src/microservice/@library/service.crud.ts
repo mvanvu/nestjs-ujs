@@ -11,6 +11,8 @@ import {
    EntityResult,
    BaseEntity,
    CRUDParamsConstructor,
+   parseQueryParamSearch,
+   parseQueryParamFilter,
 } from '@shared-library';
 import {
    Callable,
@@ -95,6 +97,8 @@ export class CRUDService<
 
    beforePaginate(
       cb: (options: {
+         q: string;
+         query: Record<string, any>;
          modelParams: {
             select?: any;
             include?: any;
@@ -169,20 +173,11 @@ export class CRUDService<
       const modelParams = {
          select: this.prismaSelect,
          include: this.prismaInclude,
-         where: {} as ObjectRecord,
+         where: { OR: [], AND: [] } as ObjectRecord,
          orderBy: <OrderBy[]>[],
          take: undefined,
          skip: undefined,
       };
-
-      // Init WHERE attributes
-      if (!modelParams.where.OR) {
-         modelParams.where.OR = [];
-      }
-
-      if (!modelParams.where.AND) {
-         modelParams.where.AND = [];
-      }
 
       query = query || {};
 
@@ -255,46 +250,10 @@ export class CRUDService<
 
       // Take care search
       const q = (query.q || '').toString().trim();
+      const searchCondition = parseQueryParamSearch(q);
 
-      if (q && this.configCRUD?.list?.searchFields?.length) {
+      if (searchCondition && this.configCRUD?.list?.searchFields?.length) {
          const where: Record<string, any>[] = [];
-         const mode = 'insensitive';
-         let searchCondition: Record<string, any> = { contains: q, mode };
-
-         // Check if advance search
-         for (const markup of ['!', '^', '$', '~', '|']) {
-            const index = q.indexOf(markup);
-            let qValue: string | string[] = q.substring(markup.length);
-
-            if (index === 0 && qValue) {
-               switch (markup) {
-                  case '!':
-                     searchCondition = { not: { contains: qValue, mode } };
-                     break;
-
-                  case '^':
-                     searchCondition = { startsWith: qValue, mode };
-                     break;
-
-                  case '$':
-                     searchCondition = { endsWith: qValue, mode };
-                     break;
-
-                  case '~':
-                     searchCondition = { equals: qValue, mode };
-                     break;
-
-                  case '|':
-                     qValue = (qValue as string).split(/[\s\n]+/g).filter((qv: string) => !!qv.trim());
-
-                     if (qValue.length) {
-                        searchCondition = { OR: qValue.map((qv: string) => ({ contains: qv, mode })) };
-                     }
-
-                     break;
-               }
-            }
-         }
 
          for (const searchField of this.configCRUD.list.searchFields) {
             where.push({ [searchField]: searchCondition });
@@ -307,106 +266,13 @@ export class CRUDService<
       const filterFields = this.configCRUD?.list?.filterFields || [];
 
       if (filterFields.length) {
-         for (const field of filterFields) {
-            const parts = field.split(':');
-            const regex = /\[([a-z0-9_.]+)\]/gi;
-            let fieldName = <any>parts[0];
-            let queryName = fieldName;
+         filterFields.forEach((field) => {
+            const filterCondition = parseQueryParamFilter(field, query);
 
-            if (fieldName.match(regex)) {
-               queryName = fieldName.replace(regex, '');
-               fieldName = fieldName.replace(queryName, '').replace(regex, '$1');
+            if (filterCondition) {
+               modelParams.where.AND.push(filterCondition);
             }
-
-            if (parts[1]?.toUpperCase() === 'DATE') {
-               const [fromDate, toDate] = queryName.includes('-') ? queryName.split('-') : [queryName, undefined];
-               const from = DateTime.from(query[fromDate]);
-
-               if (from.valid) {
-                  let to = DateTime.from(query[toDate] || '');
-
-                  if (!to.valid) {
-                     to = from.clone();
-                  }
-
-                  from.startOf();
-                  to.endOf();
-                  modelParams.where[fieldName] = { gte: from.native, lt: to.native };
-               }
-
-               continue;
-            }
-
-            if (query[queryName] === undefined) {
-               continue;
-            }
-
-            const queryValue = Transform.toString(query[queryName]);
-            const valueEquals = [];
-            let valueArray: any[] = queryValue.split('|').map((val) => {
-               val = val.trim();
-
-               if (val[0] === '!') {
-                  valueEquals.push(false);
-
-                  return val.substring(1) || '';
-               }
-
-               valueEquals.push(true);
-
-               return val;
-            });
-            const castAs = parts[1]?.toLowerCase().split(',') ?? undefined;
-
-            if (castAs) {
-               const typeTransform = castAs.filter((asType) =>
-                  ['toNumber', 'toBoolean'].includes(asType),
-               ) as TransformType[];
-               valueArray = valueArray.map((value) => Transform.clean(value, typeTransform));
-            }
-
-            if (valueArray.length) {
-               const orWhere = [];
-               const inValues = [];
-               const notInValues = [];
-               valueArray.forEach((value, index) => {
-                  const isEquals = valueEquals[index] === true;
-
-                  if (isEquals) {
-                     inValues.push(value);
-                  } else {
-                     notInValues.push(value);
-                  }
-               });
-
-               if (inValues.length) {
-                  orWhere.push(Registry.from().set(fieldName, { in: inValues }).valueOf());
-               }
-
-               if (notInValues.length) {
-                  orWhere.push(Registry.from().set(fieldName, { notIn: notInValues }).valueOf());
-               }
-
-               modelParams.where.AND.push(orWhere.length > 1 ? { OR: orWhere } : orWhere[0]);
-            }
-         }
-      }
-
-      // Take care soft delete status
-      let hasFilterByStatus: boolean = modelParams.where['status'];
-
-      for (const prop of ['OR', 'AND']) {
-         if (modelParams.where[prop].length) {
-            if (!hasFilterByStatus) {
-               hasFilterByStatus = !!modelParams.where[prop].map((obj: ObjectRecord) => obj['status'] !== undefined);
-            }
-         } else {
-            delete modelParams.where[prop];
-         }
-      }
-
-      if (this.configCRUD?.softDelete === true && !hasFilterByStatus) {
-         modelParams.where['status'] = { not: availableStatuses.Trashed };
+         });
       }
 
       // Take care pagination
@@ -426,7 +292,25 @@ export class CRUDService<
       Object.assign(query, { page, limit, q });
 
       if (Is.callable(this.events.onBeforePaginate)) {
-         await Util.call(this, this.events.onBeforePaginate, { modelParams });
+         await Util.call(this, this.events.onBeforePaginate, { query, q, modelParams });
+      }
+
+      // Take care soft delete status
+      let hasFilterByStatus: boolean = modelParams.where['status'];
+
+      // Clean up OR & AND where
+      for (const prop of ['OR', 'AND']) {
+         if (modelParams.where[prop].length) {
+            if (!hasFilterByStatus) {
+               hasFilterByStatus = !!modelParams.where[prop].map((obj: ObjectRecord) => obj['status'] !== undefined);
+            }
+         } else {
+            delete modelParams.where[prop];
+         }
+      }
+
+      if (this.configCRUD?.softDelete === true && !hasFilterByStatus) {
+         modelParams.where['status'] = { not: availableStatuses.Trashed };
       }
 
       // Prisma model
