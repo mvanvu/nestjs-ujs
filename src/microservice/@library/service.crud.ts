@@ -11,7 +11,8 @@ import {
    EntityResult,
    BaseEntity,
    CRUDParamsConstructor,
-   MessageMetaProvider,
+   parseQueryParamSearch,
+   parseQueryParamFilter,
 } from '@shared-library';
 import {
    Callable,
@@ -27,7 +28,6 @@ import {
    Util,
 } from '@mvanvu/ujs';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { app } from '@metadata';
 
 @Injectable()
 export class CRUDService<
@@ -44,6 +44,7 @@ export class CRUDService<
 
    private events: {
       onBoot?: Callable;
+      onBeforePaginate?: Callable;
       onBeforeCreate?: Callable;
       onAfterCreate?: Callable;
       onBeforeUpdate?: Callable;
@@ -52,7 +53,7 @@ export class CRUDService<
       onAfterDelete?: Callable;
    } = {};
 
-   private optionsCRUD?: {
+   private configCRUD?: {
       softDelete?: boolean;
       list?: {
          orderFields?: string[];
@@ -82,14 +83,33 @@ export class CRUDService<
       return this;
    }
 
-   options(options?: typeof this.optionsCRUD): this {
-      this.optionsCRUD = options;
+   config(configCRUD?: typeof this.configCRUD): this {
+      this.configCRUD = configCRUD;
 
       return this;
    }
 
    boot<TData>(cb: (options?: { data?: TData; context: CRUDContext }) => any | Promise<any>): this {
       this.events.onBoot = cb as Callable;
+
+      return this;
+   }
+
+   beforePaginate(
+      cb: (options: {
+         q: string;
+         query: Record<string, any>;
+         modelParams: {
+            select?: any;
+            include?: any;
+            where?: ObjectRecord;
+            orderBy?: OrderBy[];
+            take?: number;
+            skip?: number;
+         };
+      }) => any | Promise<any>,
+   ): this {
+      this.events.onBeforePaginate = cb as Callable;
 
       return this;
    }
@@ -153,20 +173,11 @@ export class CRUDService<
       const modelParams = {
          select: this.prismaSelect,
          include: this.prismaInclude,
-         where: {} as ObjectRecord,
+         where: { OR: [], AND: [] } as ObjectRecord,
          orderBy: <OrderBy[]>[],
          take: undefined,
          skip: undefined,
       };
-
-      // Init WHERE attributes
-      if (!modelParams.where.OR) {
-         modelParams.where.OR = [];
-      }
-
-      if (!modelParams.where.AND) {
-         modelParams.where.AND = [];
-      }
 
       query = query || {};
 
@@ -187,8 +198,8 @@ export class CRUDService<
                }
 
                if (['asc', 'desc'].includes(direction)) {
-                  if (this.optionsCRUD?.list?.orderFields?.length) {
-                     for (const orderField of this.optionsCRUD.list.orderFields) {
+                  if (this.configCRUD?.list?.orderFields?.length) {
+                     for (const orderField of this.configCRUD.list.orderFields) {
                         const regex = /\[([a-z0-9_.,]+)\]/gi;
                         let fieldName = orderField;
                         let queryName = fieldName;
@@ -239,48 +250,12 @@ export class CRUDService<
 
       // Take care search
       const q = (query.q || '').toString().trim();
+      const searchCondition = parseQueryParamSearch(q);
 
-      if (q && this.optionsCRUD?.list?.searchFields?.length) {
+      if (searchCondition && this.configCRUD?.list?.searchFields?.length) {
          const where: Record<string, any>[] = [];
-         const mode = 'insensitive';
-         let searchCondition: Record<string, any> = { contains: q, mode };
 
-         // Check if advance search
-         for (const markup of ['!', '^', '$', '~', '|']) {
-            const index = q.indexOf(markup);
-            let qValue: string | string[] = q.substring(markup.length);
-
-            if (index === 0 && qValue) {
-               switch (markup) {
-                  case '!':
-                     searchCondition = { not: { contains: qValue, mode } };
-                     break;
-
-                  case '^':
-                     searchCondition = { startsWith: qValue, mode };
-                     break;
-
-                  case '$':
-                     searchCondition = { endsWith: qValue, mode };
-                     break;
-
-                  case '~':
-                     searchCondition = { equals: qValue, mode };
-                     break;
-
-                  case '|':
-                     qValue = (qValue as string).split(/[\s\n]+/g).filter((qv: string) => !!qv.trim());
-
-                     if (qValue.length) {
-                        searchCondition = { OR: qValue.map((qv: string) => ({ contains: qv, mode })) };
-                     }
-
-                     break;
-               }
-            }
-         }
-
-         for (const searchField of this.optionsCRUD.list.searchFields) {
+         for (const searchField of this.configCRUD.list.searchFields) {
             where.push({ [searchField]: searchCondition });
          }
 
@@ -288,114 +263,21 @@ export class CRUDService<
       }
 
       // Take care filter
-      const filterFields = this.optionsCRUD?.list?.filterFields || [];
+      const filterFields = this.configCRUD?.list?.filterFields || [];
 
       if (filterFields.length) {
-         for (const field of filterFields) {
-            const parts = field.split(':');
-            const regex = /\[([a-z0-9_.]+)\]/gi;
-            let fieldName = <any>parts[0];
-            let queryName = fieldName;
+         filterFields.forEach((field) => {
+            const filterCondition = parseQueryParamFilter(field, query);
 
-            if (fieldName.match(regex)) {
-               queryName = fieldName.replace(regex, '');
-               fieldName = fieldName.replace(queryName, '').replace(regex, '$1');
+            if (filterCondition) {
+               modelParams.where.AND.push(filterCondition);
             }
-
-            if (parts[1]?.toUpperCase() === 'DATE') {
-               const [fromDate, toDate] = queryName.includes('-') ? queryName.split('-') : [queryName, undefined];
-               const from = DateTime.from(query[fromDate]);
-
-               if (from.valid) {
-                  let to = DateTime.from(query[toDate] || '');
-
-                  if (!to.valid) {
-                     to = from.clone();
-                  }
-
-                  from.startOf();
-                  to.endOf();
-                  modelParams.where[fieldName] = { gte: from.native, lt: to.native };
-               }
-
-               continue;
-            }
-
-            if (query[queryName] === undefined) {
-               continue;
-            }
-
-            const queryValue = Transform.toString(query[queryName]);
-            const valueEquals = [];
-            let valueArray: any[] = queryValue.split('|').map((val) => {
-               val = val.trim();
-
-               if (val[0] === '!') {
-                  valueEquals.push(false);
-
-                  return val.substring(1) || '';
-               }
-
-               valueEquals.push(true);
-
-               return val;
-            });
-            const castAs = parts[1]?.toLowerCase().split(',') ?? undefined;
-
-            if (castAs) {
-               const typeTransform = castAs.filter((asType) =>
-                  ['toNumber', 'toBoolean'].includes(asType),
-               ) as TransformType[];
-               valueArray = valueArray.map((value) => Transform.clean(value, typeTransform));
-            }
-
-            if (valueArray.length) {
-               const orWhere = [];
-               const inValues = [];
-               const notInValues = [];
-               valueArray.forEach((value, index) => {
-                  const isEquals = valueEquals[index] === true;
-
-                  if (isEquals) {
-                     inValues.push(value);
-                  } else {
-                     notInValues.push(value);
-                  }
-               });
-
-               if (inValues.length) {
-                  orWhere.push({ [fieldName]: { in: inValues } });
-               }
-
-               if (notInValues.length) {
-                  orWhere.push({ [fieldName]: { notIn: notInValues } });
-               }
-
-               modelParams.where.AND.push(orWhere.length > 1 ? { OR: orWhere } : orWhere[0]);
-            }
-         }
-      }
-
-      // Take care soft delete status
-      let hasFilterByStatus: boolean = modelParams.where['status'];
-
-      for (const prop of ['OR', 'AND']) {
-         if (modelParams.where[prop].length) {
-            if (!hasFilterByStatus) {
-               hasFilterByStatus = !!modelParams.where[prop].map((obj: ObjectRecord) => obj['status'] !== undefined);
-            }
-         } else {
-            delete modelParams.where[prop];
-         }
-      }
-
-      if (this.optionsCRUD?.softDelete === true && !hasFilterByStatus) {
-         modelParams.where['status'] = { not: availableStatuses.Trashed };
+         });
       }
 
       // Take care pagination
-      const defaultLimit = this.optionsCRUD?.list?.defaultLimit ?? 25;
-      const maxLimit = this.optionsCRUD?.list?.maxLimit ?? 1000;
+      const defaultLimit = this.configCRUD?.list?.defaultLimit ?? 25;
+      const maxLimit = this.configCRUD?.list?.maxLimit ?? 1000;
       let limit: number =
          query.limit === undefined || !query.limit.toString().match(/^[0-9]+$/)
             ? defaultLimit
@@ -408,6 +290,28 @@ export class CRUDService<
       modelParams.take = limit;
       modelParams.skip = (page - 1) * limit;
       Object.assign(query, { page, limit, q });
+
+      if (Is.callable(this.events.onBeforePaginate)) {
+         await Util.call(this, this.events.onBeforePaginate, { query, q, modelParams });
+      }
+
+      // Take care soft delete status
+      let hasFilterByStatus: boolean = modelParams.where['status'];
+
+      // Clean up OR & AND where
+      for (const prop of ['OR', 'AND']) {
+         if (modelParams.where[prop].length) {
+            if (!hasFilterByStatus) {
+               hasFilterByStatus = !!modelParams.where[prop].map((obj: ObjectRecord) => obj['status'] !== undefined);
+            }
+         } else {
+            delete modelParams.where[prop];
+         }
+      }
+
+      if (this.configCRUD?.softDelete === true && !hasFilterByStatus) {
+         modelParams.where['status'] = { not: availableStatuses.Trashed };
+      }
 
       // Prisma model
       const model = this.prisma[this.params.modelName];
@@ -445,7 +349,7 @@ export class CRUDService<
    async read<T>(id: string, where?: Record<string, any>): Promise<EntityResult<T>> {
       where = { ...(where ?? {}), id };
 
-      if (this.optionsCRUD?.softDelete === true && where['status'] === undefined) {
+      if (this.configCRUD?.softDelete === true && where['status'] === undefined) {
          where['status'] = { not: availableStatuses.Trashed };
       }
 
@@ -639,7 +543,7 @@ export class CRUDService<
             await Util.callAsync(this, this.events.onBeforeDelete, { tx, record });
          }
 
-         if (this.optionsCRUD?.softDelete === true) {
+         if (this.configCRUD?.softDelete === true) {
             await tx[this.params.modelName]['update']({
                select: { id: true },
                data: { status: availableStatuses.Trashed },

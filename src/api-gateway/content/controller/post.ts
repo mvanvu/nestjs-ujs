@@ -1,7 +1,7 @@
 import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy, Permission } from '@gateway/@library';
 import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseMongoIdPipe } from '@shared-library';
 import { serviceConfig } from '@metadata';
-import { CreatePostDto, UpdatePostDto } from '@microservice/content/dto';
+import { CreatePostDto, PostPaginationQueryDto, UpdatePostDto } from '@microservice/content/dto';
 import { PostEntity } from '@microservice/content/entity';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -10,7 +10,7 @@ const { name, permissions, patterns } = serviceConfig.get('content');
 
 @ApiBearerAuth()
 @ApiTags('Contents')
-@Controller('content/posts')
+@Controller('posts')
 export class ContentPostController {
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 
@@ -21,7 +21,7 @@ export class ContentPostController {
    @Permission({ key: permissions.post.read, adminScope: true })
    @ApiPaginationResponse(PostEntity, { summary: 'Get list pagination of content posts' })
    @Get()
-   paginate(@Query() query: PaginationQueryDto): Promise<PaginationResult<PostEntity>> {
+   paginate(@Query() query: PostPaginationQueryDto): Promise<PaginationResult<PostEntity>> {
       return this.postCRUD.paginate(query);
    }
 

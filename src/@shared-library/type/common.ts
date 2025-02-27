@@ -6,7 +6,6 @@ import { Request } from 'express';
 
 export type HttpCacheOptions = {
    disabled?: boolean;
-   withUserIdPrefix?: boolean;
    cacheKey?: string;
    cacheRefKeys?: string | RegExp | Array<string | RegExp>;
 };

@@ -239,7 +239,7 @@ export class UserService extends BaseService {
    createCRUDService() {
       return this.prisma
          .createCRUDService('user', { entity: UserEntity, createDto: CreateUserDto, updateDto: UpdateUserDto })
-         .options({
+         .config({
             softDelete: !appConfig.is('nodeEnv', 'test'),
             list: { searchFields: ['name', 'username', 'email'], filterFields: ['username', 'email'] },
          })

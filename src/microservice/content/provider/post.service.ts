@@ -1,7 +1,7 @@
 import { BaseService } from '@microservice/@library';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
-import { FieldsException } from '@shared-library';
+import { FieldsException, availableStatuses, parseQueryParamFilter } from '@shared-library';
 import { Is, Transform } from '@mvanvu/ujs';
 import { PostEntity } from '../entity';
 import { CreatePostDto, UpdatePostDto } from '../dto';
@@ -64,9 +64,34 @@ export class PostService extends BaseService {
    createCRUDService() {
       return this.prisma
          .createCRUDService('post', { entity: PostEntity, createDto: CreatePostDto, updateDto: UpdatePostDto })
-         .options({ list: { searchFields: ['title', 'description'] } })
+         .config({ list: { searchFields: ['title', 'description'] } })
          .include<Prisma.PostInclude>({
             category: { select: { id: true, status: true, title: true, slug: true, path: true } },
+         })
+         .beforePaginate(({ modelParams, query }) => {
+            const tagsFilter = parseQueryParamFilter('tag', query);
+            const tagCondittion = tagsFilter?.tag;
+
+            if (!Is.object(tagCondittion)) {
+               return;
+            }
+
+            if (Is.array(tagCondittion.in)) {
+               modelParams.where.AND.push({
+                  tags: { some: { title: { in: tagCondittion.in }, status: availableStatuses.Active } },
+               });
+            }
+
+            if (Is.array(tagCondittion.notIn)) {
+               modelParams.where.AND.push({
+                  OR: [
+                     // Empty tags
+                     { tags: { isEmpty: true } },
+                     // Or some not in values
+                     { tags: { some: { title: { notIn: tagCondittion.notIn }, status: availableStatuses.Active } } },
+                  ],
+               });
+            }
          })
          .beforeCreate(async ({ data }) => {
             const fieldsException = new FieldsException();

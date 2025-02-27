@@ -10,7 +10,7 @@ const { name, permissions, patterns } = serviceConfig.get('content');
 
 @ApiBearerAuth()
 @ApiTags('Contents')
-@Controller('content/categories')
+@Controller('categories')
 export class ContentCategoryController {
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 
