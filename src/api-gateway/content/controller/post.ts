@@ -1,5 +1,5 @@
 import { ApiEntityResponse, ApiPaginationResponse, BaseClientProxy, Permission } from '@gateway/@library';
-import { CRUDClient, EntityResult, PaginationQueryDto, PaginationResult, ParseMongoIdPipe } from '@shared-library';
+import { CRUDClient, EntityResult, PaginationResult, ParseMongoIdPipe } from '@shared-library';
 import { serviceConfig } from '@metadata';
 import { CreatePostDto, PostPaginationQueryDto, UpdatePostDto } from '@microservice/content/dto';
 import { PostEntity } from '@microservice/content/entity';
