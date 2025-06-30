@@ -39,6 +39,12 @@ A scaffold framework for initial projects built on NestJS, RabbitMQ, and MongoDB
 -  [POST] /api/v1/users/reset-password
 -  [GET] /api/v1/users/me
 
+### Content microservice
+
+-  CRUD /api/v1/categories
+-  CRUD /api/v1/tags
+-  CRUD /api/v1/posts
+
 ## Installation
 
 ### Clone this repo
