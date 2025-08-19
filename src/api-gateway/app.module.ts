@@ -7,12 +7,10 @@ import { ValidationPipe, ExceptionFilter, TransformInterceptor } from '@shared-l
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { BaseClientProxy, EventEmitterLoader, HttpCacheInterceptor, UserAuthGuard, UserRoleGuard } from './@library';
 import { bootstrap, appConfig, serviceListNames, serviceConfig } from '@metadata';
-import { redisStore } from 'cache-manager-redis-yet';
-import { CacheModule } from '@nestjs/cache-manager';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { EventEmitter, Util } from '@mvanvu/ujs';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { Language } from '@shared-library';
+import { Language, CacheModule } from '@shared-library';
 import { Request } from 'express';
 
 @Global()
@@ -61,6 +59,8 @@ class MicroserviceModule {
 
 @Module({
    imports: [
+      // Caching
+      CacheModule,
       CoreModule,
       ThrottlerModule.forRoot(appConfig.get('apiGateway.throttler')),
       ...serviceListNames.map((name) =>
@@ -83,13 +83,7 @@ class MicroserviceModule {
             ],
          }),
       ),
-      CacheModule.register({
-         isGlobal: true,
-         store: redisStore,
-         url: appConfig.get('redis.url'),
-         ttl: appConfig.get('cache.ttl'),
-         max: appConfig.get('cache.maxItems'),
-      }),
+
       // Dynamic microservice modules
       MicroserviceModule.registerAsync(),
    ],

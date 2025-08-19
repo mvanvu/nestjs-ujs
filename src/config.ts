@@ -8,7 +8,7 @@ const appConfigData = {
    defaultLanguage: envConfig.get<string>('DEFAULT_LANGUAGE', 'enGB'),
    acceptLanguage: envConfig.get<string>('ACCEPT_LANGUAGES', '*'),
    apiGateway: {
-      port: envConfig.get<number>('PORT', 9000, 'toNumber'),
+      port: envConfig.get<number>('APP_PORT', 9001, 'toNumber'),
       prefix: envConfig.get<string>('API_PREFIX', 'api'),
       cors: {
          enable: envConfig.get<boolean>('CORS_ENABLED', true, 'toBoolean'),

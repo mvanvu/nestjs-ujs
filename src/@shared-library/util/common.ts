@@ -79,6 +79,10 @@ export const parseQueryParamFilter = (field: string, query: Record<string, strin
       fieldName = fieldName.replace(queryName, '').replace(regex, '$1');
    }
 
+   if (typeof query[queryName] === 'undefined') {
+      return null;
+   }
+
    const queryValue = Transform.toString(query[queryName]);
    const valueEquals = [];
    let valueArray: any[] = queryValue.split('|').map((val) => {
@@ -94,6 +98,7 @@ export const parseQueryParamFilter = (field: string, query: Record<string, strin
 
       return val;
    });
+
    const castAs = parts[1]?.toLowerCase().split(',') ?? undefined;
 
    if (castAs) {

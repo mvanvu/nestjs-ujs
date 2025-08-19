@@ -42,31 +42,31 @@ export class UserEntity {
    @(Schema.mongoId().optional().decorate())
    updatedBy?: string;
 
-   private _permissions: string[];
+   #permissions: string[];
 
    get permissions(): string[] {
-      if (!this._permissions) {
-         this._permissions = [];
+      if (!this.#permissions) {
+         this.#permissions = [];
 
          if (this.group?.roles?.length) {
             for (const { permissions } of this.group.roles) {
-               this._permissions.push(...permissions);
+               this.#permissions.push(...permissions);
             }
          }
 
          if (this.group?.groups?.length) {
             for (const group of this.group.groups) {
                for (const { permissions } of group.roles) {
-                  this._permissions.push(...permissions);
+                  this.#permissions.push(...permissions);
                }
             }
          }
 
          // Make unique permissions
-         this._permissions = Array.from(new Set(this._permissions));
+         this.#permissions = Array.from(new Set(this.#permissions));
       }
 
-      return this._permissions;
+      return this.#permissions;
    }
 
    get isRoot(): boolean {

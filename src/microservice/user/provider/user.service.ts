@@ -4,7 +4,7 @@ import { PrismaService } from './prisma.service';
 import { Prisma, UserStatus, VerifyCode } from '.prisma/user';
 import * as argon2 from 'argon2';
 import { DateTime, Hash, Is, JWTError, Schema } from '@mvanvu/ujs';
-import { appConfig, serviceConfig } from '@metadata';
+import { serviceConfig } from '@metadata';
 import { BaseService } from '@microservice/@library';
 import {
    FieldsException,
@@ -134,10 +134,7 @@ export class UserService extends BaseService {
          ThrowException('Invalid credentials');
       }
 
-      return BaseEntity.bindToClass(
-         { user: BaseEntity.bindToClass(user, UserEntity), tokens: await this.generateTokens(user.id) },
-         AuthEntity,
-      );
+      return { user: BaseEntity.bindToClass(user, UserEntity), tokens: await this.generateTokens(user.id) };
    }
 
    async verifyToken(token: string): Promise<UserEntity> {
@@ -240,7 +237,7 @@ export class UserService extends BaseService {
       return this.prisma
          .createCRUDService('user', { entity: UserEntity, createDto: CreateUserDto, updateDto: UpdateUserDto })
          .config({
-            softDelete: !appConfig.is('nodeEnv', 'test'),
+            // softDelete: !appConfig.is('nodeEnv', 'test'),
             list: { searchFields: ['name', 'username', 'email'], filterFields: ['username', 'email'] },
          })
          .include(this.userInclude)

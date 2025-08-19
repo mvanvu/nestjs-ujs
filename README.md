@@ -17,6 +17,56 @@ A scaffold framework for initial projects built on NestJS, RabbitMQ, and MongoDB
 - SWC
 - ...
 
+## Installation
+
+### Download & install NODE (if not installed yet)
+
+Download & install NODE at https://nodejs.org/en/download/
+
+### Install Yarn (Latest) and PM2 (if not installed yet)
+
+```
+npm install -g yarn pm2
+```
+
+### Clone this repo
+
+```
+git clone https://github.com/mvanvu/nestjs-ujs.git
+
+```
+
+### Install dependences
+
+```
+cd nestjs-ujs
+yarn
+
+```
+
+### Build docker images
+
+```
+yarn docker:build
+
+```
+
+### Start the application for dev
+
+```
+yarn start:dev
+```
+
+Browse the http://localhost:9001/api-docs an enjoy
+
+## Destroy the resources (for dev)
+
+Remove all Docker images, volumes, and PM2 processes.
+
+```
+yarn destroy:dev
+```
+
 ## Default Microservices & API Gateway (See Swagger http://localhost:9000/api-docs)
 
 ### System microservice
@@ -45,35 +95,3 @@ A scaffold framework for initial projects built on NestJS, RabbitMQ, and MongoDB
 - CRUD /api/v1/categories
 - CRUD /api/v1/tags
 - CRUD /api/v1/posts
-
-## Installation
-
-### Clone this repo
-
-```
-git clone https://github.com/mvanvu/nestjs-ujs.git
-
-```
-
-### Install dependences
-
-```
-cd nestjs-ujs
-yarn
-
-```
-
-### Docker initialise
-
-```
-yarn docker:init
-
-```
-
-### Start the application for dev
-
-```
-yarn start:dev
-```
-
-Browse the http://localhost:9000/api-docs an enjoy

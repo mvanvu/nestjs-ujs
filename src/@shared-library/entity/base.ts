@@ -10,21 +10,23 @@ export class BaseEntity {
 
          for (const prop in props) {
             const schema = (props[prop] as BaseSchema)?.clone()?.default(undefined);
-            const nothing = cloneData[prop] === undefined;
+            const checkValue = cloneData[prop];
+            const isDate = checkValue instanceof Date;
+            const isUndefined = checkValue === undefined;
 
             if (schema instanceof ObjectSchema) {
                schema.whiteList('deep');
             }
 
-            if (nothing || !schema?.check(cloneData[prop])) {
-               if (nothing && schema?.isNullable()) {
+            if (isUndefined || !schema?.check(isDate ? checkValue.toISOString() : checkValue)) {
+               if (isUndefined && schema?.isNullable()) {
                   entity[prop] = null;
                }
 
                continue;
             }
 
-            entity[prop] = schema.getValue();
+            entity[prop] = isDate ? checkValue : schema.getValue();
          }
 
          if (Is.func(entity['bind'])) {

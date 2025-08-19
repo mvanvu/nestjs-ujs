@@ -1,13 +1,11 @@
 #!/bin/bash
+set -e
 
 nodeEnv=${1:-"dev"}
-outPath="/db-dump/$nodeEnv"
+outPath="/docker/mongodb/data"
 
-if [[ "$nodeEnv" == "test" ]]; then
-  dbSuffix="Test"
-else
-  dbSuffix=""
-fi
+# Must re-declare as it can't expand from .env file
+MONGODB_BASE_URL="mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PRIMARY_PORT},localhost:${MONGODB_SECONDARY_PORT}"
 
 # Dump System DB
 mongodump --uri="$MONGODB_BASE_URL/SystemService$dbSuffix?authSource=admin" --out="$outPath"

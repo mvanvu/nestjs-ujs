@@ -339,8 +339,14 @@ export class CRUDService<
       context: TContext,
       isList?: boolean,
    ): Promise<T> {
-      if (Is.class(this.params.entity)) {
-         return BaseEntity.bindToClass(item, this.params.entity);
+      // By default, return the RAW or a callback in the microservice
+
+      // if (Is.class(this.params.entity)) {
+      //    return BaseEntity.bindToClass(item, this.params.entity);
+      // }
+
+      if (Is.class(this.params.entity) || !Is.callable(this.params.entity)) {
+         return item;
       }
 
       return await Util.callAsync<T>(this, this.params.entity, item, { context, isList });

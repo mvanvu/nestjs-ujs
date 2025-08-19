@@ -1,12 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { OnServiceResponse, eventConstant } from '@shared-library';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { CacheService, OnServiceResponse, eventConstant } from '@shared-library';
 import { Is } from '@mvanvu/ujs';
 import { OnEvent } from '@gateway/@library/event-emitter.decorator';
 
 @Injectable()
 export class PurgeCacheProvider {
-   @Inject(CACHE_MANAGER) private readonly cacheManager: Cache;
+   @Inject(CacheService) private readonly cacheService: CacheService;
 
    @OnEvent(eventConstant.onServiceResponse)
    async purgeHttpCaching({ httpRequest, success }: OnServiceResponse): Promise<void> {
@@ -16,10 +15,9 @@ export class PurgeCacheProvider {
       }
 
       try {
+         const promises: Promise<void>[] = [];
          const activityLogsBaseKey = 'systems/activity-logs';
-         const promises = [];
          const requestUrlWithoutParams = httpRequest.url.replace(/\/?\?.*$/g, '');
-         const keys = await this.cacheManager.store.keys();
          const { cacheRefKeys } = httpRequest;
          const isRelatedCacheKey = (cacheKey: string): boolean => {
             if (cacheRefKeys) {
@@ -36,6 +34,8 @@ export class PurgeCacheProvider {
             return false;
          };
 
+         const keys = await this.cacheService.getKeys();
+
          if (success) {
             for (const key of keys) {
                const [, cacheKey] = /^[0-9a-fA-F]{24}:/.test(key) ? key.split(':') : [null, key];
@@ -49,7 +49,9 @@ export class PurgeCacheProvider {
                   cacheKey.includes(activityLogsBaseKey)
                ) {
                   promises.push(
-                     this.cacheManager.del(key).then(() => console.log(`Purge HTTP caching successfully, key: ${key}`)),
+                     this.cacheService
+                        .delete(key)
+                        .then(() => console.log(`Purge HTTP caching successfully, key: ${key}`)),
                   );
                }
             }
@@ -57,7 +59,9 @@ export class PurgeCacheProvider {
             for (const key of keys) {
                if (key.includes(activityLogsBaseKey)) {
                   promises.push(
-                     this.cacheManager.del(key).then(() => console.log(`Purge HTTP caching successfully, key: ${key}`)),
+                     this.cacheService
+                        .delete(key)
+                        .then(() => console.log(`Purge HTTP caching successfully, key: ${key}`)),
                   );
                }
             }
