@@ -11,7 +11,7 @@
     "start:system:dev": "(pm2 delete nestjs-ujs-system 2>/dev/null || true) && dotenvx run --env APP_ENV=system -- pm2 start nest --name nestjs-ujs-system -- start -p ./src/microservice/system/tsconfig.json -w",
     "start:content:dev": "(pm2 delete nestjs-ujs-content 2>/dev/null || true) && dotenvx run --env APP_ENV=content -- pm2 start nest --name nestjs-ujs-content -- start -p ./src/microservice/content/tsconfig.json -w",
     "start:dev": "yarn docker:init && yarn start:system:dev && yarn start:user:dev && yarn start:content:dev && yarn start:gateway:dev && pm2 logs",
-    "build": "ts-node ./script/build",
+    "build": "dotenvx run -f .env -- ts-node ./script/build.ts",
     "nest:build": "nest build",
     "format": "prettier --write \"./**/src/**/*.ts\"",
     "user:prisma:generate": "prisma generate --schema=src/microservice/user/prisma/schema.prisma",
@@ -25,7 +25,11 @@
     "docker:remove": "dotenvx run -f .env -- bash -c \"docker rm -fv \\$(docker ps -aq -f \"name=\\${APP_NAME}\") 2>/dev/null | true\"",
     "docker:init": "yarn docker:run && yarn docker:mongodb:init",
     "pm2:destroy": "rm -f ~/.pm2/logs/nestjs-ujs-*.log | pm2 list 2>/dev/null | grep 'nestjs-ujs' | awk '{print $2}' | xargs -r pm2 delete",
-    "destroy:dev": "yarn pm2:destroy && yarn docker:remove"
+    "destroy:dev": "yarn pm2:destroy && yarn docker:remove",
+    "deploy:api-gateway": "dotenvx run -f .env -- bash -c \"docker run -p \\$APP_PORT:\\$APP_PORT ${APP_NAME}-production-app-production\"",
+    "deploy:microservice:system": "dotenvx run -f .env -- bash -c \"docker run -p ${APP_NAME}-microservice-system-production\"",
+    "deploy:microservice:user": "dotenvx run -f .env -- bash -c \"docker run -p ${APP_NAME}-microservice-user-production\"",
+    "deploy:microservice:content": "dotenvx run -f .env -- bash -c \"docker run -p ${APP_NAME}-microservice-content-production\""
   },
   "dependencies": {
     "@keyv/redis": "^5.1.0",

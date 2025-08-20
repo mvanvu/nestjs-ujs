@@ -1,74 +1,21 @@
 import { Is, ObjectRecord, Util } from '@mvanvu/ujs';
-import prompts from 'prompts';
 import * as fs from 'fs';
-import { spawn } from 'child_process';
+import * as dotenvx from '@dotenvx/dotenvx';
 
 (async () => {
    const cwd = process.cwd();
-   const buildFile = fs.existsSync(`${cwd}/build.json`) ? `${cwd}/build.json` : `${cwd}/build.origin.json`;
+   const buildFile = `${cwd}/script/build.json`;
    const buildConfig = JSON.parse(fs.readFileSync(buildFile).toString());
    const microservice = buildConfig.microservice.list;
-   const buildFor = ['all', 'api-gateway', 'microservice'];
-   const { buildFor: fIndex } = await prompts({
-      type: 'select',
-      name: 'buildFor',
-      message: 'Build for',
-      choices: buildFor.map((service) => ({ title: Util.uFirst(service) })),
-   });
-
    const sources: { gateway: string[]; microservice: string[] } = { gateway: [], microservice: [] };
 
-   switch (buildFor[fIndex]) {
-      case 'api-gateway':
-         const defaultServices = buildConfig[buildFor[fIndex]].defaultList as string[];
-         sources.gateway.push(...defaultServices); // Add requirement services
-         const gatewayServices = microservice.filter((srv: string) => !defaultServices.includes(srv));
-         const indexs = (
-            await prompts({
-               type: 'multiselect',
-               name: 'gatewayServices',
-               message: 'Choose some services',
-               choices: gatewayServices.map((service: string) => ({ title: Util.uFirst(service) })),
-               hint: '- Space to select. Return to submit',
-            })
-         ).gatewayServices as number[];
-
-         if (indexs.length) {
-            indexs.forEach((idx) => sources.gateway.push(gatewayServices[idx]));
-         }
-
-         break;
-
-      case 'microservice':
-         const serviceIndexs = (
-            await prompts({
-               type: 'multiselect',
-               name: 'services',
-               message: 'Choose some services',
-               choices: microservice.map((service: string) => ({ title: Util.uFirst(service) })),
-            })
-         ).services as number[];
-
-         if (serviceIndexs.length) {
-            serviceIndexs.forEach((idx) => sources.microservice.push(microservice[idx]));
-         } else {
-            console.error(`Please choose one or some services`);
-            process.exit();
-         }
-
-         break;
-
-      case 'all':
-         sources.gateway.push(...microservice);
-         sources.microservice.push(...microservice);
-         break;
-   }
+   sources.gateway.push(...microservice);
+   sources.microservice.push(...microservice);
 
    console.log('STARTING TO BUILD, PLEASE WAIT...');
    const sourcesDir: string[] = [];
    const sourceBase = `${cwd}/src`;
    const buildDir = `${cwd}/build`;
-   const buildScripts: Record<string, string[]> = {};
    const copyFiles = (path: string | string[], buildDir: string, servicesConfig: string[]) => {
       if (Array.isArray(path)) {
          path.forEach((p) => copyFiles(p, buildDir, servicesConfig));
@@ -105,8 +52,8 @@ import { spawn } from 'child_process';
                   }
                }
 
-               envConfig.APP_ENV = `"${appEnv}"`;
-               envConfig.NODE_ENV = '"production"';
+               envConfig.APP_ENV = appEnv;
+               envConfig.NODE_ENV = 'production';
                const envOverride = buildConfig.env?.[appEnv] || {};
 
                for (const k in envOverride) {
@@ -121,9 +68,15 @@ import { spawn } from 'child_process';
                   }
                }
 
+               // Parse ENV content first
+               const envContents = Object.entries(envConfig)
+                  .map(([k, v]) => `${k}=${v}`)
+                  .join('\r\n');
+
+               // Then write .env file
                fs.writeFileSync(
                   dest,
-                  Object.entries(envConfig)
+                  Object.entries(dotenvx.parse(envContents))
                      .map(([k, v]) => `${k}=${v}`)
                      .join('\r\n'),
                );
@@ -131,47 +84,8 @@ import { spawn } from 'child_process';
                const orginPks = JSON.parse(fs.readFileSync(path).toString());
                const pks = JSON.parse(JSON.stringify(orginPks));
                const isGateway = appEnv === 'api-gateway';
-               pks.name += `-${isGateway ? appEnv : `${appEnv}-microservice`}`;
-               const scripts = {
-                  build: 'nest build',
-                  'start:dev': 'nest start -w',
-                  'start:prod': 'node dist/main',
-                  format: 'prettier --write "./**/src/**/*.ts"',
-               };
-
-               for (const script in pks.scripts) {
-                  if (
-                     /^(docker|mongodb):/.test(script) ||
-                     (!isGateway && new RegExp(`^${appEnv}:prisma:`).test(script))
-                  ) {
-                     scripts[script] = pks.scripts[script];
-                  }
-
-                  if (isGateway) {
-                     const prismaScript: string[] = [];
-                     sources.gateway.forEach((srv) => {
-                        if (pks.scripts[`${srv}:prisma:generate`]) {
-                           scripts[`${srv}:prisma:generate`] = pks.scripts[`${srv}:prisma:generate`];
-                           prismaScript.push(`yarn ${pks.scripts[`${srv}:prisma:generate`]}`);
-                        }
-                     });
-
-                     if (prismaScript.length) {
-                        scripts['api-gateway:prisma:generate'] = prismaScript.join(' && ');
-                     }
-                  }
-               }
-
-               if (!buildScripts[appEnv]) {
-                  buildScripts[appEnv] = [];
-               }
-
-               pks.scripts = scripts;
-
-               if (pks.scripts[`${appEnv}:prisma:generate`]) {
-                  buildScripts[appEnv].push(`yarn ${appEnv}:prisma:generate`);
-               }
-
+               const pkgSuffix = isGateway ? appEnv : `${appEnv}-microservice`;
+               pks.name += `-${pkgSuffix}`;
                const pckName = isGateway ? 'api-gateway' : 'microservice';
                const pkgExcludes = buildConfig[pckName]?.dependencies?.exclude || [];
                const pkgIncludes = buildConfig[pckName]?.dependencies?.include || [];
@@ -203,6 +117,14 @@ import { spawn } from 'child_process';
                      }
                   }
                }
+
+               const dockerImage = `${process.env.APP_NAME}-${pkgSuffix}-production`;
+               pks.scripts = {
+                  'docker:build': `dotenvx run -f .env -- docker build -t ${dockerImage} .`,
+                  'docker:remove': `dotenvx run -f .env -- docker rm -f $(docker ps -aq -f "name=${dockerImage}") 2>/dev/null | true`,
+                  'docker:start': `docker run -d --name ${dockerImage}${isGateway ? ` -p ${process.env.APP_PORT}:${process.env.APP_PORT}` : ''} --env-file .env --restart always ${dockerImage}`,
+                  start: 'npm run docker:build && npm run docker:remove && npm run docker:start',
+               };
 
                fs.writeFileSync(dest, JSON.stringify(pks, null, 2));
             } else if (path === `${sourceBase}/metadata.ts`) {
@@ -243,9 +165,12 @@ import { spawn } from 'child_process';
          }
       }
    };
+
    const baseFiles: string[] = [
-      `${cwd}/docker/Dockerfile`,
       `${sourceBase}/@shared-library`,
+      `${sourceBase}/microservice/system/prisma`,
+      `${sourceBase}/microservice/user/prisma`,
+      `${sourceBase}/microservice/content/prisma`,
       `${sourceBase}/config.ts`,
       `${sourceBase}/main.ts`,
       `${sourceBase}/metadata.ts`,
@@ -254,11 +179,20 @@ import { spawn } from 'child_process';
       `${cwd}/.gitignore`,
       `${cwd}/.prittierignore`,
       `${cwd}/.prettierrc`,
-      `${cwd}/docker-compose.yml`,
       `${cwd}/nest-cli.json`,
       `${cwd}/package.json`,
       `${cwd}/tsconfig.json`,
       `${cwd}/yarn.lock`,
+   ];
+
+   const dockerFileBaseContent = [
+      'FROM node:20',
+      'WORKDIR /usr/src/app',
+      'COPY . .',
+      'RUN npm install',
+      'RUN npx prisma generate --schema=src/microservice/system/prisma/schema.prisma',
+      'RUN npx prisma generate --schema=src/microservice/user/prisma/schema.prisma',
+      'RUN npx prisma generate --schema=src/microservice/content/prisma/schema.prisma',
    ];
 
    if (sources.gateway.length) {
@@ -268,17 +202,25 @@ import { spawn } from 'child_process';
 
       sourcesDir.push('api-gateway');
       const files = [...baseFiles, `${sourceBase}/api-gateway/@library`, `${sourceBase}/api-gateway/app.module.ts`];
-      sources.gateway.forEach((srv) =>
+      sources.gateway.forEach((srv) => {
          files.push(
             `${sourceBase}/api-gateway/${srv}`,
             `${sourceBase}/microservice/${srv}/config.ts`,
-            `${sourceBase}/microservice/${srv}/prisma`,
             `${sourceBase}/microservice/${srv}/dto`,
             `${sourceBase}/microservice/${srv}/entity`,
             `${sourceBase}/microservice/${srv}/type`,
-         ),
-      );
+         );
+      });
       copyFiles(files, `${buildDir}/api-gateway`, sources.gateway);
+      fs.writeFileSync(
+         `${buildDir}/api-gateway/Dockerfile`,
+         [
+            ...dockerFileBaseContent,
+            'RUN npx nest build',
+            `EXPOSE ${process.env.APP_PORT || 9001}`,
+            'CMD ["node", "dist/main"]',
+         ].join('\r\n\r\n'),
+      );
    }
 
    if (sources.microservice.length) {
@@ -293,33 +235,10 @@ import { spawn } from 'child_process';
             `${buildDir}/microservice/${srv}`,
             [srv],
          );
+         fs.writeFileSync(
+            `${buildDir}/microservice/${srv}/Dockerfile`,
+            [...dockerFileBaseContent, 'RUN npx nest build', 'CMD ["node", "dist/main"]'].join('\r\n\r\n'),
+         );
       });
    }
-
-   const buildResults: Record<string, boolean> = {};
-
-   for (const source of sourcesDir) {
-      const scripts: string[] = [`cd build/${source}`, 'yarn'];
-      const appEnv = source.split('/').pop();
-
-      if (buildScripts[appEnv]?.length) {
-         scripts.push(...buildScripts[appEnv]);
-      }
-
-      scripts.push(`yarn build`);
-      const build = spawn(scripts.join(' && '), { shell: true });
-      await new Promise((resolve) => {
-         build.stdout.on('data', (data) => console.log(`${data}`));
-         build.stderr.on('data', (data) => console.log(`${data}`));
-         build.on('close', (code) => {
-            buildResults[source] = !code;
-            const warnStr = `================= BUILD ${source.toUpperCase()} ${code === 0 ? 'SUCCESSFULLY' : 'FAILURE'} =================`;
-            const repeatStr = '='.repeat(warnStr.length);
-            console.log(`${repeatStr}\r\n${warnStr}\r\n${repeatStr}`);
-            resolve(code);
-         });
-      });
-   }
-
-   console.log(buildResults);
 })();

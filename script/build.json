@@ -1,6 +1,6 @@
 {
    "api-gateway": {
-      "defaultList": ["system", "user"],
+      "defaultList": ["user", "system", "content"],
       "dependencies": {
          "exclude": ["argon2"]
       }
@@ -11,17 +11,11 @@
          "exclude": [
             "helmet",
             "argon2",
-            "@nestjs/cache-manager",
-            "cache-manager",
-            "cache-manager-redis-yet",
             "googleapis",
-            "node-device-detector",
             "@nestjs/throttler",
-            "nodemailer",
-            "pactum",
             "@nestjs/swagger"
          ],
-         "include": ["user:argon2", "mailer:nodemailer"]
+         "include": ["user:argon2"]
       }
    },
    "env": {
