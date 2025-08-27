@@ -24,5 +24,7 @@ RUN openssl rand -base64 756 > /docker-entrypoint-initdb.d/mongodb-keyfile
 RUN chmod 400 /docker-entrypoint-initdb.d/mongodb-keyfile
 
 EXPOSE 27017
+EXPOSE 37017
+EXPOSE 37018
 
 CMD ["mongod"]

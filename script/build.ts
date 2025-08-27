@@ -1,4 +1,4 @@
-import { Is, ObjectRecord, Util } from '@mvanvu/ujs';
+import { ObjectRecord, Util } from '@mvanvu/ujs';
 import * as fs from 'fs';
 import * as dotenvx from '@dotenvx/dotenvx';
 
@@ -37,49 +37,39 @@ import * as dotenvx from '@dotenvx/dotenvx';
             if (path === `${cwd}/.env`) {
                // Preprogress env
                const envConfig: ObjectRecord = {};
-
-               for (let line of fs
-                  .readFileSync(path)
+               fs.readFileSync(path)
                   .toString()
-                  .split(/\n|\r\n/g)) {
-                  line = line.trim();
+                  .split(/\r?\n/g)
+                  .forEach((line) => {
+                     if (line.includes('=')) {
+                        const idx = line.indexOf('=');
+                        const key = line.substring(0, idx);
+                        const value = line.substring(idx + 1);
+                        envConfig[key.trim()] = value.trim();
+                     }
+                  });
 
-                  if (!line.startsWith('#') && line.includes('=')) {
-                     const parts = line.split('=');
-                     const k = parts.shift();
-                     const v = parts.join('=');
-                     envConfig[k] = v;
+               if (buildConfig.env) {
+                  if (buildConfig.env.$global) {
+                     Object.assign(envConfig, buildConfig.env.$global);
+                  }
+
+                  const envOverride = buildConfig.env?.[appEnv] || null;
+
+                  if (envOverride) {
+                     Object.assign(envConfig, envOverride);
                   }
                }
 
                envConfig.APP_ENV = appEnv;
                envConfig.NODE_ENV = 'production';
-               const envOverride = buildConfig.env?.[appEnv] || {};
-
-               for (const k in envOverride) {
-                  if (!Is.primitive(envOverride[k])) {
-                     continue;
-                  }
-
-                  if (envOverride[k] === null || envOverride[k] === undefined) {
-                     delete envConfig[k];
-                  } else {
-                     envConfig[k] = Is.string(envOverride[k]) ? `"${envOverride[k]}"` : envOverride[k];
-                  }
-               }
-
-               // Parse ENV content first
-               const envContents = Object.entries(envConfig)
-                  .map(([k, v]) => `${k}=${v}`)
-                  .join('\r\n');
+               const toEnvContent = (obj: ObjectRecord): string =>
+                  Object.entries(obj)
+                     .map(([k, v]) => `${k}=${v}`)
+                     .join('\r\n');
 
                // Then write .env file
-               fs.writeFileSync(
-                  dest,
-                  Object.entries(dotenvx.parse(envContents))
-                     .map(([k, v]) => `${k}=${v}`)
-                     .join('\r\n'),
-               );
+               fs.writeFileSync(dest, toEnvContent(dotenvx.parse(toEnvContent(envConfig), { override: true })));
             } else if (path === `${cwd}/package.json`) {
                const orginPks = JSON.parse(fs.readFileSync(path).toString());
                const pks = JSON.parse(JSON.stringify(orginPks));
@@ -122,8 +112,9 @@ import * as dotenvx from '@dotenvx/dotenvx';
                pks.scripts = {
                   'docker:build': `dotenvx run -f .env -- docker build -t ${dockerImage} .`,
                   'docker:remove': `dotenvx run -f .env -- docker rm -f $(docker ps -aq -f "name=${dockerImage}") 2>/dev/null | true`,
-                  'docker:start': `docker run -d --name ${dockerImage}${isGateway ? ` -p ${process.env.APP_PORT}:${process.env.APP_PORT}` : ''} --env-file .env --restart always ${dockerImage}`,
-                  start: 'npm run docker:build && npm run docker:remove && npm run docker:start',
+                  'docker:start': `docker run -d --name ${dockerImage}${isGateway ? ` -p ${process.env.APP_PORT}:${process.env.APP_PORT}` : ''} --network ${process.env.APP_NAME}-network --env-file .env --restart always ${dockerImage}`,
+                  deploy: 'yarn docker:build && yarn docker:remove && yarn docker:start',
+                  start: 'dotenvx run -f .env -- nest start',
                };
 
                fs.writeFileSync(dest, JSON.stringify(pks, null, 2));

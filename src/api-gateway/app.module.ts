@@ -63,26 +63,28 @@ class MicroserviceModule {
       CacheModule,
       CoreModule,
       ThrottlerModule.forRoot(appConfig.get('apiGateway.throttler')),
-      ...serviceListNames.map((name) =>
-         ClientsModule.registerAsync({
+      ...serviceListNames.map((name) => {
+         const service = `${name.toUpperCase()}_MICROSERVICE`;
+
+         return ClientsModule.registerAsync({
             isGlobal: true,
             clients: [
                {
-                  name: `${name.toUpperCase()}_MICROSERVICE`,
+                  name: service,
                   useFactory: () => {
                      return {
                         transport: Transport.RMQ,
                         options: {
                            urls: [appConfig.get<string>('rabbitMQ.url')],
-                           queue: `${name}MicroserviceQueue`,
+                           queue: service,
                            queueOptions: { durable: true },
                         },
                      };
                   },
                },
             ],
-         }),
-      ),
+         });
+      }),
 
       // Dynamic microservice modules
       MicroserviceModule.registerAsync(),

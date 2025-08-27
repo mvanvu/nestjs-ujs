@@ -19,6 +19,11 @@
       }
    },
    "env": {
+      "$global": {
+         "REDIS_URL": "redis://default:MyStr0ngPassword@nestjs-ujs-redis:6379",
+         "RABBITMQ_URL": "amqp://admin:MyStr0ngPassword@nestjs-ujs-rabbitmq:5672",
+         "MONGODB_BASE_URL": "mongodb://mongo_admin:MyStr0ngPassword@nestjs-ujs-mongodb-primary:37017,nestjs-ujs-mongodb-secondary:37018"
+      },
       "api-gateway": {},
       "user": {},
       "system": {},

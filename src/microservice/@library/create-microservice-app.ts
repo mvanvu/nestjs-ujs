@@ -13,7 +13,7 @@ export async function createMicroserviceApp(
       transport: Transport.RMQ,
       options: {
          urls: [appConfig.get('rabbitMQ.url')],
-         queue: `${serviceName}MicroserviceQueue`,
+         queue: `${serviceName.toUpperCase()}_MICROSERVICE`,
          queueOptions: { durable: true },
       },
    });

@@ -26,18 +26,18 @@ else
     rs.reconfig({
         _id: 'rs0',
         members: [
-            { _id: 0, host: 'localhost:' + process.env.MONGODB_PRIMARY_PORT, priority: 2 },
-            { _id: 1, host: 'localhost:' + process.env.MONGODB_SECONDARY_PORT, priority: 1 },
+            { _id: 0, host: process.env.APP_NAME + '-mongodb-primary:' + process.env.MONGODB_PRIMARY_CONTAINER_PORT, priority: 2 },
+            { _id: 1, host: process.env.APP_NAME + '-mongodb-secondary:' + process.env.MONGODB_SECONDARY_CONTAINER_PORT, priority: 1 },
         ],
     });
 EOF
 
     chmod +x ${REPLICA_FILE}
 
-    mongosh --port ${MONGODB_PRIMARY_PORT} < ${REPLICA_FILE}
+    mongosh --port ${MONGODB_PRIMARY_CONTAINER_PORT} < ${REPLICA_FILE}
 
     # Must re-declare as it can't expand from .env file
-    MONGODB_BASE_URL="mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PRIMARY_PORT},localhost:${MONGODB_SECONDARY_PORT}"
+    MONGODB_BASE_URL="mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@localhost:${MONGODB_PRIMARY_CONTAINER_PORT},localhost:${MONGODB_SECONDARY_CONTAINER_PORT}"
 
     # Init data
     mongorestore --uri ${MONGODB_BASE_URL} --authenticationDatabase admin /docker-entrypoint-initdb.d/db

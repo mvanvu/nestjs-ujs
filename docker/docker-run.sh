@@ -44,6 +44,9 @@ runContainer() {
     fi
 }
 
+# Create network if not exists
+docker network inspect ${NETWORK_NAME} >/dev/null 2>&1 || docker network create ${NETWORK_NAME}
+
 # Run Redis
 runContainer ${APP_NAME}-redis redis:latest \
   -p ${REDIS_HOST_PORT}:${REDIS_CONTAINER_PORT} \
@@ -61,34 +64,22 @@ runContainer ${APP_NAME}-rabbitmq rabbitmq:latest \
   --restart always \
   --network ${NETWORK_NAME}
 
-# Run MongoDB secondary 1
-runContainer ${APP_NAME}-mongodb-secondary ${APP_NAME}-mongodb \
-  -p ${MONGODB_SECONDARY_PORT}:${MONGODB_SECONDARY_PORT} \
-  -e MONGODB_USERNAME=${MONGODB_USERNAME} \
-  -e MONGODB_PASSWORD=${MONGODB_PASSWORD} \
-  --env-file .env \
-  --restart always \
-  --network ${NETWORK_NAME}
-
 # Run MongoDB primary
 runContainer ${APP_NAME}-mongodb-primary ${APP_NAME}-mongodb \
-  -p ${MONGODB_PRIMARY_PORT}:${MONGODB_PRIMARY_PORT} \
+  -p ${MONGODB_PRIMARY_HOST_PORT}:${MONGODB_PRIMARY_CONTAINER_PORT} \
   -e MONGODB_USERNAME=${MONGODB_USERNAME} \
   -e MONGODB_PASSWORD=${MONGODB_PASSWORD} \
   -v ./docker/mongodb/data:/docker/mongodb/data \
   --env-file .env \
   --restart always \
   --network ${NETWORK_NAME} \
-  -- mongod --bind_ip_all --replSet rs0 --keyFile /docker-entrypoint-initdb.d/mongodb-keyfile --port ${MONGODB_PRIMARY_PORT}
+  -- mongod --bind_ip_all --replSet rs0 --keyFile /docker-entrypoint-initdb.d/mongodb-keyfile --port ${MONGODB_PRIMARY_CONTAINER_PORT}
 
-# yarn docker:mongodb:init
-
-# Run NestJs Application (override CMD)
-# runContainer ${APP_NAME}-app \
-#   -p ${APP_PORT}:${APP_PORT} \
-#   --env-file .env \
-#   --restart always \
-#   --network ${NETWORK_NAME}
-
-# sleep 5
-# docker exec -it ${APP_NAME}-app bash -c "yarn api-gateway:prisma:generate && yarn start:gateway:dev"
+# Run MongoDB secondary
+runContainer ${APP_NAME}-mongodb-secondary ${APP_NAME}-mongodb \
+  -p ${MONGODB_SECONDARY_HOST_PORT}:${MONGODB_SECONDARY_CONTAINER_PORT} \
+  -e MONGODB_USERNAME=${MONGODB_USERNAME} \
+  -e MONGODB_PASSWORD=${MONGODB_PASSWORD} \
+  --env-file .env \
+  --restart always \
+  --network ${NETWORK_NAME}

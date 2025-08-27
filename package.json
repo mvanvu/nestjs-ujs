@@ -29,7 +29,8 @@
     "deploy:api-gateway": "dotenvx run -f .env -- bash -c \"docker run -p \\$APP_PORT:\\$APP_PORT ${APP_NAME}-production-app-production\"",
     "deploy:microservice:system": "dotenvx run -f .env -- bash -c \"docker run -p ${APP_NAME}-microservice-system-production\"",
     "deploy:microservice:user": "dotenvx run -f .env -- bash -c \"docker run -p ${APP_NAME}-microservice-user-production\"",
-    "deploy:microservice:content": "dotenvx run -f .env -- bash -c \"docker run -p ${APP_NAME}-microservice-content-production\""
+    "deploy:microservice:content": "dotenvx run -f .env -- bash -c \"docker run -p ${APP_NAME}-microservice-content-production\"",
+    "deploy:dev": "dotenvx run -f .env -- ./docker/deploy.sh"
   },
   "dependencies": {
     "@keyv/redis": "^5.1.0",
