@@ -53,11 +53,28 @@ yarn docker:build
 
 ### Start the application for dev
 
+This takes the PM2 run the microservices and API gateway in watching mode
+
 ```
 yarn start:dev
 ```
 
+Note: Edit the hosts file on your computer to be able to connect to the MongoDB Replica Set. For dev only, no needed for deployment
+
+```
+127.0.0.1 nestjs-ujs-mongodb-primary
+127.0.0.1 nestjs-ujs-mongodb-secondary
+```
+
 Browse the http://localhost:9001/api-docs an enjoy
+
+### Deployment via Docker
+
+Only one line script (useful for CI/CD), this will build/init/run the docker for each microservices and API gateway
+
+```
+yarn docker:deploy
+```
 
 ## Destroy the resources (for dev)
 
