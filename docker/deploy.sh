@@ -16,6 +16,12 @@ cd ${ROOT_PATH}/build/microservice/user
 yarn deploy
 echo "User microservice done"
 
+# Deploy content microservice
+echo "===== CONTENT MICROSERVICE ====="
+cd ${ROOT_PATH}/build/microservice/content
+yarn deploy
+echo "Content microservice done"
+
 # Deploy api gateway
 echo "===== API GATEWAY ====="
 cd ${ROOT_PATH}/build/api-gateway
