@@ -19,18 +19,18 @@
     "content:prisma:generate": "prisma generate --schema=src/microservice/content/prisma/schema.prisma",
     "api-gateway:prisma:generate": "yarn user:prisma:generate && yarn system:prisma:generate && yarn content:prisma:generate",
     "docker:mongodb:init": "docker exec -it nestjs-ujs-mongodb-primary bash -c \"dotenvx run -f /.env -- bash -c \"/docker-entrypoint-initdb.d/init.sh\"\"",
-    "docker:mongodb:dump": "docker exec -it nestjs-ujs-mongodb-primary bash -c \"dotenvx run -f /.env -- bash -c \"/docker-entrypoint-initdb.d/dump.sh\"\"",
+    "docker:mongodb:dump": "docker exec -it nestjs-ujs-mongodb-primary bash -c \"dotenvx run -f /.env -- bash -c \"/docker-entrypoint-initdb.d/dump.sh\"\" && docker cp nestjs-ujs-mongodb-primary:/docker-entrypoint-initdb.d/data ./docker/mongodb",
     "docker:build": "dotenvx run -f .env -- ./docker/docker-build.sh",
     "docker:run": "dotenvx run -f .env -- ./docker/docker-run.sh",
     "docker:remove": "dotenvx run -f .env -- bash -c \"docker rm -fv \\$(docker ps -aq -f \"name=\\${APP_NAME}\") 2>/dev/null | true\"",
     "docker:init": "yarn docker:run && yarn docker:mongodb:init",
+    "docker:deploy": "dotenvx run -f .env -- ./docker/deploy.sh",
     "pm2:destroy": "rm -f ~/.pm2/logs/nestjs-ujs-*.log | pm2 list 2>/dev/null | grep 'nestjs-ujs' | awk '{print $2}' | xargs -r pm2 delete",
     "destroy:dev": "yarn pm2:destroy && yarn docker:remove",
     "deploy:api-gateway": "dotenvx run -f .env -- bash -c \"docker run -p \\$APP_PORT:\\$APP_PORT ${APP_NAME}-production-app-production\"",
     "deploy:microservice:system": "dotenvx run -f .env -- bash -c \"docker run -p ${APP_NAME}-microservice-system-production\"",
     "deploy:microservice:user": "dotenvx run -f .env -- bash -c \"docker run -p ${APP_NAME}-microservice-user-production\"",
-    "deploy:microservice:content": "dotenvx run -f .env -- bash -c \"docker run -p ${APP_NAME}-microservice-content-production\"",
-    "deploy:dev": "dotenvx run -f .env -- ./docker/deploy.sh"
+    "deploy:microservice:content": "dotenvx run -f .env -- bash -c \"docker run -p ${APP_NAME}-microservice-content-production\""
   },
   "dependencies": {
     "@keyv/redis": "^5.1.0",

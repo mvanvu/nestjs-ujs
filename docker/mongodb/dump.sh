@@ -13,5 +13,5 @@ mongodump --uri="$MONGODB_BASE_URL/SystemService$dbSuffix?authSource=admin" --ou
 # Dump User DB
 mongodump --uri="$MONGODB_BASE_URL/UserService$dbSuffix?authSource=admin" --out="$outPath"
 
-# Dump Storage DB
-mongodump --uri="$MONGODB_BASE_URL/StorageService$dbSuffix?authSource=admin" --out="$outPath"
+# Dump Content DB
+mongodump --uri="$MONGODB_BASE_URL/ContentService$dbSuffix?authSource=admin" --out="$outPath"

@@ -1,1 +1,1 @@
-{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"name":{"$numberInt":"1"}},"name":"Role_name_key","unique":true}],"uuid":"d6629c8a370f408b80e81b566b4bd9d8","collectionName":"Role","type":"collection"}
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"name":{"$numberInt":"1"}},"name":"Role_name_key","unique":true}],"uuid":"7c3a7dcee8784a408edfd784119091e2","collectionName":"Role","type":"collection"}
