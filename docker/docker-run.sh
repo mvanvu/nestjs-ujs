@@ -64,6 +64,16 @@ runContainer ${APP_NAME}-rabbitmq rabbitmq:latest \
   --restart always \
   --network ${NETWORK_NAME}
 
+# Run MongoDB secondary
+runContainer ${APP_NAME}-mongodb-secondary ${APP_NAME}-mongodb \
+  -p ${MONGODB_SECONDARY_HOST_PORT}:${MONGODB_SECONDARY_CONTAINER_PORT} \
+  -e MONGODB_USERNAME=${MONGODB_USERNAME} \
+  -e MONGODB_PASSWORD=${MONGODB_PASSWORD} \
+  --env-file .env \
+  --restart always \
+  --network ${NETWORK_NAME} \
+  -- mongod --bind_ip_all --replSet rs0 --keyFile /docker-entrypoint-initdb.d/mongodb-keyfile --port ${MONGODB_SECONDARY_CONTAINER_PORT}
+
 # Run MongoDB primary
 runContainer ${APP_NAME}-mongodb-primary ${APP_NAME}-mongodb \
   -p ${MONGODB_PRIMARY_HOST_PORT}:${MONGODB_PRIMARY_CONTAINER_PORT} \
@@ -75,11 +85,3 @@ runContainer ${APP_NAME}-mongodb-primary ${APP_NAME}-mongodb \
   --network ${NETWORK_NAME} \
   -- mongod --bind_ip_all --replSet rs0 --keyFile /docker-entrypoint-initdb.d/mongodb-keyfile --port ${MONGODB_PRIMARY_CONTAINER_PORT}
 
-# Run MongoDB secondary
-runContainer ${APP_NAME}-mongodb-secondary ${APP_NAME}-mongodb \
-  -p ${MONGODB_SECONDARY_HOST_PORT}:${MONGODB_SECONDARY_CONTAINER_PORT} \
-  -e MONGODB_USERNAME=${MONGODB_USERNAME} \
-  -e MONGODB_PASSWORD=${MONGODB_PASSWORD} \
-  --env-file .env \
-  --restart always \
-  --network ${NETWORK_NAME}

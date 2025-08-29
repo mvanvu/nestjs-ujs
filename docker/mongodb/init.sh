@@ -30,6 +30,8 @@ else
             { _id: 1, host: process.env.APP_NAME + '-mongodb-secondary:' + process.env.MONGODB_SECONDARY_CONTAINER_PORT, priority: 1 },
         ],
     });
+
+    rs.status();
 EOF
 
     chmod +x ${REPLICA_FILE}
