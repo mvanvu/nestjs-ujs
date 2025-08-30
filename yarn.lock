@@ -972,10 +972,10 @@
   resolved "https://registry.yarnpkg.com/@microsoft/tsdoc/-/tsdoc-0.15.1.tgz#d4f6937353bc4568292654efb0a0e0532adbcba2"
   integrity sha512-4aErSrCR/On/e5G2hDP0wjooqDdauzEbIq8hIkIe5pXV0rtWJZvdCEKL0ykZxex+IxIwBp0eGeV48hQN07dXtw==
 
-"@mvanvu/ujs@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@mvanvu/ujs/-/ujs-1.0.0.tgz#16b89c6f81bf67a1e616efe33efb7784b156d789"
-  integrity sha512-vzcf60RMGR/Ho1Y+QajsA+2eNB8IuFgkYD4PGtOtzWv6CF1seoCt+vlaXaA5lDR/oT88/TOn7x4n4T6AguvcAg==
+"@mvanvu/ujs@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@mvanvu/ujs/-/ujs-1.0.1.tgz#c2e794836e3e12747788691b1d1dd0e47dc4ff22"
+  integrity sha512-YOGGVeWpS1e7IwZtP4en13vxezTHossdllmMthcGlhk6NkBaNFyE1Rqx1XM0Hpt3puo+2n4SZQACfVtl0BgZWw==
 
 "@napi-rs/nice-android-arm-eabi@1.0.1":
   version "1.0.1"
