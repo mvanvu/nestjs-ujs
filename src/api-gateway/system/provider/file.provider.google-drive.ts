@@ -64,7 +64,7 @@ export class FileProviderGoogleDrive implements FileProviderInterface {
          return `https://drive.google.com/uc?id=${file.providerId}&export=download`;
       }
 
-      return `/${storageConfig.upload.prefix}/files/${file.id}/stream`;
+      return `/${storageConfig.upload.uriPath}/files/${file.id}/stream`;
    }
 
    async stream(file: FileEntity): Promise<StreamableFile> {

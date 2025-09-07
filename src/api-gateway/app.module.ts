@@ -115,11 +115,14 @@ export class AppModule {
       app.enableShutdownHooks();
       app.use(helmet());
 
-      const staticPath = serviceConfig.get('system.upload.localPath');
+      const storePath = serviceConfig.get('system.upload.storePath');
+      const uriPath = serviceConfig.get('system.upload.uriPath', 'assets');
 
-      if (staticPath) {
-         const rootPath = path.join(process.cwd(), staticPath, 'public');
-         app.useStaticAssets(rootPath, { prefix: '/', index: false });
+      if (storePath) {
+         app.useStaticAssets(path.join(process.cwd(), storePath, 'public'), {
+            prefix: '/' + path.join(process.cwd(), uriPath),
+            index: false,
+         });
       }
 
       const apiPrefix = appConfig.get('apiGateway.prefix');

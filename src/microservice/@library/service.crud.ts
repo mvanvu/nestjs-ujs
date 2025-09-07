@@ -183,53 +183,55 @@ export class CRUDService<
 
       // Take care order by
       const orderBy = <OrderBy | string>(query?.order || '');
+      const allFields: string[] = this.params.dataModels[Util.uFirst(this.params.modelName)].fields
+         .filter(({ relationName }) => !relationName)
+         .map(({ name }) => name);
 
       if (orderBy) {
          if (typeof orderBy === 'string') {
             const orderByArray = orderBy.split(',');
+            const orderFields: string[] = Array.from(
+               new Set([...allFields, ...(this.configCRUD?.list?.orderFields ?? [])]),
+            );
 
             for (const order of orderByArray) {
                // eslint-disable-next-line prefer-const
                let [ordering, direction] = order.split(' ');
                direction = direction?.toLowerCase() ?? undefined;
 
-               if (direction === undefined) {
+               if (direction === undefined || !['asc', 'desc'].includes(direction)) {
                   direction = 'asc';
                }
 
-               if (['asc', 'desc'].includes(direction)) {
-                  if (this.configCRUD?.list?.orderFields?.length) {
-                     for (const orderField of this.configCRUD.list.orderFields) {
-                        const regex = /\[([a-z0-9_.,]+)\]/gi;
-                        let fieldName = orderField;
-                        let queryName = fieldName;
+               for (const orderField of orderFields) {
+                  const regex = /\[([a-z0-9_.,]+)\]/gi;
+                  let fieldName = orderField;
+                  let queryName = fieldName;
 
-                        if (fieldName.match(regex)) {
-                           queryName = fieldName.replace(regex, '');
-                           fieldName = fieldName.replace(queryName, '').replace(regex, '$1');
+                  if (fieldName.match(regex)) {
+                     queryName = fieldName.replace(regex, '');
+                     fieldName = fieldName.replace(queryName, '').replace(regex, '$1');
+                  }
+
+                  if (ordering === queryName) {
+                     if (fieldName.includes(',')) {
+                        const multiSortFields = fieldName.split('.');
+                        const lastSortField = multiSortFields.pop();
+                        const prefix = multiSortFields.join('.');
+
+                        if (prefix) {
+                           modelParams.orderBy.push(
+                              ...lastSortField.split(',').map((name) => ({
+                                 [prefix]: { [name]: <OrderDirection>direction },
+                              })),
+                           );
+                        } else {
+                           modelParams.orderBy.push(
+                              ...fieldName.split(',').map((name) => ({ [name]: <OrderDirection>direction })),
+                           );
                         }
-
-                        if (ordering === queryName) {
-                           if (fieldName.includes(',')) {
-                              const multiSortFields = fieldName.split('.');
-                              const lastSortField = multiSortFields.pop();
-                              const prefix = multiSortFields.join('.');
-
-                              if (prefix) {
-                                 modelParams.orderBy.push(
-                                    ...lastSortField.split(',').map((name) => ({
-                                       [prefix]: { [name]: <OrderDirection>direction },
-                                    })),
-                                 );
-                              } else {
-                                 modelParams.orderBy.push(
-                                    ...fieldName.split(',').map((name) => ({ [name]: <OrderDirection>direction })),
-                                 );
-                              }
-                           } else {
-                              modelParams.orderBy.push(Registry.from().set(fieldName, direction).valueOf());
-                           }
-                        }
+                     } else {
+                        modelParams.orderBy.push(Registry.from().set(fieldName, direction).valueOf());
                      }
                   }
                }
@@ -241,21 +243,29 @@ export class CRUDService<
 
       // Check to set default ordering
       if (!modelParams.orderBy.length) {
-         if (
-            this.params.dataModels[Util.uFirst(this.params.modelName)].fields.find(({ name }) => name === 'createdAt')
-         ) {
-            modelParams.orderBy.push({ createdAt: 'desc' });
+         if (allFields.find((name) => name === 'createdAt')) {
+            modelParams.orderBy.push({ createdAt: 'asc' });
          }
       }
 
       // Take care search
       const q = (query.q || '').toString().trim();
       const searchCondition = parseQueryParamSearch(q);
+      const searchFields: string[] = this.configCRUD?.list?.searchFields ?? [];
 
-      if (searchCondition && this.configCRUD?.list?.searchFields?.length) {
+      // Check to set default search fields
+      if (!searchFields.length) {
+         allFields.forEach((field) => {
+            if (['name', 'title', 'description', 'email', 'username'].includes(field)) {
+               searchFields.push(field);
+            }
+         });
+      }
+
+      if (searchCondition && searchFields.length) {
          const where: Record<string, any>[] = [];
 
-         for (const searchField of this.configCRUD.list.searchFields) {
+         for (const searchField of searchFields) {
             where.push({ [searchField]: searchCondition });
          }
 

@@ -23,6 +23,7 @@
     "docker:build": "dotenvx run -f .env -- ./docker/docker-build.sh",
     "docker:run": "dotenvx run -f .env -- ./docker/docker-run.sh",
     "docker:remove": "dotenvx run -f .env -- bash -c \"docker rm -fv \\$(docker ps -aq -f \"name=\\${APP_NAME}\") 2>/dev/null | true\"",
+    "docker:stop": "dotenvx run -f .env -- bash -c \"docker stop \\$(docker ps -aq -f \"name=\\${APP_NAME}\") 2>/dev/null | true\"",
     "docker:init": "yarn docker:run && yarn docker:mongodb:init",
     "docker:deploy": "dotenvx run -f .env -- ./docker/deploy.sh",
     "pm2:destroy": "rm -f ~/.pm2/logs/nestjs-ujs-*.log | pm2 list 2>/dev/null | grep 'nestjs-ujs' | awk '{print $2}' | xargs -r pm2 delete",

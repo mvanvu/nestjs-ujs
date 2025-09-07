@@ -21,7 +21,7 @@ export class GroupController {
    @Inject(BaseClientProxy) private readonly proxy: BaseClientProxy;
 
    get groupCRUD(): CRUDClient {
-      return this.proxy.createClient(name).createCRUD(patterns.groupCRUD);
+      return this.proxy.createClient(name).createCRUD(patterns.groupCRUD, { entityResponse: GroupEntity });
    }
 
    @Permission({ key: permissions.group.read, adminScope: true })

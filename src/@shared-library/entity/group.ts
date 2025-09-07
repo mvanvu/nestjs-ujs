@@ -58,8 +58,6 @@ export class GroupEntity {
    totalActiveUsers: number;
 
    bind(record?: Group & { _count: { users: number } }) {
-      if (record?._count?.users !== undefined) {
-         this.totalActiveUsers = record._count.users;
-      }
+      this.totalActiveUsers = record?._count?.users ?? 0;
    }
 }

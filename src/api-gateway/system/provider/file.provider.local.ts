@@ -13,14 +13,14 @@ export class FileProviderLocal implements FileProviderInterface {
    private readonly storeUrl: string;
 
    constructor() {
-      const basePath = storageConfig.upload.localPath;
+      const basePath = storageConfig.upload.storePath;
 
       if (!basePath) {
          throw new Error('ENV not provided: MEDIA_STORAGE_LOCAL_PATH');
       }
 
       this.storePath = path.join(process.cwd(), basePath);
-      this.storeUrl = `/${storageConfig.upload.prefix}`;
+      this.storeUrl = `/${storageConfig.upload.uriPath}`;
 
       if (!fs.existsSync(this.storePath)) {
          fs.mkdirSync(`${this.storePath}/public`, { recursive: true });

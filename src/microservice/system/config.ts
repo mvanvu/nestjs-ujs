@@ -24,8 +24,8 @@ export default {
       mail: { test: 'system.mail.sendTest' },
    },
    upload: {
-      prefix: 'assets',
-      localPath: 'storage',
+      uriPath: 'assets',
+      storePath: 'storage',
       provider: 'Local',
       googleDriveCredentialsPath: 'credentials/google-drive.json',
    },

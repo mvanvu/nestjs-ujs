@@ -25,15 +25,19 @@ export class CacheService {
    async getKeys(): Promise<string[]> {
       const keys: string[] = [];
 
-      for await (const [key] of this.cacheManager.stores[0].iterator(false)) {
-         keys.push(key);
-      }
+      this.cacheManager.stores.forEach(async (store) => {
+         for await (const [key] of store.iterator(false)) {
+            if (!keys.includes(key)) {
+               keys.push(key);
+            }
+         }
+      });
 
-      return Array.from(keys);
+      return keys;
    }
 
    async clear(): Promise<this> {
-      await this.cacheManager.stores[0].clear();
+      await Promise.all(this.cacheManager.stores.map((store) => store.clear()));
 
       return this;
    }

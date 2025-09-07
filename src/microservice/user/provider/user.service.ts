@@ -238,7 +238,7 @@ export class UserService extends BaseService {
          .createCRUDService('user', { entity: UserEntity, createDto: CreateUserDto, updateDto: UpdateUserDto })
          .config({
             // softDelete: !appConfig.is('nodeEnv', 'test'),
-            list: { searchFields: ['name', 'username', 'email'], filterFields: ['username', 'email'] },
+            list: { searchFields: ['name', 'username', 'email'], filterFields: ['username', 'email'], orderFields: ['group[group.name]'] },
          })
          .include(this.userInclude)
          .beforeCreate(async ({ tx, data }) => {
