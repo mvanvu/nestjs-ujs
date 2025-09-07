@@ -37,7 +37,7 @@ export class CacheService {
    }
 
    async clear(): Promise<this> {
-      await Promise.all(this.cacheManager.stores.map((store) => store.clear()));
+      await Promise.allSettled(this.cacheManager.stores.map((store) => store.clear()));
 
       return this;
    }
