@@ -52,7 +52,7 @@
     "googleapis": "^150.0.1",
     "helmet": "^8.1.0",
     "node-device-detector": "^2.1.0",
-    "nodemailer": "^7.0.4",
+    "nodemailer": "^7.0.11",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
